@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 1
 // Class: SmartTravelDriver
-// Written by: Yousef Yousef (40299095)
+// Written by: Yousef Yousef (40299095) Hamza Shadeed (40341727)
 // -----------------------------------------------------
 
 package driver;
