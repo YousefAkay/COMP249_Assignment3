@@ -6,6 +6,7 @@ import travel.Trip;
 
 import java.io.PrintWriter;
 
+//WSP
 public class SmartTravelService {
 
     Client[] clients = new Client[100];
