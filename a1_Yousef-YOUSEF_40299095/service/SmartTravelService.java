@@ -1,4 +1,5 @@
 package service;
+
 import client.Client;
 import travel.Accommodation;
 import travel.Transportation;
@@ -33,8 +34,6 @@ public class SmartTravelService {
     public void calculateTripTotal(){
         return;
     }
-
-
 
 
 

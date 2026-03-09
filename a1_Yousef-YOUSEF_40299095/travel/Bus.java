@@ -1,99 +1,79 @@
 // -----------------------------------------------------
-// Assignment 1
+// Assignment 2
 // Class: Bus
 // Written by: Yousef Yousef (40299095)
 // -----------------------------------------------------
 
 package travel;
 
+import exceptions.InvalidTransportDataException;
+
 /** Core Bus entity in the SmartTravel system */
 public class Bus extends Transportation {
 
-    private String busCompany;
     private int numberOfStops;
 
-    // Default constructor
-    /** Builds a valid Bus object (ID handled automatically) */
+    /** Default constructor: base fare = 60, stops = 1 */
     public Bus() {
         super();
-        this.busCompany = "Unknown";
-        this.numberOfStops = 0;
+        this.numberOfStops = 1;
+        try {
+            setBaseFare(60.0);
+        } catch (InvalidTransportDataException ignore) {
+        }
     }
 
-    /** Parameterized constructor
-     Builds a valid Bus object (ID handled automatically) */
-    public Bus(String companyName, String departureCity, String arrivalCity,
-               String busCompany, int numberOfStops) {
+    /** constructor: base fare = 60 */
+    public Bus(String companyName, String departureCity, String arrivalCity, int numberOfStops)
+            throws InvalidTransportDataException {
         super(companyName, departureCity, arrivalCity);
-        this.busCompany = busCompany;
-        this.numberOfStops = numberOfStops;
+        setNumberOfStops(numberOfStops);
+        setBaseFare(60.0);
     }
 
-    // Copy constructor (new ID, not copied)
-    /** Builds a valid Bus object (ID handled automatically) */
+    /** constructor (base fare comes from CSV) */
+    public Bus(String companyName, String departureCity, String arrivalCity, double baseFare, int numberOfStops)
+            throws InvalidTransportDataException {
+        super(companyName, departureCity, arrivalCity, baseFare);
+        setNumberOfStops(numberOfStops);
+    }
+
+    /** load-time constructor (explicit ID) */
+    public Bus(String transportId, String companyName, String departureCity, String arrivalCity,
+               double baseFare, int numberOfStops) throws InvalidTransportDataException {
+        super(transportId, companyName, departureCity, arrivalCity, baseFare);
+        setNumberOfStops(numberOfStops);
+    }
+
+    /** Copy constructor */
     public Bus(Bus other) {
-        super(other.getCompanyName(), other.getDepartureCity(), other.getArrivalCity());
-        this.busCompany = other.busCompany;
+        super(other);
         this.numberOfStops = other.numberOfStops;
     }
 
-    /** setters and getters */
-    public String getBusCompany() {
-        return busCompany;
-    }
-
-    
-    public void setBusCompany(String busCompany) {
-        this.busCompany = busCompany;
-    }
-
-  
     public int getNumberOfStops() {
         return numberOfStops;
     }
 
-   
-    public void setNumberOfStops(int numberOfStops) {
+    public void setNumberOfStops(int numberOfStops) throws InvalidTransportDataException {
+        // A2 rule: Bus requires >= 1 stop
+        if (numberOfStops < 1) {
+            throw new InvalidTransportDataException("Bus numberOfStops must be >= 1.");
+        }
         this.numberOfStops = numberOfStops;
     }
 
-    
-    /** Calculates bus cost based on base fare and fee per stop */
+    /** calculateCost uses baseFare now */
     @Override
     public double calculateCost(int numberOfDays) {
-        double base = 60.0;
-        return base + (numberOfStops * 5.0);
+        return getBaseFare() + (numberOfStops * 5.0);
     }
 
-    
     /** Provides a clean summary for display */
     @Override
     public String toString() {
-        return "Bus{" +
-                "transportId='" + getTransportId() + "'" +
-                ", companyName='" + getCompanyName() + "'" +
-                ", departureCity='" + getDepartureCity() + "'" +
-                ", arrivalCity='" + getArrivalCity() + "'" +
-                ", busCompany='" + busCompany + "'" +
-                ", numberOfStops=" + numberOfStops +
-                "}";
-    }
-
-
-    /** Checks logical equality based on meaningful attributes */
-    @Override
-    public boolean equals(Object oth) {
-        if (!super.equals(oth))
-            return false;
-
-        Bus other = (Bus) oth;
-
-        if (this.busCompany == null) {
-            if (other.busCompany != null)
-                return false;
-        } else if (!this.busCompany.equals(other.busCompany))
-            return false;
-
-        return this.numberOfStops == other.numberOfStops;
+        return "Bus{transportId='" + getTransportId() + "', companyName='" + getCompanyName() +
+                "', departureCity='" + getDepartureCity() + "', arrivalCity='" + getArrivalCity() +
+                "', baseFare=" + getBaseFare() + ", numberOfStops=" + numberOfStops + "}";
     }
 }

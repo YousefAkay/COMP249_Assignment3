@@ -1,78 +1,80 @@
 // -----------------------------------------------------
-// Assignment 1
+// Assignment 2 (based on Assignment 1 code)
 // Class: Hostel
 // Written by: Yousef Yousef (40299095)
 // -----------------------------------------------------
 
 package travel;
 
+import exceptions.InvalidAccommodationDataException;
+
 /** Core Hostel entity in the SmartTravel system */
 public class Hostel extends Accommodation {
 
-    private int sharedBedsPerRoom;
+    private int sharedRoomCapacity;
 
-    // Default constructor
-    /** Builds a valid Hostel object (ID handled automatically) */
+    /** Default constructor */
     public Hostel() {
         super();
-        this.sharedBedsPerRoom = 0;
+        this.sharedRoomCapacity = 4;
     }
 
-    // Parameterized constructor
-    /** Builds a valid Hostel object (ID handled automatically) */
-    public Hostel(String name, String location, double pricePerNight, int sharedBedsPerRoom) {
+    /** constructor */
+    public Hostel(String name, String location, double pricePerNight, int sharedRoomCapacity)
+            throws InvalidAccommodationDataException {
         super(name, location, pricePerNight);
-        this.sharedBedsPerRoom = sharedBedsPerRoom;
+        setSharedRoomCapacity(sharedRoomCapacity);
+        // A2 rule: Hostel price <= 150
+        validateHostelPrice(pricePerNight);
     }
 
-    // Copy constructor (new ID, not copied)
-    /** Builds a valid Hostel object (ID handled automatically) */
+    /** load-time constructor (explicit ID) */
+    public Hostel(String accommodationId, String name, String location, double pricePerNight, int sharedRoomCapacity)
+            throws InvalidAccommodationDataException {
+        super(accommodationId, name, location, pricePerNight);
+        setSharedRoomCapacity(sharedRoomCapacity);
+        validateHostelPrice(pricePerNight);
+    }
+
+    /** Copy constructor */
     public Hostel(Hostel other) {
-        super(other.getName(), other.getLocation(), other.getPricePerNight());
-        this.sharedBedsPerRoom = other.sharedBedsPerRoom;
+        super(other);
+        this.sharedRoomCapacity = other.sharedRoomCapacity;
     }
 
-    public int getSharedBedsPerRoom() {
-        return sharedBedsPerRoom;
+    private void validateHostelPrice(double pricePerNight) throws InvalidAccommodationDataException {
+        if (pricePerNight > 150.0) {
+            throw new InvalidAccommodationDataException("Hostel pricePerNight must be <= 150.");
+        }
     }
 
-    public void setSharedBedsPerRoom(int sharedBedsPerRoom) {
-        this.sharedBedsPerRoom = sharedBedsPerRoom;
+    public int getSharedRoomCapacity() {
+        return sharedRoomCapacity;
     }
 
+    public void setSharedRoomCapacity(int sharedRoomCapacity) throws InvalidAccommodationDataException {
+        if (sharedRoomCapacity < 1) {
+            throw new InvalidAccommodationDataException("Hostel sharedRoomCapacity must be >= 1.");
+        }
+        this.sharedRoomCapacity = sharedRoomCapacity;
+    }
 
-    /** Calculates the hostel cost based on trip duration */
+    /** multiply by 0.85 */
     @Override
     public double calculateCost(int numberOfDays) {
         double nights = numberOfDays;
         double total = nights * getPricePerNight();
 
-        /** 15% surcharge */
         total = total * 0.85;
 
         return total;
     }
 
-
-    /** Provides a clean summary for display  */
+    /** Provides a clean summary for display */
     @Override
     public String toString() {
-        return "Hostel{" +
-                "accommodationId='" + getAccommodationId() + "'" +
-                ", name='" + getName() + "'" +
-                ", location='" + getLocation() + "'" +
-                ", pricePerNight=" + getPricePerNight() +
-                ", sharedBedsPerRoom=" + sharedBedsPerRoom +
-                "}";
-    }
-
-
-    /** Checks logical equality based on meaningful attributes */
-    @Override
-    public boolean equals(Object oth) {
-        if (!super.equals(oth))
-            return false;
-        Hostel other = (Hostel) oth;
-        return this.sharedBedsPerRoom == other.sharedBedsPerRoom;
+        return "Hostel{accommodationId='" + getAccommodationId() + "', name='" + getName() +
+                "', location='" + getLocation() + "', pricePerNight=" + getPricePerNight() +
+                ", sharedRoomCapacity=" + sharedRoomCapacity + "}";
     }
 }

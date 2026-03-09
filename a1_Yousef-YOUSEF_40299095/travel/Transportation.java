@@ -1,155 +1,179 @@
 // -----------------------------------------------------
-// Assignment 1
+// Assignment 2
 // Class: Transportation
-// Written by: Yousef Yousef (40299095)
+// Written by: Yousef Yousef (40299095) & Hamza Shadeed (40
 // -----------------------------------------------------
 
 package travel;
+
+import exceptions.InvalidTransportDataException;
 
 /** Core Transportation entity in the SmartTravel system */
 public abstract class Transportation {
 
 	private static int nextId = 3001;
 
-	    private String transportId;
-	    private String companyName;
-	    private String departureCity;
-	    private String arrivalCity;
+	private String transportId;
+	private String companyName;
+	private String departureCity;
+	private String arrivalCity;
 
-	    /** Generates the next sequential ID for this category */
-	    private static String generateId() {
-	        return "TR" + nextId++;
-	    }
+	// A2 addition: base fare to support CSV pricing
+	private double baseFare;
 
-	    /** Default constructor
-	     Builds a valid Transportation object (ID handled automatically) */
-	    public Transportation() {
-	        this.transportId = generateId();
-	        this.companyName = "Unknown";
-	        this.departureCity = "Unknown";
-	        this.arrivalCity = "Unknown";
-	    }
+	/** Generates the next sequential ID for this category */
+	private static String generateId() {
+		return "TR" + nextId++;
+	}
 
-	    /** Parameterized constructor (ID auto-generated)
-	     Builds a valid Transportation object (ID handled automatically). */
-	    public Transportation(String companyName, String departureCity, String arrivalCity) {
-	        this.transportId = generateId();
-	        this.companyName = companyName;
-	        this.departureCity = departureCity;
-	        this.arrivalCity = arrivalCity;
-	    }
+	/** Sync nextId so IDs don't collide after CSV load */
+	public static void syncNextIdFromLoadedId(String loadedId) {
+		if (loadedId == null) return;
+		if (!loadedId.startsWith("TR")) return;
+		try {
+			int n = Integer.parseInt(loadedId.substring(2));
+			if (n >= nextId) nextId = n + 1;
+		} catch (NumberFormatException ignore) {
+		}
+	}
 
-	    /** Copy constructor (new ID must be generated, not copied) 
-	     Builds a valid Transportation object (ID handled automatically) */
-	    public Transportation(Transportation other) {
-	        this.transportId = generateId();
-	        this.companyName = other.companyName;
-	        this.departureCity = other.departureCity;
-	        this.arrivalCity = other.arrivalCity;
-	    }
+	/** Default constructor */
+	public Transportation() {
+		this.transportId = generateId();
+		this.companyName = "Unknown";
+		this.departureCity = "Unknown";
+		this.arrivalCity = "Unknown";
+		this.baseFare = 0.0;
+	}
 
-	    /** setters and getters */
-	    public String getTransportId() {
-	        return transportId;
-	    }
+	/** constructor */
+	public Transportation(String companyName, String departureCity, String arrivalCity) throws InvalidTransportDataException {
+		this.transportId = generateId();
+		setCompanyName(companyName);
+		setDepartureCity(departureCity);
+		setArrivalCity(arrivalCity);
+		this.baseFare = 0.0;
+	}
 
-	   /** Id setter is unnecessary as ID is auto-generated */
-	   
-	    public String getCompanyName() {
-	        return companyName;
-	    }
+	/** constructor: explicit baseFare */
+	public Transportation(String companyName, String departureCity, String arrivalCity, double baseFare)
+			throws InvalidTransportDataException {
+		this.transportId = generateId();
+		setCompanyName(companyName);
+		setDepartureCity(departureCity);
+		setArrivalCity(arrivalCity);
+		setBaseFare(baseFare);
+	}
 
-	 
-	    public void setCompanyName(String companyName) {
-	        this.companyName = companyName;
-	    }
+	/** load-time constructor: explicit ID + baseFare */
+	protected Transportation(String transportId, String companyName, String departureCity, String arrivalCity, double baseFare)
+			throws InvalidTransportDataException {
+		setTransportIdForLoad(transportId);
+		setCompanyName(companyName);
+		setDepartureCity(departureCity);
+		setArrivalCity(arrivalCity);
+		setBaseFare(baseFare);
+		syncNextIdFromLoadedId(transportId);
+	}
 
-	  
-	    public String getDepartureCity() {
-	        return departureCity;
-	    }
+	/** Copy constructor: new ID generated */
+	public Transportation(Transportation other) {
+		this.transportId = generateId();
+		this.companyName = other.companyName;
+		this.departureCity = other.departureCity;
+		this.arrivalCity = other.arrivalCity;
+		this.baseFare = other.baseFare;
+	}
 
-	
-	    public void setDepartureCity(String departureCity) {
-	        this.departureCity = departureCity;
-	    }
+	/** Validation helpers */
+	private static boolean isBlank(String s) {
+		return s == null || s.trim().isEmpty();
+	}
 
-	 
-	    public String getArrivalCity() {
-	        return arrivalCity;
-	    }
+	private void setTransportIdForLoad(String transportId) throws InvalidTransportDataException {
+		if (isBlank(transportId) || !transportId.startsWith("TR")) {
+			throw new InvalidTransportDataException("Invalid transportId: " + transportId);
+		}
+		this.transportId = transportId.trim();
+	}
 
-	   
-	    public void setArrivalCity(String arrivalCity) {
-	        this.arrivalCity = arrivalCity;
-	    }
+	/** Getters and Setters */
+	public String getTransportId() {
+		return transportId;
+	}
 
-	    /** Returns the concrete trip type based on the runtime class name */
-	    public String getTripType() {
-	        return this.getClass().getSimpleName();
-	    }
+	public String getCompanyName() {
+		return companyName;
+	}
 
-	    
-	    
-	     /** Calculates the transportation cost based on trip duration
-	     Declared abstract to enforce subclass-specific cost logic */
-	    public abstract double calculateCost(int numberOfDays);
+	public void setCompanyName(String companyName) throws InvalidTransportDataException {
+		if (isBlank(companyName)) {
+			throw new InvalidTransportDataException("companyName cannot be empty.");
+		}
+		this.companyName = companyName.trim();
+	}
 
-	    
-	    /** Creates a deep copy of a single Transportation object
-	      Preserves the runtime subclass type using copy constructors */
-	    public static Transportation deepCopyOne(Transportation original) {
-	        if (original == null) 
-	        	return null;
+	public String getDepartureCity() {
+		return departureCity;
+	}
 
-	        if (original instanceof Flight) 
-	        	return new Flight((Flight) original);
-	        if (original instanceof Train)  
-	        	return new Train((Train) original);
-	        if (original instanceof Bus)   
-	        	return new Bus((Bus) original);
+	public void setDepartureCity(String departureCity) throws InvalidTransportDataException {
+		if (isBlank(departureCity)) {
+			throw new InvalidTransportDataException("departureCity cannot be empty.");
+		}
+		this.departureCity = departureCity.trim();
+	}
 
-	        return null;
-	    }
+	public String getArrivalCity() {
+		return arrivalCity;
+	}
 
-	    
-	    /** Creates a deep copy of a Transportation array
-	      Ensures copied objects are independent from the original array */
-	    public static Transportation[] copyTransportationArray(Transportation[] original) {
-	        if (original == null) 
-	        	return null;
+	public void setArrivalCity(String arrivalCity) throws InvalidTransportDataException {
+		if (isBlank(arrivalCity)) {
+			throw new InvalidTransportDataException("arrivalCity cannot be empty.");
+		}
+		this.arrivalCity = arrivalCity.trim();
+	}
 
-	        Transportation[] copied = new Transportation[original.length];
-	        for (int i = 0; i < original.length; i++) {
-	            copied[i] = deepCopyOne(original[i]);
-	        }
-	        return copied;
-	    }
-	   
-	    /** Provides a clean summary for display */
-	    @Override
-	    public String toString() {
-	        return "Transportation{" +
-	                "transportId='" + transportId + "'" +
-	                ", companyName='" + companyName + "'" +
-	                ", departureCity='" + departureCity + "'" +
-	                ", arrivalCity='" + arrivalCity + "'" +
-	                ", type='" + getTripType() + "'" +
-	                "}";
-	    }
+	public double getBaseFare() {
+		return baseFare;
+	}
 
-	    /** Checks logical equality based on meaningful attributes */
-	    @Override
-	    public boolean equals(Object otherObject) {
-	        if (otherObject == null) 
-	        	return false;
-	        if (getClass() != otherObject.getClass())
-	        	return false;
+	public void setBaseFare(double baseFare) throws InvalidTransportDataException {
+		if (baseFare < 0) {
+			throw new InvalidTransportDataException("baseFare cannot be negative.");
+		}
+		this.baseFare = baseFare;
+	}
 
-	        Transportation other = (Transportation) otherObject;
+	/** subclasses decide how cost is computed */
+	public abstract double calculateCost(int numberOfDays);
 
-	        return companyName.equals(other.companyName)
-	            && departureCity.equals(other.departureCity)
-	            && arrivalCity.equals(other.arrivalCity);
-	    }
+	/** Logical equality (meaningful attributes, not auto-ID) */
+	public boolean equals(Object oth) {
+		if (oth == null) return false;
+		if (this.getClass() != oth.getClass()) return false;
+
+		Transportation other = (Transportation) oth;
+
+		if (companyName == null) {
+			if (other.companyName != null) return false;
+		} else if (!companyName.equals(other.companyName)) return false;
+
+		if (departureCity == null) {
+			if (other.departureCity != null) return false;
+		} else if (!departureCity.equals(other.departureCity)) return false;
+
+		if (arrivalCity == null) {
+			if (other.arrivalCity != null) return false;
+		} else if (!arrivalCity.equals(other.arrivalCity)) return false;
+
+		return Double.compare(baseFare, other.baseFare) == 0;
+	}
+
+	/** Provides a clean summary for display */
+	public String toString() {
+		return "Transportation{transportId='" + transportId + "', companyName='" + companyName +
+				"', departureCity='" + departureCity + "', arrivalCity='" + arrivalCity + "', baseFare=" + baseFare + "}";
+	}
 }

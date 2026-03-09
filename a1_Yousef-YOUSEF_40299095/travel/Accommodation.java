@@ -1,10 +1,12 @@
 // -----------------------------------------------------
-// Assignment 1
+// Assignment 2
 // Class: Accommodation
 // Written by: Yousef Yousef (40299095)
 // -----------------------------------------------------
 
 package travel;
+
+import exceptions.InvalidAccommodationDataException;
 
 /** Core Accommodation entity in the SmartTravel system */
 public abstract class Accommodation {
@@ -21,26 +23,44 @@ public abstract class Accommodation {
         return "A" + nextId++;
     }
 
-    /** Default constructor
-     Builds a valid Accommodation object (ID handled automatically) */
+    /** Sync nextId so IDs don't collide after CSV load */
+    public static void syncNextIdFromLoadedId(String loadedId) {
+        if (loadedId == null) return;
+        if (!loadedId.startsWith("A")) return;
+        try {
+            int n = Integer.parseInt(loadedId.substring(1));
+            if (n >= nextId) nextId = n + 1;
+        } catch (NumberFormatException ignore) {
+        }
+    }
+
+    /** Default constructor */
     public Accommodation() {
         this.accommodationId = generateId();
         this.name = "Unknown";
         this.location = "Unknown";
-        this.pricePerNight = 0.0;
+        this.pricePerNight = 1.0; // A2 requires > 0
     }
 
-    /** Parameterized constructor (ID auto-generated)
-     Builds a valid Accommodation object (ID handled automatically) */
-    public Accommodation(String name, String location, double pricePerNight) {
+    /** constructor */
+    public Accommodation(String name, String location, double pricePerNight) throws InvalidAccommodationDataException {
         this.accommodationId = generateId();
-        this.name = name;
-        this.location = location;
-        this.pricePerNight = pricePerNight;
+        setName(name);
+        setLocation(location);
+        setPricePerNight(pricePerNight);
     }
 
-    /** Copy constructor (new ID must be generated) */
-    /** Builds a valid Accommodation object (ID handled automatically) */
+    /** load-time constructor: explicit ID */
+    protected Accommodation(String accommodationId, String name, String location, double pricePerNight)
+            throws InvalidAccommodationDataException {
+        setAccommodationIdForLoad(accommodationId);
+        setName(name);
+        setLocation(location);
+        setPricePerNight(pricePerNight);
+        syncNextIdFromLoadedId(accommodationId);
+    }
+
+    /** Copy constructor (new ID generated) */
     public Accommodation(Accommodation other) {
         this.accommodationId = generateId();
         this.name = other.name;
@@ -48,108 +68,83 @@ public abstract class Accommodation {
         this.pricePerNight = other.pricePerNight;
     }
 
-    /** setters and getters */
+    /** Validation helpers */
+    private static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    private void setAccommodationIdForLoad(String id) throws InvalidAccommodationDataException {
+        if (isBlank(id) || !id.startsWith("A")) {
+            throw new InvalidAccommodationDataException("Invalid accommodationId: " + id);
+        }
+        this.accommodationId = id.trim();
+    }
+
+    /** Getters & Setters */
     public String getAccommodationId() {
         return accommodationId;
     }
 
-    /** ClientId setter is unnecessary as ID is auto-generated */
-   
     public String getName() {
         return name;
     }
 
-
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String name) throws InvalidAccommodationDataException {
+        if (isBlank(name)) {
+            throw new InvalidAccommodationDataException("Accommodation name cannot be empty.");
+        }
+        this.name = name.trim();
     }
 
-  
     public String getLocation() {
         return location;
     }
 
-  
-    public void setLocation(String location) {
-        this.location = location;
+    public void setLocation(String location) throws InvalidAccommodationDataException {
+        if (isBlank(location)) {
+            throw new InvalidAccommodationDataException("Accommodation location cannot be empty.");
+        }
+        this.location = location.trim();
     }
 
-   
     public double getPricePerNight() {
         return pricePerNight;
     }
 
-    
-    public void setPricePerNight(double pricePerNight) {
+    public void setPricePerNight(double pricePerNight) throws InvalidAccommodationDataException {
+        // A2 rule: price per night > 0
+        if (pricePerNight <= 0) {
+            throw new InvalidAccommodationDataException("pricePerNight must be > 0.");
+        }
         this.pricePerNight = pricePerNight;
     }
 
-    
-     /** Returns the concrete trip type based on the runtime class name */
-    public String getTripType() {
-        return this.getClass().getSimpleName();
-    }
 
-   
-    /** Calculates the accommodation cost based on trip duration
-   Declared abstract to enforce subclass-specific cost logic  */
     public abstract double calculateCost(int numberOfDays);
 
-    
-    /** Creates a deep copy of a single Accommodation object
-    Preserves the runtime subclass type using copy constructors */
-    public static Accommodation deepCopyOne(Accommodation original) {
-        if (original == null) 
-        	return null;
+    /** Logical equality: meaningful attributes only */
+    @Override
+    public boolean equals(Object oth) {
+        if (oth == null) return false;
+        if (this.getClass() != oth.getClass()) return false;
 
-        if (original instanceof Hotel) 
-        	return new Hotel((Hotel) original);
-        if (original instanceof Hostel)
-        	return new Hostel((Hostel) original);
+        Accommodation other = (Accommodation) oth;
 
-        return null;
+        if (name == null) {
+            if (other.name != null) return false;
+        } else if (!name.equals(other.name)) return false;
+
+        if (location == null) {
+            if (other.location != null) return false;
+        } else if (!location.equals(other.location)) return false;
+
+        return Double.compare(pricePerNight, other.pricePerNight) == 0;
     }
-
-    
-    /** Creates a deep copy of a Accommodation array
-    Ensures copied objects are independent from the original array */
-    public static Accommodation[] copyAccommodationArray(Accommodation[] original) {
-        if (original == null) 
-        	return null;
-
-        Accommodation[] copied = new Accommodation[original.length];
-        for (int i = 0; i < original.length; i++) {
-            copied[i] = deepCopyOne(original[i]);
-        }
-        return copied;
-    }
-    
 
     /** Provides a clean summary for display */
     @Override
     public String toString() {
-        return "Accommodation{" +
-                "accommodationId='" + accommodationId + "'" +
-                ", name='" + name + "'" +
-                ", location='" + location + "'" +
-                ", pricePerNight=" + pricePerNight +
-                ", type='" + getTripType() + "'" +
-                "}";
-    }
-
-    
-    /** Checks logical equality based on meaningful attributes */
-    @Override
-    public boolean equals(Object otherObject) {
-        if (otherObject == null) 
-        	return false;
-        if (getClass() != otherObject.getClass())
-        	return false;
-
-        Accommodation other = (Accommodation) otherObject;
-
-        return name.equals(other.name)
-            && location.equals(other.location)
-            && pricePerNight == other.pricePerNight;
+        return "Accommodation{accommodationId='" + accommodationId + "', name='" + name +
+                "', location='" + location + "', pricePerNight=" + pricePerNight + "}";
     }
 }

@@ -1,79 +1,69 @@
 // -----------------------------------------------------
-// Assignment 1
+// Assignment 2
 // Class: Hotel
 // Written by: Yousef Yousef (40299095)
 // -----------------------------------------------------
 
 package travel;
 
+import exceptions.InvalidAccommodationDataException;
+
 /** Core Hotel entity in the SmartTravel system */
 public class Hotel extends Accommodation {
 
-    private int starRating;
+    private int stars;
 
-    // Default constructor
-    /** Builds a valid Hotel object (ID handled automatically) */
+    /** Default constructor */
     public Hotel() {
         super();
-        this.starRating = 0;
+        this.stars = 3;
     }
 
-    // Parameterized constructor
-    /** Builds a valid Hotel object (ID handled automatically) */
-    public Hotel(String name, String location, double pricePerNight, int starRating) {
+    /** constructor */
+    public Hotel(String name, String location, double pricePerNight, int stars) throws InvalidAccommodationDataException {
         super(name, location, pricePerNight);
-        this.starRating = starRating;
+        setStars(stars);
     }
 
-    // Copy constructor (new ID, not copied)
-    /** Builds a valid Hotel object (ID handled automatically) */
+    /** load-time constructor (explicit ID) */
+    public Hotel(String accommodationId, String name, String location, double pricePerNight, int stars)
+            throws InvalidAccommodationDataException {
+        super(accommodationId, name, location, pricePerNight);
+        setStars(stars);
+    }
+
+    /** Copy constructor */
     public Hotel(Hotel other) {
-        super(other.getName(), other.getLocation(), other.getPricePerNight());
-        this.starRating = other.starRating;
+        super(other);
+        this.stars = other.stars;
     }
 
-    public int getStarRating() {
-        return starRating;
-    }
-    
-    public void setStarRating(int starRating) {
-        this.starRating = starRating;
+    public int getStars() {
+        return stars;
     }
 
-    
-    /** Calculates the hotel cost based on trip duration */
+    public void setStars(int stars) throws InvalidAccommodationDataException {
+        // A2 rule: stars 1–5
+        if (stars < 1 || stars > 5) {
+            throw new InvalidAccommodationDataException("Hotel stars must be between 1 and 5.");
+        }
+        this.stars = stars;
+    }
+
+    /** base nights cost + 10% surcharge */
     @Override
     public double calculateCost(int numberOfDays) {
         double nights = numberOfDays;
         double total = nights * getPricePerNight();
-
-        /** 10% surcharge */
-        total = total * 1.10;
-
+        total = total * 1.10; // 10% surcharge
         return total;
     }
-
 
     /** Provides a clean summary for display */
     @Override
     public String toString() {
-        return "Hotel{" +
-                "accommodationId='" + getAccommodationId() + "'" +
-                ", name='" + getName() + "'" +
-                ", location='" + getLocation() + "'" +
-                ", pricePerNight=" + getPricePerNight() +
-                ", starRating=" + starRating +
-                "}";
-    }
-
-
-    /** Checks logical equality based on meaningful attributes */
-    @Override
-    public boolean equals(Object oth) {
-        if (!super.equals(oth))
-            return false;
-        
-        Hotel other = (Hotel) oth;
-        return this.starRating == other.starRating;
+        return "Hotel{accommodationId='" + getAccommodationId() + "', name='" + getName() +
+                "', location='" + getLocation() + "', pricePerNight=" + getPricePerNight() +
+                ", stars=" + stars + "}";
     }
 }

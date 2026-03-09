@@ -1,105 +1,107 @@
 // -----------------------------------------------------
-// Assignment 1
+// Assignment 2
 // Class: Train
 // Written by: Yousef Yousef (40299095)
 // -----------------------------------------------------
 
 package travel;
 
+import exceptions.InvalidTransportDataException;
+
 /** Core Train entity in the SmartTravel system */
 public class Train extends Transportation {
 
     private String trainType;
-    private String seatClass;  
+    private String seatClass;
 
-    /** Default constructor
-     Builds a valid Train object (ID handled automatically) */
+    /** Default constructor: base fare = 120 */
     public Train() {
         super();
-        this.trainType = "Unknown";
-        this.seatClass = "Unknown";
+        this.trainType = "Standard";
+        this.seatClass = "Economy";
+        try {
+            setBaseFare(120.0);
+        } catch (InvalidTransportDataException ignore) {
+        }
     }
 
-    /** Parameterized constructor
-    Builds a valid Train object (ID handled automatically) */
-    public Train(String companyName, String departureCity, String arrivalCity, String trainType, String seatClass) {
+    /** constructor: base fare = 120 */
+    public Train(String companyName, String departureCity, String arrivalCity, String trainType, String seatClass)
+            throws InvalidTransportDataException {
         super(companyName, departureCity, arrivalCity);
-        this.trainType = trainType;
-        this.seatClass = seatClass;
+        setTrainType(trainType);
+        setSeatClass(seatClass);
+        setBaseFare(120.0);
     }
 
-    /** Copy constructor (new ID, not copied)
-    Builds a valid Train object (ID handled automatically) */
+    /** constructor (base fare comes from CSV) */
+    public Train(String companyName, String departureCity, String arrivalCity, String trainType, String seatClass,
+                 double baseFare) throws InvalidTransportDataException {
+        super(companyName, departureCity, arrivalCity, baseFare);
+        setTrainType(trainType);
+        setSeatClass(seatClass);
+    }
+
+    /** load-time constructor (explicit ID) */
+    public Train(String transportId, String companyName, String departureCity, String arrivalCity,
+                 String trainType, String seatClass, double baseFare) throws InvalidTransportDataException {
+        super(transportId, companyName, departureCity, arrivalCity, baseFare);
+        setTrainType(trainType);
+        setSeatClass(seatClass);
+    }
+
+    /** Copy constructor */
     public Train(Train other) {
-        super(other.getCompanyName(), other.getDepartureCity(), other.getArrivalCity());
+        super(other);
         this.trainType = other.trainType;
         this.seatClass = other.seatClass;
     }
 
-    /** setters and getters */
+    private static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     public String getTrainType() {
         return trainType;
     }
 
-    public void setTrainType(String trainType) {
-        this.trainType = trainType;
+    public void setTrainType(String trainType) throws InvalidTransportDataException {
+        if (isBlank(trainType)) {
+            throw new InvalidTransportDataException("trainType cannot be empty.");
+        }
+        this.trainType = trainType.trim();
     }
 
     public String getSeatClass() {
         return seatClass;
     }
 
-    public void setSeatClass(String seatClass) {
-        this.seatClass = seatClass;
+    public void setSeatClass(String seatClass) throws InvalidTransportDataException {
+        if (isBlank(seatClass)) {
+            throw new InvalidTransportDataException("seatClass cannot be empty.");
+        }
+        this.seatClass = seatClass.trim();
     }
-   
-    
-    /** Calculates train cost based on base fare with upgrades for seat class and train type */
+
+    /** now uses baseFare instead of hardcoded base */
     @Override
     public double calculateCost(int numberOfDays) {
-        double base = 120.0;
+        double base = getBaseFare();
+
         if (seatClass != null && seatClass.equalsIgnoreCase("first")) {
             base += 60.0;
         }
-        if (trainType != null && trainType.equalsIgnoreCase("high-speed")) {
+        if (trainType != null && trainType.equalsIgnoreCase("highspeed")) {
             base += 40.0;
         }
         return base;
     }
 
- 
-    /** Provides a clean summary for display  */
+    /** Provides a clean summary for display */
     @Override
     public String toString() {
-        return "Train{" +
-                "transportId='" + getTransportId() + "'" +
-                ", companyName='" + getCompanyName() + "'" +
-                ", departureCity='" + getDepartureCity() + "'" +
-                ", arrivalCity='" + getArrivalCity() + "'" +
-                ", trainType='" + trainType + "'" +
-                ", seatClass='" + seatClass + "'" +
-                "}";
-    }
-
-
-    /** Checks logical equality based on meaningful attributes */
-    @Override
-    public boolean equals(Object oth) {
-        if (!super.equals(oth)) 
-        	return false;
-
-        Train other = (Train) oth;
-
-        if (this.trainType == null) {
-            if (other.trainType != null)
-            	return false;
-        } else if (!this.trainType.equals(other.trainType))
-        	return false;
-
-        if (this.seatClass == null) {
-            return other.seatClass == null;
-        } else {
-            return this.seatClass.equals(other.seatClass);
-        }
+        return "Train{transportId='" + getTransportId() + "', companyName='" + getCompanyName() +
+                "', departureCity='" + getDepartureCity() + "', arrivalCity='" + getArrivalCity() +
+                "', trainType='" + trainType + "', seatClass='" + seatClass + "', baseFare=" + getBaseFare() + "}";
     }
 }
