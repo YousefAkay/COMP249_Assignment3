@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: Client
-// Written by: Yousef Yousef (40299095) & Hamza Shadeed (40
+// Written by: Yousef Yousef (40299095) & Hamza Shadeed (4034172)
 // -----------------------------------------------------
 
 package client;

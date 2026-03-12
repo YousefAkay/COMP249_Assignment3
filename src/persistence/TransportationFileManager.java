@@ -58,26 +58,24 @@ public class TransportationFileManager {
                     String type = p[0].trim().toUpperCase();
 
                     if ("FLIGHT".equals(type)) {
-                        if (p.length != 8) throw new InvalidTransportDataException("Bad FLIGHT token count: " + raw);
+                        if (p.length !=7) throw new InvalidTransportDataException("Bad FLIGHT token count: " + raw);
                         String id = p[1].trim();
                         String company = p[2].trim();
                         String dep = p[3].trim();
                         String arrCity = p[4].trim();
-                        String airline = p[5].trim();
-                        double baseFare = Double.parseDouble(p[6].trim());
-                        double luggage = Double.parseDouble(p[7].trim());
-                        arr[count++] = new Flight(id, company, dep, arrCity, airline, baseFare, luggage);
+                        double baseFare = Double.parseDouble(p[5].trim());
+                        double luggage = Double.parseDouble(p[6].trim());
+                        arr[count++] = new Flight(id, company, dep, arrCity, company, baseFare, luggage);
 
                     } else if ("TRAIN".equals(type)) {
-                        if (p.length != 8) throw new InvalidTransportDataException("Bad TRAIN token count: " + raw);
+                        if (p.length != 7) throw new InvalidTransportDataException("Bad TRAIN token count: " + raw);
                         String id = p[1].trim();
                         String company = p[2].trim();
                         String dep = p[3].trim();
                         String arrCity = p[4].trim();
                         String trainType = p[5].trim();
-                        String seatClass = p[6].trim();
-                        double baseFare = Double.parseDouble(p[7].trim());
-                        arr[count++] = new Train(id, company, dep, arrCity, trainType, seatClass, baseFare);
+                        double baseFare = Double.parseDouble(p[6].trim());
+                        arr[count++] = new Train(id, company, dep, arrCity, trainType, "Economy", baseFare);
 
                     } else if ("BUS".equals(type)) {
                         if (p.length != 7) throw new InvalidTransportDataException("Bad BUS token count: " + raw);

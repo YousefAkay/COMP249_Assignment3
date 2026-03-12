@@ -212,6 +212,11 @@ public class SmartTravelService {
         return copy;
     }
 
+    // For Trip Chart Generator
+    public Trip[] getAllTrips() {
+        return trips;
+    }
+
     /** Recompute amountSpent from scratch (useful after bulk-load) */
     public void recomputeAllClientSpending() throws InvalidClientDataException {
         // reset
@@ -268,7 +273,7 @@ public class SmartTravelService {
     }
 
     // ---------------------------
-// Reset service data (for predefined scenarios)
+// Reset service data (for predefined scenario)
 // ---------------------------
 
     public void clearAllData() {
@@ -289,5 +294,60 @@ public class SmartTravelService {
         tripCount = 0;
         transportCount = 0;
         accommodationCount = 0;
+    }
+
+    // Delete a Client
+    public void deleteClient(String clientId) throws EntityNotFoundException {
+        for (int i = 0; i < clientCount; i++) {
+            if (clients[i] != null && clients[i].getClientId().equals(clientId)) {
+                // shift left
+                for (int j = i; j < clientCount - 1; j++) {
+                    clients[j] = clients[j + 1];
+                }
+                clients[--clientCount] = null;
+                return;
+            }
+        }
+        throw new EntityNotFoundException("Client not found: " + clientId);
+    }
+
+    // Delete Trip
+    public void deleteTrip(String tripId) throws EntityNotFoundException {
+        for (int i = 0; i < tripCount; i++) {
+            if (trips[i] != null && trips[i].getTripId().equals(tripId)) {
+                for (int j = i; j < tripCount - 1; j++) {
+                    trips[j] = trips[j + 1];
+                }
+                trips[--tripCount] = null;
+                return;
+            }
+        }
+        throw new EntityNotFoundException("Trip not found: " + tripId);
+    }
+
+// DELETE TRANSPORTATION
+    public void deleteTransportation(String transportId) throws EntityNotFoundException {
+        for (int i = 0; i < transportCount; i++) {
+            if (transportations[i] != null && transportations[i].getTransportId().equals(transportId)) {
+                for (int j = i; j < transportCount - 1; j++)
+                    transportations[j] = transportations[j + 1];
+                transportations[--transportCount] = null;
+                return;
+            }
+        }
+        throw new EntityNotFoundException("Transportation not found: " + transportId);
+    }
+
+    // DELETE ACCOMMODATION
+    public void deleteAccommodation(String accommodationId) throws EntityNotFoundException {
+        for (int i = 0; i < accommodationCount; i++) {
+            if (accommodations[i] != null && accommodations[i].getAccommodationId().equals(accommodationId)) {
+                for (int j = i; j < accommodationCount - 1; j++)
+                    accommodations[j] = accommodations[j + 1];
+                accommodations[--accommodationCount] = null;
+                return;
+            }
+        }
+        throw new EntityNotFoundException("Accommodation not found: " + accommodationId);
     }
 }

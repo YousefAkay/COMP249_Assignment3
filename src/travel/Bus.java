@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: Bus
-// Written by: Yousef Yousef (40299095)
+// Written by: Yousef Yousef (40299095) , Hamza Shadeed(40341727)
 // -----------------------------------------------------
 
 package travel;
@@ -24,7 +24,7 @@ public class Bus extends Transportation {
     }
 
     /** constructor: base fare = 60 */
-    public Bus(String companyName, String departureCity, String arrivalCity, int numberOfStops)
+    public Bus(String companyName, String departureCity, String arrivalCity ,int numberOfStops)
             throws InvalidTransportDataException {
         super(companyName, departureCity, arrivalCity);
         setNumberOfStops(numberOfStops);
@@ -51,6 +51,7 @@ public class Bus extends Transportation {
         this.numberOfStops = other.numberOfStops;
     }
 
+    // GETTERS & SETTERS
     public int getNumberOfStops() {
         return numberOfStops;
     }
@@ -63,6 +64,7 @@ public class Bus extends Transportation {
         this.numberOfStops = numberOfStops;
     }
 
+
     /** calculateCost uses baseFare now */
     @Override
     public double calculateCost(int numberOfDays) {
@@ -72,8 +74,19 @@ public class Bus extends Transportation {
     /** Provides a clean summary for display */
     @Override
     public String toString() {
-        return "Bus{transportId='" + getTransportId() + "', companyName='" + getCompanyName() +
-                "', departureCity='" + getDepartureCity() + "', arrivalCity='" + getArrivalCity() +
-                "', baseFare=" + getBaseFare() + ", numberOfStops=" + numberOfStops + "}";
+        return "Bus{transportId : " + getTransportId() + "', Company Name : " + getCompanyName() +
+                "', departureCity : " + getDepartureCity() + "', Arrival City : " + getArrivalCity() +
+                "', baseFare : " + getBaseFare() + ", numberOfStops :" + numberOfStops + "}";
     }
+
+    /** EQUALS */
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) return false;
+        Bus other = (Bus) obj;
+        return numberOfStops == other.numberOfStops;
+    }
+
+    @Override
+    public String getType() { return "Bus"; }
 }

@@ -176,4 +176,6 @@ public abstract class Transportation {
 		return "Transportation{transportId='" + transportId + "', companyName='" + companyName +
 				"', departureCity='" + departureCity + "', arrivalCity='" + arrivalCity + "', baseFare=" + baseFare + "}";
 	}
+
+    public abstract String getType();
 }

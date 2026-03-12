@@ -5,6 +5,12 @@ import travel.*;
 
 import java.io.*;
 
+// -----------------------------------------------------
+// Assignment 2
+// Class: Client
+// Written by: Yousef Yousef (40299095) & Hamza Shadeed (4034172)
+// -----------------------------------------------------
+
 public class AccommodationFileManager {
 
     // Example formats:

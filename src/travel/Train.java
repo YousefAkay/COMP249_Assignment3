@@ -104,4 +104,24 @@ public class Train extends Transportation {
                 "', departureCity='" + getDepartureCity() + "', arrivalCity='" + getArrivalCity() +
                 "', trainType='" + trainType + "', seatClass='" + seatClass + "', baseFare=" + getBaseFare() + "}";
     }
+
+    /** EQUALS */
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) return false;
+        Train other = (Train) obj;
+
+        if (trainType == null && other.trainType != null) return false;
+        if (trainType != null && !trainType.equals(other.trainType)) return false;
+
+        if (seatClass == null && other.seatClass != null) return false;
+        if (seatClass != null && !seatClass.equals(other.seatClass)) return false;
+
+        if (Double.compare(getBaseFare(), other.getBaseFare()) != 0) return false;
+
+        return true;
+    }
+
+    @Override
+    public String getType() { return "Train"; }
 }

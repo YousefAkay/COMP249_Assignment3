@@ -9,6 +9,8 @@ package travel;
 import client.Client;
 import exceptions.InvalidTripDataException;
 
+import java.util.Objects;
+
 public class Trip {
 
     private static int nextId = 2001;
@@ -36,7 +38,7 @@ public class Trip {
     /** Sync nextId so IDs don't collide after CSV load */
     public static void syncNextIdFromLoadedId(String loadedId) {
         if (loadedId == null) return;
-        if (!loadedId.startsWith("T")) return;
+        if (!loadedId.startsWith("T") || loadedId.startsWith("TR")) return;
         try {
             int n = Integer.parseInt(loadedId.substring(1));
             if (n >= nextId) nextId = n + 1;
@@ -245,6 +247,7 @@ public class Trip {
     }
 
 
+    /** TOTAL COST **/
     public double calculateTotalCost() {
         double total = basePrice;
 
@@ -258,7 +261,26 @@ public class Trip {
         return total;
     }
 
-    /** Provides a clean summary for display */
+    // EQUALS
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (this.getClass() != obj.getClass()) return false;
+        Trip other = (Trip) obj;
+
+        if (destination == null && other.destination != null) return false;
+        if (destination != null && !destination.equals(other.destination)) return false;
+
+        if (clientId == null && other.clientId != null) return false;
+        if (clientId != null && !clientId.equals(other.clientId)) return false;
+
+        if (durationInDays != other.durationInDays) return false;
+        if (Double.compare(basePrice, other.basePrice) != 0) return false;
+
+        return true;
+    }
+
+    /** ToString , Provides a clean summary for display */
     @Override
     public String toString() {
         return "Trip{tripId='" + tripId + "', clientId='" + clientId +

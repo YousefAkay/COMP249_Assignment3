@@ -141,6 +141,9 @@ public abstract class Accommodation {
         return Double.compare(pricePerNight, other.pricePerNight) == 0;
     }
 
+    public abstract String getType();
+
+
     /** Provides a clean summary for display */
     @Override
     public String toString() {
