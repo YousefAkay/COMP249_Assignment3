@@ -106,4 +106,21 @@ public class Flight extends Transportation {
                 "', airlineName='" + airlineName + "', baseFare=" + getBaseFare() +
                 ", luggageAllowanceKg=" + luggageAllowanceKg + "}";
     }
+
+    /** EQUALS */
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) return false;
+        Flight other = (Flight) obj;
+
+        if (airlineName == null && other.airlineName != null) return false;
+        if (airlineName != null && !airlineName.equals(other.airlineName)) return false;
+
+        if (Double.compare(luggageAllowanceKg, other.luggageAllowanceKg) != 0) return false;
+
+        return true;
+    }
+
+    @Override
+    public String getType() { return "Flight"; }
 }

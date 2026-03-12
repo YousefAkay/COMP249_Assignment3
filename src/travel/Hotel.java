@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: Hotel
-// Written by: Yousef Yousef (40299095)
+// Written by: Yousef Yousef (40299095) , Hamza Shadeed (4034172)
 // -----------------------------------------------------
 
 package travel;
@@ -50,13 +50,17 @@ public class Hotel extends Accommodation {
         this.stars = stars;
     }
 
-    /** base nights cost + 10% surcharge */
+    /** Total : PricePerNight * numberOfDays * starRatingMultiplier */
     @Override
     public double calculateCost(int numberOfDays) {
-        double nights = numberOfDays;
-        double total = nights * getPricePerNight();
-        total = total * 1.10; // 10% surcharge
-        return total;
+        double starBonus;
+        if      (stars == 1) starBonus = 1.0;
+        else if (stars == 2) starBonus = 1.2;
+        else if (stars == 3) starBonus = 1.5;
+        else if (stars == 4) starBonus = 1.8;
+        else                 starBonus = 2.2;  // 5 stars
+        return getPricePerNight() * numberOfDays * starBonus;
+
     }
 
     /** Provides a clean summary for display */
@@ -66,4 +70,18 @@ public class Hotel extends Accommodation {
                 "', location='" + getLocation() + "', pricePerNight=" + getPricePerNight() +
                 ", stars=" + stars + "}";
     }
+
+    // EQUALS
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) return false;
+        Hotel other = (Hotel) obj;
+        return stars == other.stars;
+    }
+
+    @Override
+    public String getType() { return "Hotel"; }
+
+
+
 }

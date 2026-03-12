@@ -11,7 +11,7 @@ public class TripFileManager {
 
     // Format:
     // TripID;ClientID;AccommodationID;TransportationID;Destination;DurationDays;BasePrice
-    public static void saveTrips(Trip[] arr, int count, String filePath) throws IOException {
+    public static void saveTrips(Trip[] arr, int count , String filePath) throws IOException {
         ensureParentDir(filePath);
         PrintWriter out = new PrintWriter(new FileWriter(filePath));
 
@@ -30,7 +30,6 @@ public class TripFileManager {
     }
 
     public static int loadTrips(Trip[] arr, String filePath, SmartTravelService svc) throws IOException {
-        int count = 0;
         BufferedReader br = null;
 
         try {
@@ -81,7 +80,7 @@ public class TripFileManager {
                     ErrorLogger.log("TRIP LOAD ERROR | " + ex.getMessage() + " | line=" + raw);
                 }
 
-                if (count >= arr.length) break;
+                if (svc.getTripCount() >= arr.length) break;
             }
 
             // service already inserted into its internal trip array,

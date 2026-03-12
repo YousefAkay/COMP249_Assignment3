@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2 (based on Assignment 1 code)
 // Class: Hostel
-// Written by: Yousef Yousef (40299095)
+// Written by: Yousef Yousef (40299095) , Hamza Shadeed(40341727)
 // -----------------------------------------------------
 
 package travel;
@@ -76,5 +76,16 @@ public class Hostel extends Accommodation {
         return "Hostel{accommodationId='" + getAccommodationId() + "', name='" + getName() +
                 "', location='" + getLocation() + "', pricePerNight=" + getPricePerNight() +
                 ", sharedRoomCapacity=" + sharedRoomCapacity + "}";
+    }
+
+    @Override
+    public String getType() { return "Hostel"; }
+
+    // EQUALS
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) return false;
+        Hostel other = (Hostel) obj;
+        return sharedRoomCapacity == other.sharedRoomCapacity;
     }
 }
