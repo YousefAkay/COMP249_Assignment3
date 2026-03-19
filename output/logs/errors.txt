@@ -1,0 +1,12 @@
+TRANSPORT LOAD ERROR | Bad TRAIN token count: TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00 | line=TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00
+TRIP LOAD ERROR | Transportation not found: TR3002 | line=T2002;C1002;A4002;TR3002;Ottawa;3;500.00
+TRANSPORT LOAD ERROR | Bad TRAIN token count: TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00 | line=TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00
+TRIP LOAD ERROR | Transportation not found: TR3002 | line=T2002;C1002;A4002;TR3002;Ottawa;3;500.00
+TRANSPORT LOAD ERROR | Bad TRAIN token count: TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00 | line=TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00
+TRIP LOAD ERROR | Transportation not found: TR3002 | line=T2002;C1002;A4002;TR3002;Ottawa;3;500.00
+TRANSPORT LOAD ERROR | Bad TRAIN token count: TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00 | line=TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00
+TRIP LOAD ERROR | Transportation not found: TR3002 | line=T2002;C1002;A4002;TR3002;Ottawa;3;500.00
+TRANSPORT LOAD ERROR | Bad TRAIN token count: TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00 | line=TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00
+TRIP LOAD ERROR | Transportation not found: TR3002 | line=T2002;C1002;A4002;TR3002;Ottawa;3;500.00
+TRANSPORT LOAD ERROR | Bad TRAIN token count: TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00 | line=TRAIN;TR3002;SkyRail;Toronto;Ottawa;HighSpeed;250.00
+TRIP LOAD ERROR | Transportation not found: TR3002 | line=T2002;C1002;A4002;TR3002;Ottawa;3;500.00
