@@ -23,6 +23,10 @@ public abstract class Accommodation {
         return "A" + nextId++;
     }
 
+    public static void resetIdCounter() {
+        nextId = 4001;
+    }
+
     /** Sync nextId so IDs don't collide after CSV load */
     public static void syncNextIdFromLoadedId(String loadedId) {
         if (loadedId == null) return;

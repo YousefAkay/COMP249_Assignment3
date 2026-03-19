@@ -1,179 +1,135 @@
 package visualization;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PiePlot;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.ValueAxis;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtils;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.DefaultPieDataset;
-
-import service.SmartTravelService;
 import travel.Trip;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import exceptions.InvalidTripDataException;
-import persistence.ErrorLogger;
-
-/**
- * Utility class for generating charts from arrays of Trip objects.
- * Supports Bar, Pie, and Line charts.
- */
 public class TripChartGenerator {
 
-	/**
-	 * Applies consistent font styling to charts.
-	 *
-	 * @param chart the chart to style
-	 */
-	private static void applyChartStyling(JFreeChart chart) {
+    public static void generateAllCharts(Trip[] trips, int tripCount) throws IOException {
+        File dir = new File("output/charts");
+        if (!dir.exists()) dir.mkdirs();
 
-		Font titleFont = new Font("Bookman Old Style", Font.BOLD, 36);
-        Font axisLabelFont = new Font("Bookman Old Style", Font.BOLD, 27);
-        Font tickLabelFont = new Font("Bookman Old Style", Font.PLAIN, 18);
-        Font legendFont = new Font("Bookman Old Style", Font.BOLD, 23);
-        Font pieLabelFont = new Font("Bookman Old Style", Font.ITALIC, 23);
-        
-	    // Title
-	    chart.getTitle().setFont(titleFont);
+        generateTripCostBarChart(trips, tripCount, "output/charts/trip_cost_bar_chart.png");
+        generateTripDurationLineChart(trips, tripCount, "output/charts/trip_duration_line_chart.png");
+        generateTripsPerDestinationPieChart(trips, tripCount, "output/charts/trips_per_destination_pie.png");
+    }
 
-	    // Legend
-	    if (chart.getLegend() != null) {
-	        chart.getLegend().setItemFont(legendFont);
-	    }
+    private static void generateTripCostBarChart(Trip[] trips, int tripCount, String path) throws IOException {
+        BufferedImage img = new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, 800, 500);
+        g.setColor(Color.BLACK);
+        g.drawString("Trip Cost Bar Chart", 330, 30);
 
-	    // Category & Line charts
-	    if (chart.getPlot() instanceof CategoryPlot) {
-	        CategoryPlot plot = (CategoryPlot) chart.getPlot();
-
-	        CategoryAxis domainAxis = plot.getDomainAxis();
-	        ValueAxis rangeAxis = plot.getRangeAxis();
-
-	        domainAxis.setLabelFont(axisLabelFont);
-	        domainAxis.setTickLabelFont(tickLabelFont);
-
-	        rangeAxis.setLabelFont(axisLabelFont);
-	        rangeAxis.setTickLabelFont(tickLabelFont);
-	    }
-
-	    // Pie charts
-	    if (chart.getPlot() instanceof PiePlot) {
-	    	@SuppressWarnings("unchecked")
-	    	PiePlot<String> plot = (PiePlot<String>) chart.getPlot();
-
-	    	plot.setLabelFont(pieLabelFont);
-
-	        plot.setBackgroundPaint(Color.WHITE);
-	        plot.setOutlineVisible(false);
-	        plot.setSectionOutlinesVisible(false);
-	        plot.setShadowPaint(null); // Remove default shadow
-	        plot.setLabelBackgroundPaint(new Color(245, 245, 245, 180)); // Transparent label background
-	    	
-	    }
-	}
-	
-	/**
-     * Generates a Bar chart showing total cost per trip.
-     *
-     * @param service the SmartTravelService containing trip data
-     * @throws IOException if PNG file cannot be written
-     */
-    public static void generateCostBarChart(SmartTravelService service) throws IOException {
-        
-    	Trip[] trips = service.getAllTrips();
-    	int count = service.getTripCount();
-    	DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        for (int i = 0; i < count; i++) {
-            try {
-                dataset.addValue(service.calculateTripTotal(i), "Total Cost", trips[i].getTripId());
-            } catch (InvalidTripDataException e) {
-                ErrorLogger.log("Chart error for trip " + trips[i].getTripId() + ": " + e.getMessage());
+        double max = 1;
+        for (int i = 0; i < tripCount; i++) {
+            if (trips[i] != null) {
+                max = Math.max(max, trips[i].calculateTotalCost());
             }
         }
 
-        JFreeChart chart = ChartFactory.createBarChart(
-                "Trip Costs",
-                "Trip ID",
-                "Cost ($)",
-                dataset
-        );
-        
-        applyChartStyling(chart);
-        ChartUtils.saveChartAsPNG(new File("output/charts/trip_cost_bar_chart.png"), chart, 800, 600);
+        int x = 60;
+        for (int i = 0; i < tripCount; i++) {
+            if (trips[i] == null) continue;
+            int height = (int) ((trips[i].calculateTotalCost() / max) * 300);
+            g.setColor(new Color(70, 130, 180));
+            g.fillRect(x, 400 - height, 60, height);
+            g.setColor(Color.BLACK);
+            g.drawRect(x, 400 - height, 60, height);
+            g.drawString(trips[i].getTripId(), x, 420);
+            x += 100;
+        }
+
+        g.dispose();
+        ImageIO.write(img, "png", new File(path));
     }
 
-    /**
-     * Generates a Pie chart showing distribution of trips per destination.
-     *
-     * @param service the SmartTravelService containing trip data
-     * @throws IOException if PNG file cannot be written
-     */
-    public static void generateDestinationPieChart(SmartTravelService service) throws IOException {
-        
-    	Trip[] trips = service.getAllTrips();
-    	int count = service.getTripCount();
-    	DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
+    private static void generateTripDurationLineChart(Trip[] trips, int tripCount, String path) throws IOException {
+        BufferedImage img = new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, 800, 500);
+        g.setColor(Color.BLACK);
+        g.drawString("Trip Duration Line Chart", 320, 30);
 
-        // Count trips per destination
-        for (int i = 0; i < count; i++) {
-            String destination = trips[i].getDestination();
-            if (dataset.getIndex(destination) != -1) {
-                double value = dataset.getValue(destination).doubleValue();
-                dataset.setValue(destination, value + 1);
+        g.drawLine(60, 420, 740, 420);
+        g.drawLine(60, 60, 60, 420);
+
+        int prevX = -1;
+        int prevY = -1;
+        int x = 100;
+
+        for (int i = 0; i < tripCount; i++) {
+            if (trips[i] == null) continue;
+            int y = 420 - (trips[i].getDurationInDays() * 15);
+            g.setColor(Color.RED);
+            g.fillOval(x - 4, y - 4, 8, 8);
+            if (prevX != -1) {
+                g.drawLine(prevX, prevY, x, y);
+            }
+            g.setColor(Color.BLACK);
+            g.drawString(trips[i].getTripId(), x - 10, 440);
+            prevX = x;
+            prevY = y;
+            x += 120;
+        }
+
+        g.dispose();
+        ImageIO.write(img, "png", new File(path));
+    }
+
+    private static void generateTripsPerDestinationPieChart(Trip[] trips, int tripCount, String path) throws IOException {
+        BufferedImage img = new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, 800, 500);
+        g.setColor(Color.BLACK);
+        g.drawString("Trips Per Destination Pie Chart", 300, 30);
+
+        String[] destinations = new String[tripCount];
+        int[] counts = new int[tripCount];
+        int unique = 0;
+
+        for (int i = 0; i < tripCount; i++) {
+            if (trips[i] == null) continue;
+            String dest = trips[i].getDestination();
+            int pos = -1;
+            for (int j = 0; j < unique; j++) {
+                if (destinations[j].equalsIgnoreCase(dest)) {
+                    pos = j;
+                    break;
+                }
+            }
+            if (pos == -1) {
+                destinations[unique] = dest;
+                counts[unique] = 1;
+                unique++;
             } else {
-                dataset.setValue(destination, 1);
+                counts[pos]++;
             }
         }
 
-        JFreeChart chart = ChartFactory.createPieChart(
-                "Trips per Destination",
-                dataset,
-                true,
-                true,
-                false
-        );
-        applyChartStyling(chart);
-        ChartUtils.saveChartAsPNG(new File("output/charts/trips_per_destination_pie.png"), chart, 800, 600);
-    }
+        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA, Color.CYAN};
+        int total = 0;
+        for (int i = 0; i < unique; i++) total += counts[i];
 
-    /**
-     * Generates a Line chart showing trip duration over Trip IDs.
-     *
-     * @param service the SmartTravelService containing trip data
-     * @throws IOException if PNG file cannot be written
-     */
-    public static void generateDurationLineChart(SmartTravelService service) throws IOException {
-    	Trip[] trips = service.getAllTrips();
-    	int count = service.getTripCount();
-    	DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        for (int i = 0; i < count; i++) {
-            dataset.addValue(trips[i].getDurationInDays(), "Duration (days)", trips[i].getTripId());
+        int startAngle = 0;
+        for (int i = 0; i < unique; i++) {
+            int angle = (int) Math.round((counts[i] * 360.0) / total);
+            g.setColor(colors[i % colors.length]);
+            g.fillArc(250, 100, 250, 250, startAngle, angle);
+            g.setColor(Color.BLACK);
+            g.drawString(destinations[i] + " (" + counts[i] + ")", 550, 120 + i * 25);
+            startAngle += angle;
         }
 
-        JFreeChart chart = ChartFactory.createLineChart(
-                "Trip Duration",
-                "Trip ID",
-                "Duration (days)",
-                dataset
-        );
-        applyChartStyling(chart);
-        
-        CategoryPlot plot = chart.getCategoryPlot();
-        LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-        renderer.setSeriesStroke(0, new BasicStroke(3.0f));
-        renderer.setSeriesPaint(0, Color.MAGENTA);
-        renderer.setSeriesShapesVisible(0, true);
-        renderer.setSeriesShapesFilled(0, true);
-        
-        ChartUtils.saveChartAsPNG(new File("output/charts/trip_duration_line_chart.png"), chart, 800, 600);
+        g.dispose();
+        ImageIO.write(img, "png", new File(path));
     }
 }

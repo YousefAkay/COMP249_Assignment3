@@ -70,6 +70,15 @@ public class Hostel extends Accommodation {
         return total;
     }
 
+    @Override
+    public boolean equals(Object oth) {
+        if (!super.equals(oth)) return false;
+        if (!(oth instanceof Hostel)) return false;
+
+        Hostel other = (Hostel) oth;
+        return sharedRoomCapacity == other.sharedRoomCapacity;
+    }
+
     /** Provides a clean summary for display */
     @Override
     public String toString() {

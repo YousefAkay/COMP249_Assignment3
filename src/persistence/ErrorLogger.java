@@ -14,21 +14,29 @@ public class ErrorLogger {
     }
 
     public static void log(String filePath, String message) {
-        if (message == null) message = "null";
+        if (message == null) {
+            message = "null";
+        }
+
         ensureParentDir(filePath);
+
         PrintWriter out = null;
         try {
             out = new PrintWriter(new FileWriter(filePath, true));
             out.println(message);
         } catch (IOException ignore) {
         } finally {
-            if (out != null) out.close();
+            if (out != null) {
+                out.close();
+            }
         }
     }
 
     private static void ensureParentDir(String filePath) {
         File f = new File(filePath);
         File parent = f.getParentFile();
-        if (parent != null && !parent.exists()) parent.mkdirs();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
     }
 }

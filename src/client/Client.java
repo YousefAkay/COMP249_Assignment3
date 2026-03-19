@@ -19,8 +19,11 @@ public class Client {
     private String lastName;
     private String email;
 
-
     private double amountSpent;
+
+    public static void resetIdCounter() {
+        nextId = 1001;
+    }
 
     /** Generates the next sequential ID for this category */
     private static String generateId() {

@@ -27,6 +27,7 @@ public class ClientFileManager {
         try {
             br = new BufferedReader(new FileReader(filePath));
             String line;
+
             while ((line = br.readLine()) != null) {
                 String raw = line;
                 line = line.trim();
@@ -43,14 +44,22 @@ public class ClientFileManager {
                     String ln = parts[2].trim();
                     String em = parts[3].trim();
 
+                    for (int i = 0; i < count; i++) {
+                        if (clients[i] != null && clients[i].getEmail().equalsIgnoreCase(em)) {
+                            throw new InvalidClientDataException("Duplicate email in clients.csv: " + em);
+                        }
+                    }
+
                     Client c = new Client(id, fn, ln, em, 0.0);
                     clients[count++] = c;
+
                 } catch (Exception ex) {
                     ErrorLogger.log("CLIENT LOAD ERROR | " + ex.getMessage() + " | line=" + raw);
                 }
 
                 if (count >= clients.length) break;
             }
+
         } finally {
             if (br != null) br.close();
         }

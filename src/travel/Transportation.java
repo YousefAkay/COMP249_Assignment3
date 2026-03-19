@@ -21,6 +21,10 @@ public abstract class Transportation {
 	// A2 addition: base fare to support CSV pricing
 	private double baseFare;
 
+	public static void resetIdCounter() {
+		nextId = 3001;
+	}
+
 	/** Generates the next sequential ID for this category */
 	private static String generateId() {
 		return "TR" + nextId++;

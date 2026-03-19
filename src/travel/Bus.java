@@ -71,6 +71,15 @@ public class Bus extends Transportation {
         return getBaseFare() + (numberOfStops * 5.0);
     }
 
+    @Override
+    public boolean equals(Object oth) {
+        if (!super.equals(oth)) return false;
+        if (!(oth instanceof Bus)) return false;
+
+        Bus other = (Bus) oth;
+        return numberOfStops == other.numberOfStops;
+    }
+
     /** Provides a clean summary for display */
     @Override
     public String toString() {

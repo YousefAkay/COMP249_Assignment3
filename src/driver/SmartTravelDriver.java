@@ -1,3 +1,9 @@
+// -----------------------------------------------------
+// Assignment 2
+// Class: SmartTravelDriver
+// Written by: Yousef Yousef (40299095) & Hamza Shadeed
+// -----------------------------------------------------
+
 package driver;
 
 import client.Client;
@@ -14,12 +20,11 @@ public class SmartTravelDriver {
     public static void main(String[] args) {
         Scanner keyboard = new Scanner(System.in);
 
-            System.out.println("\n===========================================");
-            System.out.println("SMART TRAVEL MANAGEMENT SYSTEM");
-            System.out.println("Developed by: Yousef Yousef & Hamza Shadeed");
-            System.out.println("===========================================\n");
+        System.out.println("\n===========================================");
+        System.out.println("SMART TRAVEL MANAGEMENT SYSTEM");
+        System.out.println("Developed by: Yousef Yousef & Hamza Shadeed");
+        System.out.println("===========================================\n");
 
-        // A2 required arrays + max sizes
         Client[] clients = new Client[100];
         Trip[] trips = new Trip[200];
         Transportation[] transportations = new Transportation[50];
@@ -40,7 +45,7 @@ public class SmartTravelDriver {
             System.out.println("7) List All Data Summary");
             System.out.println("8) Load All Data");
             System.out.println("9) Save All Data");
-            System.out.println("10) Run Predefined Scenario (A2)");
+            System.out.println("10) Run A2 Predefined Scenario");
             System.out.println("11) Generate Dashboard");
             System.out.println("0) Exit");
             System.out.print("Enter choice: ");
@@ -94,12 +99,9 @@ public class SmartTravelDriver {
         System.out.println("Program terminated.");
     }
 
-    // ---------------------------
-    // Menus (kept simple + A2 safe)
-    // ---------------------------
-
     private static void clientMenu(Scanner keyboard, SmartTravelService svc) {
         boolean back = false;
+
         while (!back) {
             System.out.println("\n=== CLIENT MENU ===");
             System.out.println("1) Add Client");
@@ -108,6 +110,7 @@ public class SmartTravelDriver {
             System.out.println("4) List Clients");
             System.out.println("0) Back");
             System.out.print("Enter choice: ");
+
             int c = readInt(keyboard);
 
             switch (c) {
@@ -119,53 +122,188 @@ public class SmartTravelDriver {
                         String ln = keyboard.nextLine();
                         System.out.print("Email: ");
                         String em = keyboard.nextLine();
+
                         Client cl = new Client(fn, ln, em);
                         svc.addClient(cl);
                         System.out.println("Added: " + cl);
-                    } catch (DuplicateEmailException ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
-                    } catch (InvalidClientDataException ex) {
+
+                    } catch (DuplicateEmailException | InvalidClientDataException ex) {
                         System.out.println("ERROR: " + ex.getMessage());
                     }
                     break;
 
                 case 2:
                     try {
-                        System.out.print("Enter Client ID to edit: ");
-                        String id = keyboard.nextLine();
-                        Client cl = svc.findClientById(id);
-                        System.out.println("Editing: " + cl);
-                        System.out.print("New first name (Enter to keep): ");
-                        String fn = keyboard.nextLine();
-                        System.out.print("New last name (Enter to keep): ");
-                        String ln = keyboard.nextLine();
-                        System.out.print("New email (Enter to keep): ");
-                        String em = keyboard.nextLine();
-                        if (!fn.trim().isEmpty()) cl.setFirstName(fn.trim());
-                        if (!ln.trim().isEmpty()) cl.setLastName(ln.trim());
-                        if (!em.trim().isEmpty()) cl.setEmail(em.trim());
-                        System.out.println("Updated: " + cl);
-                    } catch (EntityNotFoundException ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
-                    } catch (InvalidClientDataException ex) {
+                        System.out.print("Enter client ID to edit: ");
+                        String clientId = keyboard.nextLine();
+
+                        System.out.print("New first name: ");
+                        String newFirst = keyboard.nextLine();
+
+                        System.out.print("New last name: ");
+                        String newLast = keyboard.nextLine();
+
+                        System.out.print("New email: ");
+                        String newEmail = keyboard.nextLine();
+
+                        svc.editClient(clientId, newFirst, newLast, newEmail);
+                        System.out.println("Client updated.");
+
+                    } catch (Exception ex) {
                         System.out.println("ERROR: " + ex.getMessage());
                     }
                     break;
 
                 case 3:
                     try {
-                        System.out.print("Enter Client ID to delete: ");
-                        String id = keyboard.nextLine();
-                        svc.deleteClient(id);
-                        System.out.println("Client " + id + " deleted.");
-                    } catch (EntityNotFoundException ex) {
+                        System.out.print("Enter client ID to delete: ");
+                        String clientId = keyboard.nextLine();
+                        svc.deleteClient(clientId);
+                        System.out.println("Client deleted.");
+                    } catch (Exception ex) {
                         System.out.println("ERROR: " + ex.getMessage());
                     }
                     break;
 
                 case 4:
                     for (int i = 0; i < svc.getClientCount(); i++) {
-                        if (svc.getClients()[i] != null) System.out.println(svc.getClients()[i]);
+                        if (svc.getClients()[i] != null) {
+                            System.out.println(svc.getClients()[i]);
+                        }
+                    }
+                    break;
+
+                case 0:
+                    back = true;
+                    break;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private static void tripMenu(Scanner keyboard, SmartTravelService svc) {
+        boolean back = false;
+
+        while (!back) {
+            System.out.println("\n=== TRIP MENU ===");
+            System.out.println("1) Create Trip");
+            System.out.println("2) Edit Trip");
+            System.out.println("3) Cancel Trip");
+            System.out.println("4) List All Trips");
+            System.out.println("5) List Trips For Specific Client");
+            System.out.println("0) Back");
+            System.out.print("Enter choice: ");
+
+            int c = readInt(keyboard);
+
+            switch (c) {
+                case 1:
+                    try {
+                        System.out.print("Client ID: ");
+                        String cid = keyboard.nextLine();
+
+                        System.out.print("Accommodation ID (blank if none): ");
+                        String aid = keyboard.nextLine();
+
+                        System.out.print("Transportation ID (blank if none): ");
+                        String tid = keyboard.nextLine();
+
+                        System.out.print("Destination: ");
+                        String dest = keyboard.nextLine();
+
+                        System.out.print("Duration (1-20 days): ");
+                        int days = readInt(keyboard);
+
+                        System.out.print("Base price (>=100): ");
+                        double base = readDouble(keyboard);
+
+                        Client client = svc.findClientById(cid);
+                        Accommodation ac = aid.trim().isEmpty() ? null : svc.findAccommodationById(aid.trim());
+                        Transportation tr = tid.trim().isEmpty() ? null : svc.findTransportationById(tid.trim());
+
+                        Trip trip = new Trip(client, tr, ac, dest, days, base);
+                        svc.addTrip(trip);
+
+                        System.out.println("Trip created: " + trip);
+
+                    } catch (Exception ex) {
+                        System.out.println("ERROR: " + ex.getMessage());
+                    }
+                    break;
+
+                case 2:
+                    try {
+                        System.out.print("Enter trip ID to edit: ");
+                        String tripId = keyboard.nextLine();
+
+                        System.out.print("New destination: ");
+                        String destination = keyboard.nextLine();
+
+                        System.out.print("New duration: ");
+                        int duration = readInt(keyboard);
+
+                        System.out.print("New base price: ");
+                        double basePrice = readDouble(keyboard);
+
+                        System.out.print("New accommodation ID (blank if none): ");
+                        String accommodationId = keyboard.nextLine();
+
+                        System.out.print("New transportation ID (blank if none): ");
+                        String transportationId = keyboard.nextLine();
+
+                        svc.editTrip(
+                                tripId,
+                                destination,
+                                duration,
+                                basePrice,
+                                accommodationId.trim().isEmpty() ? null : accommodationId.trim(),
+                                transportationId.trim().isEmpty() ? null : transportationId.trim()
+                        );
+
+                        System.out.println("Trip updated.");
+
+                    } catch (Exception ex) {
+                        System.out.println("ERROR: " + ex.getMessage());
+                    }
+                    break;
+
+                case 3:
+                    try {
+                        System.out.print("Enter trip ID to cancel: ");
+                        String tripId = keyboard.nextLine();
+                        svc.cancelTrip(tripId);
+                        System.out.println("Trip cancelled.");
+                    } catch (Exception ex) {
+                        System.out.println("ERROR: " + ex.getMessage());
+                    }
+                    break;
+
+                case 4:
+                    for (int i = 0; i < svc.getTripCount(); i++) {
+                        if (svc.getTrips()[i] != null) {
+                            System.out.println(svc.getTrips()[i] + " | total=" +
+                                    String.format("%.2f", svc.getTrips()[i].calculateTotalCost()));
+                        }
+                    }
+                    break;
+
+                case 5:
+                    System.out.print("Enter client ID: ");
+                    String clientId = keyboard.nextLine();
+                    boolean found = false;
+
+                    for (int i = 0; i < svc.getTripCount(); i++) {
+                        Trip t = svc.getTrips()[i];
+                        if (t != null && clientId.equals(t.getClientId())) {
+                            System.out.println(t + " | total=" + String.format("%.2f", t.calculateTotalCost()));
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        System.out.println("No trips found for that client.");
                     }
                     break;
 
@@ -181,13 +319,15 @@ public class SmartTravelDriver {
 
     private static void transportMenu(Scanner keyboard, SmartTravelService svc) {
         boolean back = false;
+
         while (!back) {
-            System.out.println("\n=== TRANSPORT MENU ===");
+            System.out.println("\n=== TRANSPORTATION MENU ===");
             System.out.println("1) Add Transportation");
             System.out.println("2) Remove Transportation");
-            System.out.println("3) List by Type (FLight/Train/Bus)");
+            System.out.println("3) List Transportation By Type");
             System.out.println("0) Back");
             System.out.print("Enter choice: ");
+
             int c = readInt(keyboard);
 
             switch (c) {
@@ -220,10 +360,8 @@ public class SmartTravelDriver {
                         } else if (t == 2) {
                             System.out.print("Train type: ");
                             String trainType = keyboard.nextLine();
-                            System.out.print("Seat class: ");
-                            String seatClass = keyboard.nextLine();
 
-                            Train tr = new Train(company, dep, arr, trainType, seatClass);
+                            Train tr = new Train(company, dep, arr, trainType);
                             svc.addTransportation(tr);
                             System.out.println("Added: " + tr);
 
@@ -238,41 +376,38 @@ public class SmartTravelDriver {
                         } else {
                             System.out.println("Invalid transport type.");
                         }
-                    } catch (InvalidTransportDataException ex) {
+
+                    } catch (Exception ex) {
                         System.out.println("ERROR: " + ex.getMessage());
                     }
                     break;
 
                 case 2:
                     try {
-                        System.out.print("Enter Transport ID to remove: ");
-                        String id = keyboard.nextLine();
-                        svc.deleteTransportation(id);
-                        System.out.println("Transportation " + id + " removed.");
-                    } catch (EntityNotFoundException ex) {
+                        System.out.print("Enter transportation ID to remove: ");
+                        String transportId = keyboard.nextLine();
+                        svc.removeTransportation(transportId);
+                        System.out.println("Transportation removed.");
+                    } catch (Exception ex) {
                         System.out.println("ERROR: " + ex.getMessage());
                     }
                     break;
 
-                case 3 :
-                    System.out.println("1) Flight  2) Train  3) Bus");
-                    System.out.print("Enter choice: ");
-                    int typeChoice = readInt(keyboard);
-                    String typeName;
-                    if      (typeChoice == 1) typeName = "Flight";
-                    else if (typeChoice == 2) typeName = "Train";
-                    else if (typeChoice == 3) typeName = "Bus";
-                    else { System.out.println("Invalid type."); break; }
+                case 3:
+                    System.out.println("1) Flight");
+                    System.out.println("2) Train");
+                    System.out.println("3) Bus");
+                    System.out.print("Choose type: ");
+                    int type = readInt(keyboard);
 
-                    boolean foundT = false;
                     for (int i = 0; i < svc.getTransportCount(); i++) {
                         Transportation tr = svc.getTransportations()[i];
-                        if (tr != null && tr.getType().equals(typeName)) {
-                            System.out.println(tr);
-                            foundT = true;
-                        }
+                        if (tr == null) continue;
+
+                        if (type == 1 && tr instanceof Flight) System.out.println(tr);
+                        if (type == 2 && tr instanceof Train) System.out.println(tr);
+                        if (type == 3 && tr instanceof Bus) System.out.println(tr);
                     }
-                    if (!foundT) System.out.println("No " + typeName + " options found.");
                     break;
 
                 case 0:
@@ -287,13 +422,15 @@ public class SmartTravelDriver {
 
     private static void accommodationMenu(Scanner keyboard, SmartTravelService svc) {
         boolean back = false;
+
         while (!back) {
             System.out.println("\n=== ACCOMMODATION MENU ===");
             System.out.println("1) Add Accommodation");
             System.out.println("2) Remove Accommodation");
-            System.out.println("3) List by Type (Hotel/Hostel)");
+            System.out.println("3) List Accommodation By Type");
             System.out.println("0) Back");
             System.out.print("Enter choice: ");
+
             int c = readInt(keyboard);
 
             switch (c) {
@@ -329,139 +466,36 @@ public class SmartTravelDriver {
                         } else {
                             System.out.println("Invalid accommodation type.");
                         }
-                    } catch (InvalidAccommodationDataException ex) {
+
+                    } catch (Exception ex) {
                         System.out.println("ERROR: " + ex.getMessage());
                     }
                     break;
 
                 case 2:
                     try {
-                        System.out.print("Enter Accommodation ID to remove: ");
-                        String id = keyboard.nextLine();
-                        svc.deleteAccommodation(id);
-                        System.out.println("Accommodation " + id + " removed.");
-                    } catch (EntityNotFoundException ex) {
+                        System.out.print("Enter accommodation ID to remove: ");
+                        String accommodationId = keyboard.nextLine();
+                        svc.removeAccommodation(accommodationId);
+                        System.out.println("Accommodation removed.");
+                    } catch (Exception ex) {
                         System.out.println("ERROR: " + ex.getMessage());
                     }
                     break;
 
                 case 3:
-                    System.out.println("1) Hotel  2) Hostel");
-                    System.out.print("Enter choice: ");
-                    int aTypeChoice = readInt(keyboard);
-                    String aTypeName;
-                    if      (aTypeChoice == 1) aTypeName = "Hotel";
-                    else if (aTypeChoice == 2) aTypeName = "Hostel";
-                    else { System.out.println("Invalid type."); break; }
+                    System.out.println("1) Hotel");
+                    System.out.println("2) Hostel");
+                    System.out.print("Choose type: ");
+                    int type = readInt(keyboard);
 
-                    boolean foundA = false;
                     for (int i = 0; i < svc.getAccommodationCount(); i++) {
-                        Accommodation acc = svc.getAccommodations()[i];
-                        if (acc != null && acc.getType().equals(aTypeName)) {
-                            System.out.println(acc);
-                            foundA = true;
-                        }
+                        Accommodation ac = svc.getAccommodations()[i];
+                        if (ac == null) continue;
+
+                        if (type == 1 && ac instanceof Hotel) System.out.println(ac);
+                        if (type == 2 && ac instanceof Hostel) System.out.println(ac);
                     }
-                    if (!foundA) System.out.println("No " + aTypeName + " options found.");
-                    break;
-
-                case 0:
-                    back = true;
-                    break;
-
-                default:
-                    System.out.println("Invalid choice.");
-            }
-        }
-    }
-
-    private static void tripMenu(Scanner keyboard, SmartTravelService svc) {
-        boolean back = false;
-        while (!back) {
-            System.out.println("\n=== TRIP MENU ===");
-            System.out.println("1) Add Trip (by IDs)");
-            System.out.println("2) List Trips");
-            System.out.println("3) Cancel Trip");
-            System.out.println("4) List Trips for a Client");
-            System.out.println("0) Back");
-            System.out.print("Enter choice: ");
-            int c = readInt(keyboard);
-
-            switch (c) {
-                case 1:
-                    try {
-                        System.out.print("Client ID (e.g., C1001): ");
-                        String cid = keyboard.nextLine();
-
-                        System.out.print("Accommodation ID (blank if none): ");
-                        String aid = keyboard.nextLine();
-
-                        System.out.print("Transportation ID (blank if none): ");
-                        String tid = keyboard.nextLine();
-
-                        System.out.print("Destination: ");
-                        String dest = keyboard.nextLine();
-
-                        System.out.print("Duration (days 1-20): ");
-                        int days = readInt(keyboard);
-
-                        System.out.print("Base price (>=100): ");
-                        double base = readDouble(keyboard);
-
-                        Client client = svc.findClientById(cid);
-                        Transportation tr = null;
-                        Accommodation ac = null;
-
-                        if (!aid.trim().isEmpty()) {
-                            ac = svc.findAccommodationById(aid.trim());
-                        }
-                        if (!tid.trim().isEmpty()) {
-                            tr = svc.findTransportationById(tid.trim());
-                        }
-
-                        Trip real = new Trip(client, tr, ac, dest, days, base);
-                        svc.addTrip(real);
-
-                        System.out.println("Added: " + real);
-
-                    } catch (EntityNotFoundException ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
-                    } catch (InvalidTripDataException ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
-                    } catch (InvalidClientDataException ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
-                    }
-                    break;
-
-                case 2:
-                    for (int i = 0; i < svc.getTripCount(); i++) {
-                        if (svc.getTrips()[i] != null) System.out.println(svc.getTrips()[i] + " | total=" +
-                                String.format("%.2f", svc.getTrips()[i].calculateTotalCost()));
-                    }
-                    break;
-                case 3:
-                    try {
-                        System.out.print("Enter Trip ID to cancel: ");
-                        String tid = keyboard.nextLine();
-                        svc.deleteTrip(tid);
-                        System.out.println("Trip " + tid + " cancelled.");
-                    } catch (EntityNotFoundException ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
-                    }
-                    break;
-
-                case 4:
-                    System.out.print("Enter Client ID: ");
-                    String cid = keyboard.nextLine();
-                    boolean found = false;
-                    for (int i = 0; i < svc.getTripCount(); i++) {
-                        Trip t = svc.getTrips()[i];
-                        if (t != null && t.getClientId().equals(cid.trim())) {
-                            System.out.println(t);
-                            found = true;
-                        }
-                    }
-                    if (!found) System.out.println("No trips found for client: " + cid);
                     break;
 
                 case 0:
@@ -475,46 +509,38 @@ public class SmartTravelDriver {
     }
 
     private static void additionalOperationsMenu(Scanner keyboard, SmartTravelService svc) {
-
         boolean back = false;
 
         while (!back) {
-
             System.out.println("\n=== ADDITIONAL OPERATIONS ===");
             System.out.println("1) Display most expensive trip");
             System.out.println("2) Calculate total cost of a trip");
             System.out.println("3) Deep copy transportation array");
             System.out.println("4) Deep copy accommodation array");
             System.out.println("0) Back");
-
             System.out.print("Enter choice: ");
+
             int choice = readInt(keyboard);
 
             switch (choice) {
-
                 case 1:
                     try {
-
                         Trip t = svc.findMostExpensiveTrip();
-
                         System.out.println("\nMost expensive trip:");
                         System.out.println(t);
                         System.out.println("Total cost: " + t.calculateTotalCost());
-
                     } catch (EntityNotFoundException e) {
                         System.out.println("ERROR: " + e.getMessage());
                     }
                     break;
 
                 case 2:
-
                     if (svc.getTripCount() == 0) {
                         System.out.println("No trips available.");
                         break;
                     }
 
                     System.out.println("\nTrips:");
-
                     for (int i = 0; i < svc.getTripCount(); i++) {
                         System.out.println(i + " -> " + svc.getTrips()[i]);
                     }
@@ -523,51 +549,67 @@ public class SmartTravelDriver {
                     int index = readInt(keyboard);
 
                     try {
-
                         double total = svc.calculateTripTotal(index);
-
                         System.out.println("Total cost = " + total);
-
                     } catch (InvalidTripDataException e) {
                         System.out.println("ERROR: " + e.getMessage());
                     }
-
                     break;
 
                 case 3:
+                    if (svc.getTransportCount() == 0) {
+                        System.out.println("No transportation records available.");
+                        break;
+                    }
 
                     Transportation[] copyT = svc.deepCopyTransportationArray();
 
-                    System.out.println("\nOriginal transportation array:");
+                    System.out.println("\nBefore modifying copied transportation:");
+                    System.out.println("Original[0] = " + svc.getTransportations()[0]);
+                    System.out.println("Copy[0]     = " + copyT[0]);
 
-                    for (int i = 0; i < svc.getTransportCount(); i++) {
-                        System.out.println("Original[" + i + "] = " + svc.getTransportations()[i]);
+                    try {
+                        if (copyT[0] instanceof Flight) {
+                            ((Flight) copyT[0]).setAirlineName("ModifiedCopyAir");
+                        } else if (copyT[0] instanceof Train) {
+                            ((Train) copyT[0]).setTrainType("ModifiedType");
+                        } else if (copyT[0] instanceof Bus) {
+                            ((Bus) copyT[0]).setNumberOfStops(((Bus) copyT[0]).getNumberOfStops() + 1);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Modification error: " + e.getMessage());
                     }
 
-                    System.out.println("\nCopied transportation array:");
-
-                    for (int i = 0; i < copyT.length; i++) {
-                        System.out.println("Copy[" + i + "] = " + copyT[i]);
-                    }
-
+                    System.out.println("\nAfter modifying copied transportation:");
+                    System.out.println("Original[0] = " + svc.getTransportations()[0]);
+                    System.out.println("Copy[0]     = " + copyT[0]);
                     break;
 
                 case 4:
+                    if (svc.getAccommodationCount() == 0) {
+                        System.out.println("No accommodation records available.");
+                        break;
+                    }
 
                     Accommodation[] copyA = svc.deepCopyAccommodationArray();
 
-                    System.out.println("\nOriginal accommodation array:");
+                    System.out.println("\nBefore modifying copied accommodation:");
+                    System.out.println("Original[0] = " + svc.getAccommodations()[0]);
+                    System.out.println("Copy[0]     = " + copyA[0]);
 
-                    for (int i = 0; i < svc.getAccommodationCount(); i++) {
-                        System.out.println("Original[" + i + "] = " + svc.getAccommodations()[i]);
+                    try {
+                        if (copyA[0] instanceof Hotel) {
+                            ((Hotel) copyA[0]).setStars(1);
+                        } else if (copyA[0] instanceof Hostel) {
+                            ((Hostel) copyA[0]).setSharedRoomCapacity(((Hostel) copyA[0]).getSharedRoomCapacity() + 1);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Modification error: " + e.getMessage());
                     }
 
-                    System.out.println("\nCopied accommodation array:");
-
-                    for (int i = 0; i < copyA.length; i++) {
-                        System.out.println("Copy[" + i + "] = " + copyA[i]);
-                    }
-
+                    System.out.println("\nAfter modifying copied accommodation:");
+                    System.out.println("Original[0] = " + svc.getAccommodations()[0]);
+                    System.out.println("Copy[0]     = " + copyA[0]);
                     break;
 
                 case 0:
@@ -579,10 +621,6 @@ public class SmartTravelDriver {
             }
         }
     }
-
-    // ---------------------------
-    // A2 menu options
-    // ---------------------------
 
     private static void listAllSummary(SmartTravelService svc) {
         System.out.println("\n--- Clients ---");
@@ -629,139 +667,123 @@ public class SmartTravelDriver {
 
     private static void generateDashboard(SmartTravelService svc) {
         try {
-            DashboardGenerator.generateDashboard(svc.getClients(), svc.getClientCount(), svc.getTrips(), svc.getTripCount());
+            DashboardGenerator.generateDashboard(
+                    svc.getClients(),
+                    svc.getClientCount(),
+                    svc.getTrips(),
+                    svc.getTripCount()
+            );
             System.out.println("Dashboard generated in output/dashboard/ (and output/charts/ created).");
         } catch (IOException ex) {
             System.out.println("DASHBOARD ERROR: " + ex.getMessage());
         }
     }
 
-    // ---------------------------
-    // Predefined scenarios
-    // ---------------------------
-
-    /** A1 scenario idea kept: minimal sample data */
     private static void runA1PredefinedScenario(SmartTravelService svc) {
         try {
-
             svc.clearAllData();
 
-            // Add clients
-            svc.addClient(new Client("Malcolm", "White", "malcolm@example.com"));
-            svc.addClient(new Client("Sara", "Black", "sara@example.com"));
-            svc.addClient(new Client("Danny", "Brown", "danny@example.com"));
+            Client c1 = new Client("Malcolm", "White", "malcolm@example.com");
+            Client c2 = new Client("Sara", "Black", "sara@example.com");
+            Client c3 = new Client("Danny", "Brown", "danny@example.com");
 
-            // Add transport (A1 base fares preserved by constructors)
-            svc.addTransportation(new Flight("AirX", "Montreal", "Paris", "AirX", 25.0));
-            svc.addTransportation(new Train("RailPro", "Toronto", "Ottawa", "HighSpeed", "First"));
-            svc.addTransportation(new Bus("Greyhound", "NYC", "Boston", 3));
+            svc.addClient(c1);
+            svc.addClient(c2);
+            svc.addClient(c3);
 
-            // Add accom
-            svc.addAccommodation(new Hotel("Hilton", "Rome", 280.0, 4));
-            svc.addAccommodation(new Hostel("Backpackers", "Rome", 55.0, 6));
+            Flight f1 = new Flight("AirX", "Montreal", "Paris", "AirX", 25.0);
+            Flight f2 = new Flight("SkyJet", "Dubai", "Rome", "SkyJet", 18.0);
+            Train tr1 = new Train("RailPro", "Toronto", "Ottawa", "HighSpeed");
+            Train tr2 = new Train("EuroRail", "Rome", "Milan", "Standard");
+            Bus b1 = new Bus("Greyhound", "NYC", "Boston", 3);
+            Bus b2 = new Bus("CoachX", "Madrid", "Valencia", 2);
 
-            // Make trips
-            Client c1 = svc.findClientById(svc.getClients()[0].getClientId());
-            Trip t1 = new Trip(c1, svc.getTransportations()[0], svc.getAccommodations()[0], "Rome", 5, 1800.0);
+            svc.addTransportation(f1);
+            svc.addTransportation(f2);
+            svc.addTransportation(tr1);
+            svc.addTransportation(tr2);
+            svc.addTransportation(b1);
+            svc.addTransportation(b2);
+
+            Hotel h1 = new Hotel("Hilton", "Rome", 280.0, 4);
+            Hotel h2 = new Hotel("Sheraton", "Paris", 320.0, 5);
+            Hostel ho1 = new Hostel("Backpackers", "Rome", 55.0, 6);
+            Hostel ho2 = new Hostel("CityHostel", "Ottawa", 70.0, 4);
+
+            svc.addAccommodation(h1);
+            svc.addAccommodation(h2);
+            svc.addAccommodation(ho1);
+            svc.addAccommodation(ho2);
+
+            Trip t1 = new Trip(c1, f1, h1, "Rome", 5, 1800.0);
+            Trip t2 = new Trip(c2, tr1, ho2, "Ottawa", 3, 500.0);
+            Trip t3 = new Trip(c3, b2, ho1, "Valencia", 4, 700.0);
+
             svc.addTrip(t1);
+            svc.addTrip(t2);
+            svc.addTrip(t3);
 
-            System.out.println("Predefined scenario executed.");
+            System.out.println("\n===== PREDEFINED SCENARIO =====");
             listAllSummary(svc);
+
+            System.out.println("\n===== EQUALS TESTS =====");
+            System.out.println("Different classes (Flight vs Hotel): " + f1.equals(h1));
+            System.out.println("Same class, different attributes (Hotel h1 vs h2): " + h1.equals(h2));
+            Hotel h3 = new Hotel("Hilton", "Rome", 280.0, 4);
+            System.out.println("Same class, identical attributes except ID: " + h1.equals(h3));
+
+            System.out.println("\n===== MOST EXPENSIVE TRIP =====");
+            Trip mostExp = svc.findMostExpensiveTrip();
+            System.out.println(mostExp);
+            System.out.println("Total = " + mostExp.calculateTotalCost());
+
+            System.out.println("\n===== DEEP COPY TEST: TRANSPORT =====");
+            Transportation[] copyT = svc.deepCopyTransportationArray();
+            System.out.println("Original[0] = " + svc.getTransportations()[0]);
+            System.out.println("Copy[0]     = " + copyT[0]);
+            if (copyT[0] instanceof Flight) {
+                ((Flight) copyT[0]).setAirlineName("ChangedAirline");
+            }
+            System.out.println("Original[0] = " + svc.getTransportations()[0]);
+            System.out.println("Copy[0]     = " + copyT[0]);
+
+            System.out.println("\n===== DEEP COPY TEST: ACCOMMODATION =====");
+            Accommodation[] copyA = svc.deepCopyAccommodationArray();
+            System.out.println("Original[0] = " + svc.getAccommodations()[0]);
+            System.out.println("Copy[0]     = " + copyA[0]);
+            if (copyA[0] instanceof Hotel) {
+                ((Hotel) copyA[0]).setStars(1);
+            }
+            System.out.println("Original[0] = " + svc.getAccommodations()[0]);
+            System.out.println("Copy[0]     = " + copyA[0]);
 
         } catch (Exception ex) {
             System.out.println("SCENARIO ERROR: " + ex.getMessage());
         }
     }
 
-    /** A2 scenario should demonstrate load/save + validation */
     private static void runA2PredefinedScenario(SmartTravelService svc) {
         svc.clearAllData();
-        System.out.println("\n========================================");
-        System.out.println("  A2 PREDEFINED SCENARIO");
-        System.out.println("========================================");
+        System.out.println("\nRunning A2 predefined scenario...");
 
-        // ── 1. Load from files ───────────────────────────────────────
-        System.out.println("\n--- Step 1: Load from CSV files ---");
         loadAllData(svc);
-        listAllSummary(svc);
 
-        // ── 2. DuplicateEmailException (unchecked) ───────────────────
-        System.out.println("\n--- Step 2: DuplicateEmailException ---");
-        try {
-            Client dup = new Client("Test", "User", "malcolm@example.com");
-            svc.addClient(dup);
-        } catch (DuplicateEmailException ex) {
-            System.out.println("Caught DuplicateEmailException: " + ex.getMessage());
-        } catch (InvalidClientDataException ex) {
-            System.out.println("Unexpected: " + ex.getMessage());
-        }
-
-        // ── 3. InvalidClientDataException ───────────────────────────
-        System.out.println("\n--- Step 3: InvalidClientDataException ---");
-        try {
-            Client bad = new Client("", "NoName", "bademail");
-            svc.addClient(bad);
-        } catch (InvalidClientDataException ex) {
-            System.out.println("Caught InvalidClientDataException: " + ex.getMessage());
-        } catch (DuplicateEmailException ex) {
-            System.out.println("Unexpected: " + ex.getMessage());
-        }
-
-        // ── 4. InvalidTransportDataException ────────────────────────
-        System.out.println("\n--- Step 4: InvalidTransportDataException (Bus 0 stops) ---");
-        try {
-            Bus badBus = new Bus("BadBus", "Montreal", "Toronto", 0);
-            svc.addTransportation(badBus);
-        } catch (InvalidTransportDataException ex) {
-            System.out.println("Caught InvalidTransportDataException: " + ex.getMessage());
-        }
-
-        // ── 5. InvalidAccommodationDataException ────────────────────
-        System.out.println("\n--- Step 5: InvalidAccommodationDataException (Hostel > $150) ---");
-        try {
-            Hostel badHostel = new Hostel("Expensive Hostel", "Paris", 200.0, 4);
-            svc.addAccommodation(badHostel);
-        } catch (InvalidAccommodationDataException ex) {
-            System.out.println("Caught InvalidAccommodationDataException: " + ex.getMessage());
-        }
-
-        // ── 6. InvalidTripDataException ─────────────────────────────
-        System.out.println("\n--- Step 6: InvalidTripDataException (duration > 20) ---");
-        try {
-            if (svc.getClientCount() > 0) {
-                Client c = svc.getClients()[0];
-                Flight f = new Flight("TestAir", "MTL", "NYC", "TestAir", 20.0);
-                svc.addTransportation(f);
-                Trip badTrip = new Trip(c, f, null, "NYC", 99, 500.0);
-                svc.addTrip(badTrip);
+        if (svc.getClientCount() > 0) {
+            try {
+                String duplicateEmail = svc.getClients()[0].getEmail();
+                svc.addClient(new Client("Test", "User", duplicateEmail));
+            } catch (DuplicateEmailException ex) {
+                System.out.println("Caught expected DuplicateEmailException: " + ex.getMessage());
+            } catch (InvalidClientDataException ex) {
+                System.out.println("Unexpected client validation error: " + ex.getMessage());
             }
-        } catch (InvalidTripDataException ex) {
-            System.out.println("Caught InvalidTripDataException: " + ex.getMessage());
-        } catch (Exception ex) {
-            System.out.println("Caught: " + ex.getMessage());
         }
 
-        // ── 7. EntityNotFoundException ──────────────────────────────
-        System.out.println("\n--- Step 7: EntityNotFoundException ---");
-        try {
-            svc.findClientById("C9999");
-        } catch (EntityNotFoundException ex) {
-            System.out.println("Caught EntityNotFoundException: " + ex.getMessage());
-        }
-
-        // ── 8. Save all data ────────────────────────────────────────
-        System.out.println("\n--- Step 8: Save all data ---");
         saveAllData(svc);
+        generateDashboard(svc);
 
-        System.out.println("\n========================================");
-        System.out.println("  A2 SCENARIO COMPLETE");
-        System.out.println("========================================");
+        System.out.println("A2 scenario done.");
     }
-
-
-    // ---------------------------
-    // Input helpers
-    // ---------------------------
 
     private static int readInt(Scanner keyboard) {
         while (true) {

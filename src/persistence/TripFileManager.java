@@ -11,8 +11,9 @@ public class TripFileManager {
 
     // Format:
     // TripID;ClientID;AccommodationID;TransportationID;Destination;DurationDays;BasePrice
-    public static void saveTrips(Trip[] arr, int count , String filePath) throws IOException {
+    public static void saveTrips(Trip[] arr, int count, String filePath) throws IOException {
         ensureParentDir(filePath);
+
         PrintWriter out = new PrintWriter(new FileWriter(filePath));
 
         for (int i = 0; i < count; i++) {
@@ -30,6 +31,7 @@ public class TripFileManager {
     }
 
     public static int loadTrips(Trip[] arr, String filePath, SmartTravelService svc) throws IOException {
+        int count = 0;
         BufferedReader br = null;
 
         try {
@@ -37,13 +39,17 @@ public class TripFileManager {
             String line;
 
             while ((line = br.readLine()) != null) {
+                if (count >= arr.length) break;
+
                 String raw = line;
                 line = line.trim();
                 if (line.isEmpty()) continue;
 
                 try {
                     String[] p = line.split(";");
-                    if (p.length != 7) throw new InvalidTripDataException("Bad TRIP token count: " + raw);
+                    if (p.length != 7) {
+                        throw new InvalidTripDataException("Bad TRIP token count: " + raw);
+                    }
 
                     String tripId = p[0].trim();
                     String clientId = p[1].trim();
@@ -53,43 +59,39 @@ public class TripFileManager {
                     int days = Integer.parseInt(p[5].trim());
                     double base = Double.parseDouble(p[6].trim());
 
-                    // At least one of accom/trans must be present
-                    if ((accomId == null || accomId.isEmpty()) && (transId == null || transId.isEmpty())) {
+                    if (accomId.isEmpty()) accomId = null;
+                    if (transId.isEmpty()) transId = null;
+
+                    if (accomId == null && transId == null) {
                         throw new InvalidTripDataException("Trip must have accommodationId or transportationId: " + raw);
                     }
 
-                    // Client must exist
                     if (!svc.clientExists(clientId)) {
                         throw new EntityNotFoundException("Trip references missing clientId: " + clientId);
                     }
 
-                    // Let Trip validate its own rules too
-                    Trip t = new Trip(tripId, clientId,
-                            accomId.isEmpty() ? null : accomId,
-                            transId.isEmpty() ? null : transId,
-                            dest, days, base);
+                    if (accomId != null) {
+                        svc.findAccommodationById(accomId);
+                    }
+                    if (transId != null) {
+                        svc.findTransportationById(transId);
+                    }
 
-                    // Strict ID existence check (recommended by spec)
-                    if (t.getAccommodationId() != null) svc.findAccommodationById(t.getAccommodationId());
-                    if (t.getTransportationId() != null) svc.findTransportationById(t.getTransportationId());
+                    Trip t = new Trip(tripId, clientId, accomId, transId, dest, days, base);
 
-                    // add via service to update amountSpent
                     svc.addTrip(t);
+                    count++;
 
                 } catch (Exception ex) {
                     ErrorLogger.log("TRIP LOAD ERROR | " + ex.getMessage() + " | line=" + raw);
                 }
-
-                if (svc.getTripCount() >= arr.length) break;
             }
-
-            // service already inserted into its internal trip array,
-            // so we return its tripCount for consistency:
-            return svc.getTripCount();
 
         } finally {
             if (br != null) br.close();
         }
+
+        return count;
     }
 
     private static void ensureParentDir(String filePath) {

@@ -63,6 +63,15 @@ public class Hotel extends Accommodation {
 
     }
 
+    @Override
+    public boolean equals(Object oth) {
+        if (!super.equals(oth)) return false;
+        if (!(oth instanceof Hotel)) return false;
+
+        Hotel other = (Hotel) oth;
+        return stars == other.stars;
+    }
+
     /** Provides a clean summary for display */
     @Override
     public String toString() {

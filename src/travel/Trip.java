@@ -9,13 +9,15 @@ package travel;
 import client.Client;
 import exceptions.InvalidTripDataException;
 
-import java.util.Objects;
-
 public class Trip {
 
     private static int nextId = 2001;
 
     private String tripId;
+
+    public static void resetIdCounter() {
+        nextId = 2001;
+    }
 
     /** store IDs for persistence */
     private String clientId;
@@ -38,7 +40,7 @@ public class Trip {
     /** Sync nextId so IDs don't collide after CSV load */
     public static void syncNextIdFromLoadedId(String loadedId) {
         if (loadedId == null) return;
-        if (!loadedId.startsWith("T") || loadedId.startsWith("TR")) return;
+        if (!loadedId.startsWith("T")) return;
         try {
             int n = Integer.parseInt(loadedId.substring(1));
             if (n >= nextId) nextId = n + 1;
@@ -161,23 +163,32 @@ public class Trip {
         return accommodationId;
     }
 
-    public void setAccommodationId(String accommodationId) {
-        if (isBlank(accommodationId)) {
-            this.accommodationId = null;
-        } else {
-            this.accommodationId = accommodationId.trim();
-        }
-    }
-
     public String getTransportationId() {
         return transportationId;
     }
+    public void setAccommodationId(String accommodationId) throws InvalidTripDataException {
+        if (isBlank(accommodationId)) {
+            this.accommodationId = null;
+        }
+        else {
+            String value = accommodationId.trim();
+            if (!value.startsWith("A")) {
+                throw new InvalidTripDataException("Invalid accommodationId: " + accommodationId);
+            }
+            this.accommodationId = value;
+        }
+    }
 
-    public void setTransportationId(String transportationId) {
+    public void setTransportationId(String transportationId) throws InvalidTripDataException {
         if (isBlank(transportationId)) {
             this.transportationId = null;
-        } else {
-            this.transportationId = transportationId.trim();
+        }
+        else {
+            String value = transportationId.trim();
+            if (!value.startsWith("TR")) {
+                throw new InvalidTripDataException("Invalid transportationId: " + transportationId);
+            }
+            this.transportationId = value;
         }
     }
 
@@ -247,7 +258,6 @@ public class Trip {
     }
 
 
-    /** TOTAL COST **/
     public double calculateTotalCost() {
         double total = basePrice;
 
@@ -261,26 +271,42 @@ public class Trip {
         return total;
     }
 
-    // EQUALS
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (this.getClass() != obj.getClass()) return false;
-        Trip other = (Trip) obj;
+    public boolean equals(Object oth) {
+        if (oth == null) return false;
+        if (!(oth instanceof Trip)) return false;
 
-        if (destination == null && other.destination != null) return false;
-        if (destination != null && !destination.equals(other.destination)) return false;
+        Trip other = (Trip) oth;
 
-        if (clientId == null && other.clientId != null) return false;
-        if (clientId != null && !clientId.equals(other.clientId)) return false;
+        if (clientId == null) {
+            if (other.clientId != null) return false;
+        } else if (!clientId.equals(other.clientId)) {
+            return false;
+        }
 
-        if (durationInDays != other.durationInDays) return false;
-        if (Double.compare(basePrice, other.basePrice) != 0) return false;
+        if (accommodationId == null) {
+            if (other.accommodationId != null) return false;
+        } else if (!accommodationId.equals(other.accommodationId)) {
+            return false;
+        }
 
-        return true;
+        if (transportationId == null) {
+            if (other.transportationId != null) return false;
+        } else if (!transportationId.equals(other.transportationId)) {
+            return false;
+        }
+
+        if (destination == null) {
+            if (other.destination != null) return false;
+        } else if (!destination.equals(other.destination)) {
+            return false;
+        }
+
+        return durationInDays == other.durationInDays &&
+                Double.compare(basePrice, other.basePrice) == 0;
     }
 
-    /** ToString , Provides a clean summary for display */
+    /** Provides a clean summary for display */
     @Override
     public String toString() {
         return "Trip{tripId='" + tripId + "', clientId='" + clientId +

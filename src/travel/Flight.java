@@ -98,6 +98,22 @@ public class Flight extends Transportation {
         return base + baggageFee;
     }
 
+    @Override
+    public boolean equals(Object oth) {
+        if (!super.equals(oth)) return false;
+        if (!(oth instanceof Flight)) return false;
+
+        Flight other = (Flight) oth;
+
+        if (airlineName == null) {
+            if (other.airlineName != null) return false;
+        } else if (!airlineName.equals(other.airlineName)) {
+            return false;
+        }
+
+        return Double.compare(luggageAllowanceKg, other.luggageAllowanceKg) == 0;
+    }
+
     /** Provides a clean summary for display */
     @Override
     public String toString() {
