@@ -1,112 +1,133 @@
+// -----------------------------------------------------
+// Assignment 2
+// Class: AccommodationFileManager
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// -----------------------------------------------------
+
 package persistence;
 
 import exceptions.InvalidAccommodationDataException;
-import travel.*;
+import travel.Accommodation;
+import travel.Hotel;
+import travel.Hostel;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
-// -----------------------------------------------------
-// Assignment 2
-// Class: Client
-// Written by: Yousef Yousef (40299095) & Hamza Shadeed (4034172)
-// -----------------------------------------------------
-
+/** Handles CSV saving and loading for accommodation records. */
 public class AccommodationFileManager {
 
-    // Example formats:
-    // HOTEL;A4001;Hilton Rome;Rome;280.00;4
-    // HOSTEL;A4002;Rome Backpackers;Rome;55.00;6
-    public static void saveAccommodations(Accommodation[] arr, int count, String filePath) throws IOException {
+    /** Saves each accommodation object using the subclass prefix required by the assignment. */
+    public static void saveAccommodations(Accommodation[] accommodations, int accommodationCount, String filePath)
+            throws IOException {
         ensureParentDir(filePath);
 
-        PrintWriter out = new PrintWriter(new FileWriter(filePath));
+        PrintWriter outputWriter = new PrintWriter(new FileWriter(filePath));
 
-        for (int i = 0; i < count; i++) {
-            Accommodation a = arr[i];
-            if (a == null) continue;
+        for (int accommodationIndex = 0; accommodationIndex < accommodationCount; accommodationIndex++) {
+            Accommodation accommodation = accommodations[accommodationIndex];
+            if (accommodation == null) continue;
 
-            if (a instanceof Hotel) {
-                Hotel h = (Hotel) a;
-                out.println("HOTEL;" + h.getAccommodationId() + ";" + h.getName() + ";" +
-                        h.getLocation() + ";" + h.getPricePerNight() + ";" + h.getStars());
+            if (accommodation instanceof Hotel) {
+                Hotel hotel = (Hotel) accommodation;
+                outputWriter.println(
+                        "HOTEL;" + hotel.getAccommodationId() + ";" + hotel.getName() + ";" +
+                                hotel.getLocation() + ";" + hotel.getPricePerNight() + ";" + hotel.getStars()
+                );
 
-            } else if (a instanceof Hostel) {
-                Hostel ho = (Hostel) a;
-                out.println("HOSTEL;" + ho.getAccommodationId() + ";" + ho.getName() + ";" +
-                        ho.getLocation() + ";" + ho.getPricePerNight() + ";" + ho.getSharedRoomCapacity());
+            } else if (accommodation instanceof Hostel) {
+                Hostel hostel = (Hostel) accommodation;
+                outputWriter.println(
+                        "HOSTEL;" + hostel.getAccommodationId() + ";" + hostel.getName() + ";" +
+                                hostel.getLocation() + ";" + hostel.getPricePerNight() + ";" +
+                                hostel.getSharedRoomCapacity()
+                );
 
             } else {
-                ErrorLogger.log("ACCOM SAVE ERROR | Unknown accommodation subclass: " + a.getClass().getName());
+                ErrorLogger.log("ACCOM SAVE ERROR | Unknown accommodation subclass: " +
+                        accommodation.getClass().getName());
             }
         }
 
-        out.close();
+        outputWriter.close();
     }
 
-    public static int loadAccommodations(Accommodation[] arr, String filePath) throws IOException {
-        int count = 0;
-        BufferedReader br = null;
+    /** Loads accommodation records line by line, logging invalid rows and continuing safely. */
+    public static int loadAccommodations(Accommodation[] accommodations, String filePath) throws IOException {
+        int loadedCount = 0;
+        BufferedReader bufferedReader = null;
 
         try {
-            br = new BufferedReader(new FileReader(filePath));
+            bufferedReader = new BufferedReader(new FileReader(filePath));
             String line;
 
-            while ((line = br.readLine()) != null) {
-                String raw = line;
+            while ((line = bufferedReader.readLine()) != null) {
+                if (loadedCount >= accommodations.length) break;
+
+                String rawLine = line;
                 line = line.trim();
                 if (line.isEmpty()) continue;
 
                 try {
-                    String[] p = line.split(";");
-                    String type = p[0].trim().toUpperCase();
+                    String[] tokens = line.split(";");
+                    String typePrefix = tokens[0].trim().toUpperCase();
 
-                    if ("HOTEL".equals(type)) {
-                        if (p.length != 6) {
-                            throw new InvalidAccommodationDataException("Bad HOTEL token count: " + raw);
+                    if ("HOTEL".equals(typePrefix)) {
+                        if (tokens.length != 6) {
+                            throw new InvalidAccommodationDataException("Bad HOTEL token count: " + rawLine);
                         }
 
-                        String id = p[1].trim();
-                        String name = p[2].trim();
-                        String loc = p[3].trim();
-                        double ppn = Double.parseDouble(p[4].trim());
-                        int stars = Integer.parseInt(p[5].trim());
+                        String accommodationId = tokens[1].trim();
+                        String name = tokens[2].trim();
+                        String location = tokens[3].trim();
+                        double pricePerNight = Double.parseDouble(tokens[4].trim());
+                        int stars = Integer.parseInt(tokens[5].trim());
 
-                        arr[count++] = new Hotel(id, name, loc, ppn, stars);
+                        accommodations[loadedCount++] =
+                                new Hotel(accommodationId, name, location, pricePerNight, stars);
 
-                    } else if ("HOSTEL".equals(type)) {
-                        if (p.length != 6) {
-                            throw new InvalidAccommodationDataException("Bad HOSTEL token count: " + raw);
+                    } else if ("HOSTEL".equals(typePrefix)) {
+                        if (tokens.length != 6) {
+                            throw new InvalidAccommodationDataException("Bad HOSTEL token count: " + rawLine);
                         }
 
-                        String id = p[1].trim();
-                        String name = p[2].trim();
-                        String loc = p[3].trim();
-                        double ppn = Double.parseDouble(p[4].trim());
-                        int cap = Integer.parseInt(p[5].trim());
+                        String accommodationId = tokens[1].trim();
+                        String name = tokens[2].trim();
+                        String location = tokens[3].trim();
+                        double pricePerNight = Double.parseDouble(tokens[4].trim());
+                        int sharedRoomCapacity = Integer.parseInt(tokens[5].trim());
 
-                        arr[count++] = new Hostel(id, name, loc, ppn, cap);
+                        accommodations[loadedCount++] =
+                                new Hostel(accommodationId, name, location, pricePerNight, sharedRoomCapacity);
 
                     } else {
-                        throw new InvalidAccommodationDataException("Unknown accommodation type prefix: " + type);
+                        throw new InvalidAccommodationDataException(
+                                "Unknown accommodation type prefix: " + typePrefix
+                        );
                     }
 
-                } catch (Exception ex) {
-                    ErrorLogger.log("ACCOM LOAD ERROR | " + ex.getMessage() + " | line=" + raw);
+                } catch (Exception exception) {
+                    ErrorLogger.log("ACCOM LOAD ERROR | " + exception.getMessage() + " | line=" + rawLine);
                 }
-
-                if (count >= arr.length) break;
             }
 
         } finally {
-            if (br != null) br.close();
+            if (bufferedReader != null) bufferedReader.close();
         }
 
-        return count;
+        return loadedCount;
     }
 
+    /** Creates the output directory path before saving files into it. */
     private static void ensureParentDir(String filePath) {
-        File f = new File(filePath);
-        File parent = f.getParentFile();
-        if (parent != null && !parent.exists()) parent.mkdirs();
+        File outputFile = new File(filePath);
+        File parentDirectory = outputFile.getParentFile();
+        if (parentDirectory != null && !parentDirectory.exists()) {
+            parentDirectory.mkdirs();
+        }
     }
 }

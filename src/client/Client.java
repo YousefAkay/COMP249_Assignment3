@@ -1,11 +1,10 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: Client
-// Written by: Yousef Yousef (40299095) & Hamza Shadeed (4034172)
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package client;
-
 
 import exceptions.InvalidClientDataException;
 
@@ -18,31 +17,32 @@ public class Client {
     private String firstName;
     private String lastName;
     private String email;
-
     private double amountSpent;
 
     public static void resetIdCounter() {
         nextId = 1001;
     }
 
-    /** Generates the next sequential ID for this category */
+    /** Generates the next sequential ID for client objects. */
     private static String generateId() {
         return "C" + nextId++;
     }
 
-    /** Syncs nextId so IDs don't collide after loading from CSV */
+    /** Syncs the next ID after loading records so new IDs stay unique. */
     public static void syncNextIdFromLoadedId(String loadedId) {
         if (loadedId == null) return;
-        // expected like "C1042"
         if (!loadedId.startsWith("C")) return;
+
         try {
-            int n = Integer.parseInt(loadedId.substring(1));
-            if (n >= nextId) nextId = n + 1;
-        } catch (NumberFormatException ignore) {
+            int loadedNumber = Integer.parseInt(loadedId.substring(1));
+            if (loadedNumber >= nextId) {
+                nextId = loadedNumber + 1;
+            }
+        } catch (NumberFormatException ignoredException) {
         }
     }
 
-    /** Default constructor */
+    /** Builds a default client with placeholder values. */
     public Client() {
         this.clientId = generateId();
         this.firstName = "Unknown";
@@ -51,7 +51,7 @@ public class Client {
         this.amountSpent = 0.0;
     }
 
-    /**  parameterized constructor */
+    /** Builds a client from validated user input. */
     public Client(String firstName, String lastName, String email) throws InvalidClientDataException {
         this.clientId = generateId();
         setFirstName(firstName);
@@ -60,7 +60,7 @@ public class Client {
         this.amountSpent = 0.0;
     }
 
-    /** load-time constructor: uses explicit ID from CSV */
+    /** Builds a client from file data using an explicit ID and stored spending. */
     public Client(String clientId, String firstName, String lastName, String email, double amountSpent)
             throws InvalidClientDataException {
         setClientIdForLoad(clientId);
@@ -71,20 +71,21 @@ public class Client {
         syncNextIdFromLoadedId(clientId);
     }
 
-    /** Copy constructor */
-    public Client(Client other) {
+    /** Creates a copy of the client data but assigns a fresh generated ID. */
+    public Client(Client otherClient) {
         this.clientId = generateId();
-        this.firstName = other.firstName;
-        this.lastName = other.lastName;
-        this.email = other.email;
-        this.amountSpent = other.amountSpent;
+        this.firstName = otherClient.firstName;
+        this.lastName = otherClient.lastName;
+        this.email = otherClient.email;
+        this.amountSpent = otherClient.amountSpent;
     }
 
-
-    private static boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
+    /** Treats null or whitespace-only text as blank input. */
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
+    /** Applies the shared validation rules used by first and last names. */
     private static void validateName(String value, String fieldName) throws InvalidClientDataException {
         if (isBlank(value)) {
             throw new InvalidClientDataException(fieldName + " cannot be empty.");
@@ -94,24 +95,26 @@ public class Client {
         }
     }
 
+    /** Applies the validation rules required for email addresses. */
     private static void validateEmail(String value) throws InvalidClientDataException {
         if (isBlank(value)) {
             throw new InvalidClientDataException("Email cannot be empty.");
         }
-        String e = value.trim();
-        if (e.length() > 100) {
+
+        String trimmedEmail = value.trim();
+
+        if (trimmedEmail.length() > 100) {
             throw new InvalidClientDataException("Email must be <= 100 characters.");
         }
-        if (e.contains(" ")) {
+        if (trimmedEmail.contains(" ")) {
             throw new InvalidClientDataException("Email cannot contain spaces.");
         }
-        if (!(e.contains("@") && e.contains("."))) {
+        if (!(trimmedEmail.contains("@") && trimmedEmail.contains("."))) {
             throw new InvalidClientDataException("Email must contain '@' and '.'.");
         }
     }
 
-
-    /** Load-only setter: do NOT use in normal app flow */
+    /** Stores a loaded client ID directly and should only be used during file loading. */
     private void setClientIdForLoad(String clientId) throws InvalidClientDataException {
         if (isBlank(clientId) || !clientId.startsWith("C")) {
             throw new InvalidClientDataException("Invalid clientId: " + clientId);
@@ -127,6 +130,7 @@ public class Client {
         return firstName;
     }
 
+    /** Validates and stores the client's first name. */
     public void setFirstName(String firstName) throws InvalidClientDataException {
         validateName(firstName, "First name");
         this.firstName = firstName.trim();
@@ -136,6 +140,7 @@ public class Client {
         return lastName;
     }
 
+    /** Validates and stores the client's last name. */
     public void setLastName(String lastName) throws InvalidClientDataException {
         validateName(lastName, "Last name");
         this.lastName = lastName.trim();
@@ -145,6 +150,7 @@ public class Client {
         return email;
     }
 
+    /** Validates and stores the client's email address. */
     public void setEmail(String email) throws InvalidClientDataException {
         validateEmail(email);
         this.email = email.trim();
@@ -154,6 +160,7 @@ public class Client {
         return amountSpent;
     }
 
+    /** Enforces that stored client spending can never go negative. */
     public void setAmountSpent(double amountSpent) throws InvalidClientDataException {
         if (amountSpent < 0) {
             throw new InvalidClientDataException("amountSpent cannot be negative.");
@@ -161,32 +168,34 @@ public class Client {
         this.amountSpent = amountSpent;
     }
 
-    public void addToAmountSpent(double delta) throws InvalidClientDataException {
-        if (delta < 0) {
+    /** Adds new trip spending to the running total while rejecting negative values. */
+    public void addToAmountSpent(double amountToAdd) throws InvalidClientDataException {
+        if (amountToAdd < 0) {
             throw new InvalidClientDataException("Cannot add negative spending.");
         }
-        this.amountSpent += delta;
+        this.amountSpent += amountToAdd;
     }
 
-    /** Checks logical equality based on meaningful attributes */
-    public boolean equals(Object oth) {
-        if (oth == null) return false;
-        if (this.getClass() != oth.getClass()) return false;
+    /** Checks logical equality using the client's meaningful identity fields. */
+    @Override
+    public boolean equals(Object otherObject) {
+        if (otherObject == null) return false;
+        if (this.getClass() != otherObject.getClass()) return false;
 
-        Client other = (Client) oth;
+        Client otherClient = (Client) otherObject;
 
-        if (firstName == null) return other.firstName == null;
-        if (!firstName.equals(other.firstName)) return false;
+        if (firstName == null) return otherClient.firstName == null;
+        if (!firstName.equals(otherClient.firstName)) return false;
 
-        if (lastName == null) return other.lastName == null;
-        if (!lastName.equals(other.lastName)) return false;
+        if (lastName == null) return otherClient.lastName == null;
+        if (!lastName.equals(otherClient.lastName)) return false;
 
-        if (email == null) return other.email == null;
-        return email.equals(other.email);
+        if (email == null) return otherClient.email == null;
+        return email.equals(otherClient.email);
     }
 
-
-    /** cleanly displays all meaningful attributes */
+    /** Returns a compact text summary for menus, debugging, and output. */
+    @Override
     public String toString() {
         return "Client{clientId='" + clientId + "', firstName='" + firstName + "', lastName='" + lastName +
                 "', email='" + email + "', amountSpent=" + amountSpent + "}";

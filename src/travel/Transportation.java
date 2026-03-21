@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: Transportation
-// Written by: Yousef Yousef (40299095) & Hamza Shadeed (40
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package travel;
@@ -17,31 +17,32 @@ public abstract class Transportation {
 	private String companyName;
 	private String departureCity;
 	private String arrivalCity;
-
-	// A2 addition: base fare to support CSV pricing
 	private double baseFare;
 
 	public static void resetIdCounter() {
 		nextId = 3001;
 	}
 
-	/** Generates the next sequential ID for this category */
+	/** Generates the next sequential ID for transportation objects. */
 	private static String generateId() {
 		return "TR" + nextId++;
 	}
 
-	/** Sync nextId so IDs don't collide after CSV load */
+	/** Updates the next ID after loading records so new IDs do not collide. */
 	public static void syncNextIdFromLoadedId(String loadedId) {
 		if (loadedId == null) return;
 		if (!loadedId.startsWith("TR")) return;
+
 		try {
-			int n = Integer.parseInt(loadedId.substring(2));
-			if (n >= nextId) nextId = n + 1;
+			int loadedNumber = Integer.parseInt(loadedId.substring(2));
+			if (loadedNumber >= nextId) {
+				nextId = loadedNumber + 1;
+			}
 		} catch (NumberFormatException ignore) {
 		}
 	}
 
-	/** Default constructor */
+	/** Builds a default transportation object with placeholder values. */
 	public Transportation() {
 		this.transportId = generateId();
 		this.companyName = "Unknown";
@@ -50,8 +51,9 @@ public abstract class Transportation {
 		this.baseFare = 0.0;
 	}
 
-	/** constructor */
-	public Transportation(String companyName, String departureCity, String arrivalCity) throws InvalidTransportDataException {
+	/** Builds a transportation object from validated user input. */
+	public Transportation(String companyName, String departureCity, String arrivalCity)
+			throws InvalidTransportDataException {
 		this.transportId = generateId();
 		setCompanyName(companyName);
 		setDepartureCity(departureCity);
@@ -59,7 +61,7 @@ public abstract class Transportation {
 		this.baseFare = 0.0;
 	}
 
-	/** constructor: explicit baseFare */
+	/** Builds a transportation object with an explicit base fare. */
 	public Transportation(String companyName, String departureCity, String arrivalCity, double baseFare)
 			throws InvalidTransportDataException {
 		this.transportId = generateId();
@@ -69,9 +71,9 @@ public abstract class Transportation {
 		setBaseFare(baseFare);
 	}
 
-	/** load-time constructor: explicit ID + baseFare */
-	protected Transportation(String transportId, String companyName, String departureCity, String arrivalCity, double baseFare)
-			throws InvalidTransportDataException {
+	/** Builds a transportation object from file data using an explicit ID. */
+	protected Transportation(String transportId, String companyName, String departureCity,
+							 String arrivalCity, double baseFare) throws InvalidTransportDataException {
 		setTransportIdForLoad(transportId);
 		setCompanyName(companyName);
 		setDepartureCity(departureCity);
@@ -80,20 +82,21 @@ public abstract class Transportation {
 		syncNextIdFromLoadedId(transportId);
 	}
 
-	/** Copy constructor: new ID generated */
-	public Transportation(Transportation other) {
+	/** Creates a deep-style copy with a fresh generated ID. */
+	public Transportation(Transportation otherTransportation) {
 		this.transportId = generateId();
-		this.companyName = other.companyName;
-		this.departureCity = other.departureCity;
-		this.arrivalCity = other.arrivalCity;
-		this.baseFare = other.baseFare;
+		this.companyName = otherTransportation.companyName;
+		this.departureCity = otherTransportation.departureCity;
+		this.arrivalCity = otherTransportation.arrivalCity;
+		this.baseFare = otherTransportation.baseFare;
 	}
 
-	/** Validation helpers */
-	private static boolean isBlank(String s) {
-		return s == null || s.trim().isEmpty();
+	/** Treats null or whitespace-only text as blank input. */
+	private static boolean isBlank(String value) {
+		return value == null || value.trim().isEmpty();
 	}
 
+	/** Validates a loaded ID before storing it on the object. */
 	private void setTransportIdForLoad(String transportId) throws InvalidTransportDataException {
 		if (isBlank(transportId) || !transportId.startsWith("TR")) {
 			throw new InvalidTransportDataException("Invalid transportId: " + transportId);
@@ -101,7 +104,6 @@ public abstract class Transportation {
 		this.transportId = transportId.trim();
 	}
 
-	/** Getters and Setters */
 	public String getTransportId() {
 		return transportId;
 	}
@@ -143,6 +145,7 @@ public abstract class Transportation {
 		return baseFare;
 	}
 
+	/** Enforces the common rule that transport fare cannot be negative. */
 	public void setBaseFare(double baseFare) throws InvalidTransportDataException {
 		if (baseFare < 0) {
 			throw new InvalidTransportDataException("baseFare cannot be negative.");
@@ -150,36 +153,45 @@ public abstract class Transportation {
 		this.baseFare = baseFare;
 	}
 
-	/** subclasses decide how cost is computed */
+	/** Lets each subclass define its own transport pricing rule. */
 	public abstract double calculateCost(int numberOfDays);
 
-	/** Logical equality (meaningful attributes, not auto-ID) */
-	public boolean equals(Object oth) {
-		if (oth == null) return false;
-		if (this.getClass() != oth.getClass()) return false;
+	/** Compares the meaningful state of two transportation objects. */
+	@Override
+	public boolean equals(Object otherObject) {
+		if (otherObject == null) return false;
+		if (this.getClass() != otherObject.getClass()) return false;
 
-		Transportation other = (Transportation) oth;
+		Transportation otherTransportation = (Transportation) otherObject;
 
 		if (companyName == null) {
-			if (other.companyName != null) return false;
-		} else if (!companyName.equals(other.companyName)) return false;
+			if (otherTransportation.companyName != null) return false;
+		} else if (!companyName.equals(otherTransportation.companyName)) {
+			return false;
+		}
 
 		if (departureCity == null) {
-			if (other.departureCity != null) return false;
-		} else if (!departureCity.equals(other.departureCity)) return false;
+			if (otherTransportation.departureCity != null) return false;
+		} else if (!departureCity.equals(otherTransportation.departureCity)) {
+			return false;
+		}
 
 		if (arrivalCity == null) {
-			if (other.arrivalCity != null) return false;
-		} else if (!arrivalCity.equals(other.arrivalCity)) return false;
+			if (otherTransportation.arrivalCity != null) return false;
+		} else if (!arrivalCity.equals(otherTransportation.arrivalCity)) {
+			return false;
+		}
 
-		return Double.compare(baseFare, other.baseFare) == 0;
+		return Double.compare(baseFare, otherTransportation.baseFare) == 0;
 	}
 
-	/** Provides a clean summary for display */
+	/** Returns a clean text summary for menus, testing, and logging. */
+	@Override
 	public String toString() {
 		return "Transportation{transportId='" + transportId + "', companyName='" + companyName +
-				"', departureCity='" + departureCity + "', arrivalCity='" + arrivalCity + "', baseFare=" + baseFare + "}";
+				"', departureCity='" + departureCity + "', arrivalCity='" + arrivalCity +
+				"', baseFare=" + baseFare + "}";
 	}
 
-    public abstract String getType();
+	public abstract String getType();
 }

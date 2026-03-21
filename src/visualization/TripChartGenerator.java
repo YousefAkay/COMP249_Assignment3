@@ -1,135 +1,180 @@
+// -----------------------------------------------------
+// Assignment 2
+// Class: TripChartGenerator
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// -----------------------------------------------------
+
 package visualization;
 
 import travel.Trip;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+/** Generates simple chart images from the trip array without external libraries. */
 public class TripChartGenerator {
 
+    /** Creates all required chart images inside the output/charts directory. */
     public static void generateAllCharts(Trip[] trips, int tripCount) throws IOException {
-        File dir = new File("output/charts");
-        if (!dir.exists()) dir.mkdirs();
+        File outputDirectory = new File("output/charts");
+        if (!outputDirectory.exists()) {
+            outputDirectory.mkdirs();
+        }
 
         generateTripCostBarChart(trips, tripCount, "output/charts/trip_cost_bar_chart.png");
         generateTripDurationLineChart(trips, tripCount, "output/charts/trip_duration_line_chart.png");
         generateTripsPerDestinationPieChart(trips, tripCount, "output/charts/trips_per_destination_pie.png");
     }
 
-    private static void generateTripCostBarChart(Trip[] trips, int tripCount, String path) throws IOException {
-        BufferedImage img = new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = img.createGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, 800, 500);
-        g.setColor(Color.BLACK);
-        g.drawString("Trip Cost Bar Chart", 330, 30);
+    /** Draws a bar chart where each trip bar is scaled against the highest trip cost. */
+    private static void generateTripCostBarChart(Trip[] trips, int tripCount, String filePath)
+            throws IOException {
+        BufferedImage image = new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
 
-        double max = 1;
-        for (int i = 0; i < tripCount; i++) {
-            if (trips[i] != null) {
-                max = Math.max(max, trips[i].calculateTotalCost());
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(0, 0, 800, 500);
+        graphics.setColor(Color.BLACK);
+        graphics.drawString("Trip Cost Bar Chart", 330, 30);
+
+        double maxTripCost = 1;
+        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
+            if (trips[tripIndex] != null) {
+                maxTripCost = Math.max(maxTripCost, trips[tripIndex].calculateTotalCost());
             }
         }
 
-        int x = 60;
-        for (int i = 0; i < tripCount; i++) {
-            if (trips[i] == null) continue;
-            int height = (int) ((trips[i].calculateTotalCost() / max) * 300);
-            g.setColor(new Color(70, 130, 180));
-            g.fillRect(x, 400 - height, 60, height);
-            g.setColor(Color.BLACK);
-            g.drawRect(x, 400 - height, 60, height);
-            g.drawString(trips[i].getTripId(), x, 420);
-            x += 100;
+        int xPosition = 60;
+        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
+            if (trips[tripIndex] == null) continue;
+
+            int barHeight = (int) ((trips[tripIndex].calculateTotalCost() / maxTripCost) * 300);
+
+            graphics.setColor(new Color(70, 130, 180));
+            graphics.fillRect(xPosition, 400 - barHeight, 60, barHeight);
+
+            graphics.setColor(Color.BLACK);
+            graphics.drawRect(xPosition, 400 - barHeight, 60, barHeight);
+            graphics.drawString(trips[tripIndex].getTripId(), xPosition, 420);
+
+            xPosition += 100;
         }
 
-        g.dispose();
-        ImageIO.write(img, "png", new File(path));
+        graphics.dispose();
+        ImageIO.write(image, "png", new File(filePath));
     }
 
-    private static void generateTripDurationLineChart(Trip[] trips, int tripCount, String path) throws IOException {
-        BufferedImage img = new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = img.createGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, 800, 500);
-        g.setColor(Color.BLACK);
-        g.drawString("Trip Duration Line Chart", 320, 30);
+    /** Draws a line chart using trip duration values in the order trips appear in the array. */
+    private static void generateTripDurationLineChart(Trip[] trips, int tripCount, String filePath)
+            throws IOException {
+        BufferedImage image = new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
 
-        g.drawLine(60, 420, 740, 420);
-        g.drawLine(60, 60, 60, 420);
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(0, 0, 800, 500);
+        graphics.setColor(Color.BLACK);
+        graphics.drawString("Trip Duration Line Chart", 320, 30);
 
-        int prevX = -1;
-        int prevY = -1;
-        int x = 100;
+        graphics.drawLine(60, 420, 740, 420);
+        graphics.drawLine(60, 60, 60, 420);
 
-        for (int i = 0; i < tripCount; i++) {
-            if (trips[i] == null) continue;
-            int y = 420 - (trips[i].getDurationInDays() * 15);
-            g.setColor(Color.RED);
-            g.fillOval(x - 4, y - 4, 8, 8);
-            if (prevX != -1) {
-                g.drawLine(prevX, prevY, x, y);
+        int previousX = -1;
+        int previousY = -1;
+        int xPosition = 100;
+
+        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
+            if (trips[tripIndex] == null) continue;
+
+            int yPosition = 420 - (trips[tripIndex].getDurationInDays() * 15);
+
+            graphics.setColor(Color.RED);
+            graphics.fillOval(xPosition - 4, yPosition - 4, 8, 8);
+
+            if (previousX != -1) {
+                graphics.drawLine(previousX, previousY, xPosition, yPosition);
             }
-            g.setColor(Color.BLACK);
-            g.drawString(trips[i].getTripId(), x - 10, 440);
-            prevX = x;
-            prevY = y;
-            x += 120;
+
+            graphics.setColor(Color.BLACK);
+            graphics.drawString(trips[tripIndex].getTripId(), xPosition - 10, 440);
+
+            previousX = xPosition;
+            previousY = yPosition;
+            xPosition += 120;
         }
 
-        g.dispose();
-        ImageIO.write(img, "png", new File(path));
+        graphics.dispose();
+        ImageIO.write(image, "png", new File(filePath));
     }
 
-    private static void generateTripsPerDestinationPieChart(Trip[] trips, int tripCount, String path) throws IOException {
-        BufferedImage img = new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = img.createGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, 800, 500);
-        g.setColor(Color.BLACK);
-        g.drawString("Trips Per Destination Pie Chart", 300, 30);
+    /** Draws a pie chart by grouping trips with the same destination name. */
+    private static void generateTripsPerDestinationPieChart(Trip[] trips, int tripCount, String filePath)
+            throws IOException {
+        BufferedImage image = new BufferedImage(800, 500, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(0, 0, 800, 500);
+        graphics.setColor(Color.BLACK);
+        graphics.drawString("Trips Per Destination Pie Chart", 300, 30);
 
         String[] destinations = new String[tripCount];
-        int[] counts = new int[tripCount];
-        int unique = 0;
+        int[] destinationCounts = new int[tripCount];
+        int uniqueDestinationCount = 0;
 
-        for (int i = 0; i < tripCount; i++) {
-            if (trips[i] == null) continue;
-            String dest = trips[i].getDestination();
-            int pos = -1;
-            for (int j = 0; j < unique; j++) {
-                if (destinations[j].equalsIgnoreCase(dest)) {
-                    pos = j;
+        /** Count how many trips belong to each destination without using collections. */
+        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
+            if (trips[tripIndex] == null) continue;
+
+            String destination = trips[tripIndex].getDestination();
+            int existingPosition = -1;
+
+            for (int destinationIndex = 0; destinationIndex < uniqueDestinationCount; destinationIndex++) {
+                if (destinations[destinationIndex].equalsIgnoreCase(destination)) {
+                    existingPosition = destinationIndex;
                     break;
                 }
             }
-            if (pos == -1) {
-                destinations[unique] = dest;
-                counts[unique] = 1;
-                unique++;
+
+            if (existingPosition == -1) {
+                destinations[uniqueDestinationCount] = destination;
+                destinationCounts[uniqueDestinationCount] = 1;
+                uniqueDestinationCount++;
             } else {
-                counts[pos]++;
+                destinationCounts[existingPosition]++;
             }
         }
 
-        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA, Color.CYAN};
-        int total = 0;
-        for (int i = 0; i < unique; i++) total += counts[i];
+        Color[] sliceColors = {
+                Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA, Color.CYAN
+        };
 
-        int startAngle = 0;
-        for (int i = 0; i < unique; i++) {
-            int angle = (int) Math.round((counts[i] * 360.0) / total);
-            g.setColor(colors[i % colors.length]);
-            g.fillArc(250, 100, 250, 250, startAngle, angle);
-            g.setColor(Color.BLACK);
-            g.drawString(destinations[i] + " (" + counts[i] + ")", 550, 120 + i * 25);
-            startAngle += angle;
+        int totalTripsCounted = 0;
+        for (int destinationIndex = 0; destinationIndex < uniqueDestinationCount; destinationIndex++) {
+            totalTripsCounted += destinationCounts[destinationIndex];
         }
 
-        g.dispose();
-        ImageIO.write(img, "png", new File(path));
+        int startAngle = 0;
+        for (int destinationIndex = 0; destinationIndex < uniqueDestinationCount; destinationIndex++) {
+            int sliceAngle = (int) Math.round((destinationCounts[destinationIndex] * 360.0) / totalTripsCounted);
+
+            graphics.setColor(sliceColors[destinationIndex % sliceColors.length]);
+            graphics.fillArc(250, 100, 250, 250, startAngle, sliceAngle);
+
+            graphics.setColor(Color.BLACK);
+            graphics.drawString(
+                    destinations[destinationIndex] + " (" + destinationCounts[destinationIndex] + ")",
+                    550,
+                    120 + destinationIndex * 25
+            );
+
+            startAngle += sliceAngle;
+        }
+
+        graphics.dispose();
+        ImageIO.write(image, "png", new File(filePath));
     }
 }

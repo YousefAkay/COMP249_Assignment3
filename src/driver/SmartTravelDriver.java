@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: SmartTravelDriver
-// Written by: Yousef Yousef (40299095) & Hamza Shadeed
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package driver;
@@ -17,74 +17,82 @@ import java.util.Scanner;
 
 public class SmartTravelDriver {
 
+    /** Starts the full SmartTravel menu system and keeps running until the user exits. */
     public static void main(String[] args) {
         Scanner keyboard = new Scanner(System.in);
 
+        /** Build the startup banner shown when the program launches. */
         System.out.println("\n===========================================");
         System.out.println("SMART TRAVEL MANAGEMENT SYSTEM");
-        System.out.println("Developed by: Yousef Yousef & Hamza Shadeed");
+        System.out.println("Developed by: Yousef Yousef & Hamza Shaheed");
         System.out.println("===========================================\n");
 
+        /** Create the fixed-size arrays required by the assignment. */
         Client[] clients = new Client[100];
         Trip[] trips = new Trip[200];
         Transportation[] transportations = new Transportation[50];
         Accommodation[] accommodations = new Accommodation[50];
 
-        SmartTravelService svc = new SmartTravelService(clients, trips, transportations, accommodations);
+        /** Pass the shared arrays into the service layer so all logic uses the same data. */
+        SmartTravelService smartTravelService =
+                new SmartTravelService(clients, trips, transportations, accommodations);
 
+        /** Keep the program running until the user selects the exit option. */
         boolean done = false;
 
         while (!done) {
+            /** Display the main menu before reading the user's next action. */
             System.out.println("\n=== MAIN MENU ===");
             System.out.println("1) Client Management");
             System.out.println("2) Trip Management");
             System.out.println("3) Transportation Management");
             System.out.println("4) Accommodation Management");
             System.out.println("5) Additional Operations");
-            System.out.println("6) Run Predefined Scenario");
+            System.out.println("6) Run A1 Predefined Scenario");
             System.out.println("7) List All Data Summary");
             System.out.println("8) Load All Data");
             System.out.println("9) Save All Data");
-            System.out.println("10) Run A2 Predefined Scenario");
+            System.out.println("10) Run Predefined Scenario");
             System.out.println("11) Generate Dashboard");
             System.out.println("0) Exit");
             System.out.print("Enter choice: ");
 
-            int choice = readInt(keyboard);
+            int mainChoice = readInt(keyboard);
 
-            switch (choice) {
+            /** Route the user's menu choice to the matching operation. */
+            switch (mainChoice) {
                 case 1:
-                    clientMenu(keyboard, svc);
+                    clientMenu(keyboard, smartTravelService);
                     break;
                 case 2:
-                    tripMenu(keyboard, svc);
+                    tripMenu(keyboard, smartTravelService);
                     break;
                 case 3:
-                    transportMenu(keyboard, svc);
+                    transportMenu(keyboard, smartTravelService);
                     break;
                 case 4:
-                    accommodationMenu(keyboard, svc);
+                    accommodationMenu(keyboard, smartTravelService);
                     break;
                 case 5:
-                    additionalOperationsMenu(keyboard, svc);
+                    additionalOperationsMenu(keyboard, smartTravelService);
                     break;
                 case 6:
-                    runA1PredefinedScenario(svc);
+                    runA1PredefinedScenario(smartTravelService);
                     break;
                 case 7:
-                    listAllSummary(svc);
+                    listAllSummary(smartTravelService);
                     break;
                 case 8:
-                    loadAllData(svc);
+                    loadAllData(smartTravelService);
                     break;
                 case 9:
-                    saveAllData(svc);
+                    saveAllData(smartTravelService);
                     break;
                 case 10:
-                    runA2PredefinedScenario(svc);
+                    runA2PredefinedScenario(smartTravelService);
                     break;
                 case 11:
-                    generateDashboard(svc);
+                    generateDashboard(smartTravelService);
                     break;
                 case 0:
                     done = true;
@@ -94,15 +102,18 @@ public class SmartTravelDriver {
             }
         }
 
+        /** Close the scanner cleanly before the program ends. */
         keyboard.close();
         System.out.println("\nThank You for Using SmartTravel, Goodbye!");
         System.out.println("Program terminated.");
     }
 
-    private static void clientMenu(Scanner keyboard, SmartTravelService svc) {
+    /** Handles all client-related menu actions until the user chooses to go back. */
+    private static void clientMenu(Scanner keyboard, SmartTravelService smartTravelService) {
         boolean back = false;
 
         while (!back) {
+            /** Show the client submenu before reading the next client action. */
             System.out.println("\n=== CLIENT MENU ===");
             System.out.println("1) Add Client");
             System.out.println("2) Edit Client");
@@ -111,64 +122,70 @@ public class SmartTravelDriver {
             System.out.println("0) Back");
             System.out.print("Enter choice: ");
 
-            int c = readInt(keyboard);
+            int clientMenuChoice = readInt(keyboard);
 
-            switch (c) {
+            switch (clientMenuChoice) {
                 case 1:
                     try {
+                        /** Read the new client's basic details from the keyboard. */
                         System.out.print("First name: ");
-                        String fn = keyboard.nextLine();
+                        String firstName = keyboard.nextLine();
                         System.out.print("Last name: ");
-                        String ln = keyboard.nextLine();
+                        String lastName = keyboard.nextLine();
                         System.out.print("Email: ");
-                        String em = keyboard.nextLine();
+                        String email = keyboard.nextLine();
 
-                        Client cl = new Client(fn, ln, em);
-                        svc.addClient(cl);
-                        System.out.println("Added: " + cl);
+                        /** Create the client object and pass it to the service layer. */
+                        Client client = new Client(firstName, lastName, email);
+                        smartTravelService.addClient(client);
+                        System.out.println("Added: " + client);
 
-                    } catch (DuplicateEmailException | InvalidClientDataException ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (DuplicateEmailException | InvalidClientDataException exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 2:
                     try {
+                        /** Read the target ID and the replacement client values. */
                         System.out.print("Enter client ID to edit: ");
                         String clientId = keyboard.nextLine();
 
                         System.out.print("New first name: ");
-                        String newFirst = keyboard.nextLine();
+                        String newFirstName = keyboard.nextLine();
 
                         System.out.print("New last name: ");
-                        String newLast = keyboard.nextLine();
+                        String newLastName = keyboard.nextLine();
 
                         System.out.print("New email: ");
                         String newEmail = keyboard.nextLine();
 
-                        svc.editClient(clientId, newFirst, newLast, newEmail);
+                        /** Forward the edit request to the service layer. */
+                        smartTravelService.editClient(clientId, newFirstName, newLastName, newEmail);
                         System.out.println("Client updated.");
 
-                    } catch (Exception ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 3:
                     try {
+                        /** Read the client ID and request deletion through the service. */
                         System.out.print("Enter client ID to delete: ");
                         String clientId = keyboard.nextLine();
-                        svc.deleteClient(clientId);
+                        smartTravelService.deleteClient(clientId);
                         System.out.println("Client deleted.");
-                    } catch (Exception ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 4:
-                    for (int i = 0; i < svc.getClientCount(); i++) {
-                        if (svc.getClients()[i] != null) {
-                            System.out.println(svc.getClients()[i]);
+                    /** Print every active client currently stored in the array. */
+                    for (int clientIndex = 0; clientIndex < smartTravelService.getClientCount(); clientIndex++) {
+                        if (smartTravelService.getClients()[clientIndex] != null) {
+                            System.out.println(smartTravelService.getClients()[clientIndex]);
                         }
                     }
                     break;
@@ -183,10 +200,12 @@ public class SmartTravelDriver {
         }
     }
 
-    private static void tripMenu(Scanner keyboard, SmartTravelService svc) {
+    /** Handles all trip-related menu actions until the user chooses to go back. */
+    private static void tripMenu(Scanner keyboard, SmartTravelService smartTravelService) {
         boolean back = false;
 
         while (!back) {
+            /** Show the trip submenu before reading the next trip action. */
             System.out.println("\n=== TRIP MENU ===");
             System.out.println("1) Create Trip");
             System.out.println("2) Edit Trip");
@@ -196,45 +215,53 @@ public class SmartTravelDriver {
             System.out.println("0) Back");
             System.out.print("Enter choice: ");
 
-            int c = readInt(keyboard);
+            int tripMenuChoice = readInt(keyboard);
 
-            switch (c) {
+            switch (tripMenuChoice) {
                 case 1:
                     try {
+                        /** Read the booking IDs and trip details needed to create a trip. */
                         System.out.print("Client ID: ");
-                        String cid = keyboard.nextLine();
+                        String clientId = keyboard.nextLine();
 
                         System.out.print("Accommodation ID (blank if none): ");
-                        String aid = keyboard.nextLine();
+                        String accommodationId = keyboard.nextLine();
 
                         System.out.print("Transportation ID (blank if none): ");
-                        String tid = keyboard.nextLine();
+                        String transportationId = keyboard.nextLine();
 
                         System.out.print("Destination: ");
-                        String dest = keyboard.nextLine();
+                        String destination = keyboard.nextLine();
 
                         System.out.print("Duration (1-20 days): ");
-                        int days = readInt(keyboard);
+                        int durationInDays = readInt(keyboard);
 
                         System.out.print("Base price (>=100): ");
-                        double base = readDouble(keyboard);
+                        double basePrice = readDouble(keyboard);
 
-                        Client client = svc.findClientById(cid);
-                        Accommodation ac = aid.trim().isEmpty() ? null : svc.findAccommodationById(aid.trim());
-                        Transportation tr = tid.trim().isEmpty() ? null : svc.findTransportationById(tid.trim());
+                        /** Resolve the referenced objects before building the trip. */
+                        Client client = smartTravelService.findClientById(clientId);
+                        Accommodation accommodation = accommodationId.trim().isEmpty()
+                                ? null
+                                : smartTravelService.findAccommodationById(accommodationId.trim());
+                        Transportation transportation = transportationId.trim().isEmpty()
+                                ? null
+                                : smartTravelService.findTransportationById(transportationId.trim());
 
-                        Trip trip = new Trip(client, tr, ac, dest, days, base);
-                        svc.addTrip(trip);
+                        /** Create the trip and store it through the service layer. */
+                        Trip trip = new Trip(client, transportation, accommodation, destination, durationInDays, basePrice);
+                        smartTravelService.addTrip(trip);
 
                         System.out.println("Trip created: " + trip);
 
-                    } catch (Exception ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 2:
                     try {
+                        /** Read the trip ID and the replacement values for the edit. */
                         System.out.print("Enter trip ID to edit: ");
                         String tripId = keyboard.nextLine();
 
@@ -242,7 +269,7 @@ public class SmartTravelDriver {
                         String destination = keyboard.nextLine();
 
                         System.out.print("New duration: ");
-                        int duration = readInt(keyboard);
+                        int durationInDays = readInt(keyboard);
 
                         System.out.print("New base price: ");
                         double basePrice = readDouble(keyboard);
@@ -253,10 +280,11 @@ public class SmartTravelDriver {
                         System.out.print("New transportation ID (blank if none): ");
                         String transportationId = keyboard.nextLine();
 
-                        svc.editTrip(
+                        /** Normalize blank optional IDs to null before calling the service. */
+                        smartTravelService.editTrip(
                                 tripId,
                                 destination,
-                                duration,
+                                durationInDays,
                                 basePrice,
                                 accommodationId.trim().isEmpty() ? null : accommodationId.trim(),
                                 transportationId.trim().isEmpty() ? null : transportationId.trim()
@@ -264,40 +292,43 @@ public class SmartTravelDriver {
 
                         System.out.println("Trip updated.");
 
-                    } catch (Exception ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 3:
                     try {
+                        /** Read the trip ID and cancel it through the service. */
                         System.out.print("Enter trip ID to cancel: ");
                         String tripId = keyboard.nextLine();
-                        svc.cancelTrip(tripId);
+                        smartTravelService.cancelTrip(tripId);
                         System.out.println("Trip cancelled.");
-                    } catch (Exception ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 4:
-                    for (int i = 0; i < svc.getTripCount(); i++) {
-                        if (svc.getTrips()[i] != null) {
-                            System.out.println(svc.getTrips()[i] + " | total=" +
-                                    String.format("%.2f", svc.getTrips()[i].calculateTotalCost()));
+                    /** Print every active trip along with its computed total cost. */
+                    for (int tripIndex = 0; tripIndex < smartTravelService.getTripCount(); tripIndex++) {
+                        if (smartTravelService.getTrips()[tripIndex] != null) {
+                            System.out.println(smartTravelService.getTrips()[tripIndex] + " | total=" +
+                                    String.format("%.2f", smartTravelService.getTrips()[tripIndex].calculateTotalCost()));
                         }
                     }
                     break;
 
                 case 5:
+                    /** Filter the trip list manually to show only one client's trips. */
                     System.out.print("Enter client ID: ");
                     String clientId = keyboard.nextLine();
                     boolean found = false;
 
-                    for (int i = 0; i < svc.getTripCount(); i++) {
-                        Trip t = svc.getTrips()[i];
-                        if (t != null && clientId.equals(t.getClientId())) {
-                            System.out.println(t + " | total=" + String.format("%.2f", t.calculateTotalCost()));
+                    for (int tripIndex = 0; tripIndex < smartTravelService.getTripCount(); tripIndex++) {
+                        Trip trip = smartTravelService.getTrips()[tripIndex];
+                        if (trip != null && clientId.equals(trip.getClientId())) {
+                            System.out.println(trip + " | total=" + String.format("%.2f", trip.calculateTotalCost()));
                             found = true;
                         }
                     }
@@ -317,10 +348,12 @@ public class SmartTravelDriver {
         }
     }
 
-    private static void transportMenu(Scanner keyboard, SmartTravelService svc) {
+    /** Handles all transportation-related menu actions until the user chooses to go back. */
+    private static void transportMenu(Scanner keyboard, SmartTravelService smartTravelService) {
         boolean back = false;
 
         while (!back) {
+            /** Show the transportation submenu before reading the next action. */
             System.out.println("\n=== TRANSPORTATION MENU ===");
             System.out.println("1) Add Transportation");
             System.out.println("2) Remove Transportation");
@@ -328,85 +361,92 @@ public class SmartTravelDriver {
             System.out.println("0) Back");
             System.out.print("Enter choice: ");
 
-            int c = readInt(keyboard);
+            int transportMenuChoice = readInt(keyboard);
 
-            switch (c) {
+            switch (transportMenuChoice) {
                 case 1:
+                    /** Ask the user which concrete transportation subclass to create. */
                     System.out.println("\nChoose transport type:");
                     System.out.println("1) Flight");
                     System.out.println("2) Train");
                     System.out.println("3) Bus");
                     System.out.print("Enter choice: ");
-                    int t = readInt(keyboard);
+                    int transportTypeChoice = readInt(keyboard);
 
                     try {
+                        /** Read the common transportation fields first. */
                         System.out.print("Company name: ");
-                        String company = keyboard.nextLine();
+                        String companyName = keyboard.nextLine();
                         System.out.print("Departure city: ");
-                        String dep = keyboard.nextLine();
+                        String departureCity = keyboard.nextLine();
                         System.out.print("Arrival city: ");
-                        String arr = keyboard.nextLine();
+                        String arrivalCity = keyboard.nextLine();
 
-                        if (t == 1) {
+                        if (transportTypeChoice == 1) {
+                            /** Read flight-specific fields and add a Flight object. */
                             System.out.print("Airline name: ");
-                            String airline = keyboard.nextLine();
+                            String airlineName = keyboard.nextLine();
                             System.out.print("Luggage allowance (kg): ");
-                            double lug = readDouble(keyboard);
+                            double luggageAllowanceKg = readDouble(keyboard);
 
-                            Flight f = new Flight(company, dep, arr, airline, lug);
-                            svc.addTransportation(f);
-                            System.out.println("Added: " + f);
+                            Flight flight = new Flight(companyName, departureCity, arrivalCity, airlineName, luggageAllowanceKg);
+                            smartTravelService.addTransportation(flight);
+                            System.out.println("Added: " + flight);
 
-                        } else if (t == 2) {
+                        } else if (transportTypeChoice == 2) {
+                            /** Read train-specific fields and add a Train object. */
                             System.out.print("Train type: ");
                             String trainType = keyboard.nextLine();
 
-                            Train tr = new Train(company, dep, arr, trainType);
-                            svc.addTransportation(tr);
-                            System.out.println("Added: " + tr);
+                            Train train = new Train(companyName, departureCity, arrivalCity, trainType);
+                            smartTravelService.addTransportation(train);
+                            System.out.println("Added: " + train);
 
-                        } else if (t == 3) {
+                        } else if (transportTypeChoice == 3) {
+                            /** Read bus-specific fields and add a Bus object. */
                             System.out.print("Number of stops: ");
-                            int stops = readInt(keyboard);
+                            int numberOfStops = readInt(keyboard);
 
-                            Bus b = new Bus(company, dep, arr, stops);
-                            svc.addTransportation(b);
-                            System.out.println("Added: " + b);
+                            Bus bus = new Bus(companyName, departureCity, arrivalCity, numberOfStops);
+                            smartTravelService.addTransportation(bus);
+                            System.out.println("Added: " + bus);
 
                         } else {
                             System.out.println("Invalid transport type.");
                         }
 
-                    } catch (Exception ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 2:
                     try {
+                        /** Read the transportation ID and request removal through the service. */
                         System.out.print("Enter transportation ID to remove: ");
                         String transportId = keyboard.nextLine();
-                        svc.removeTransportation(transportId);
+                        smartTravelService.removeTransportation(transportId);
                         System.out.println("Transportation removed.");
-                    } catch (Exception ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 3:
+                    /** Filter the transportation array by concrete subclass type. */
                     System.out.println("1) Flight");
                     System.out.println("2) Train");
                     System.out.println("3) Bus");
                     System.out.print("Choose type: ");
-                    int type = readInt(keyboard);
+                    int transportTypeFilter = readInt(keyboard);
 
-                    for (int i = 0; i < svc.getTransportCount(); i++) {
-                        Transportation tr = svc.getTransportations()[i];
-                        if (tr == null) continue;
+                    for (int transportIndex = 0; transportIndex < smartTravelService.getTransportCount(); transportIndex++) {
+                        Transportation transportation = smartTravelService.getTransportations()[transportIndex];
+                        if (transportation == null) continue;
 
-                        if (type == 1 && tr instanceof Flight) System.out.println(tr);
-                        if (type == 2 && tr instanceof Train) System.out.println(tr);
-                        if (type == 3 && tr instanceof Bus) System.out.println(tr);
+                        if (transportTypeFilter == 1 && transportation instanceof Flight) System.out.println(transportation);
+                        if (transportTypeFilter == 2 && transportation instanceof Train) System.out.println(transportation);
+                        if (transportTypeFilter == 3 && transportation instanceof Bus) System.out.println(transportation);
                     }
                     break;
 
@@ -420,10 +460,12 @@ public class SmartTravelDriver {
         }
     }
 
-    private static void accommodationMenu(Scanner keyboard, SmartTravelService svc) {
+    /** Handles all accommodation-related menu actions until the user chooses to go back. */
+    private static void accommodationMenu(Scanner keyboard, SmartTravelService smartTravelService) {
         boolean back = false;
 
         while (!back) {
+            /** Show the accommodation submenu before reading the next action. */
             System.out.println("\n=== ACCOMMODATION MENU ===");
             System.out.println("1) Add Accommodation");
             System.out.println("2) Remove Accommodation");
@@ -431,70 +473,76 @@ public class SmartTravelDriver {
             System.out.println("0) Back");
             System.out.print("Enter choice: ");
 
-            int c = readInt(keyboard);
+            int accommodationMenuChoice = readInt(keyboard);
 
-            switch (c) {
+            switch (accommodationMenuChoice) {
                 case 1:
+                    /** Ask the user which concrete accommodation subclass to create. */
                     System.out.println("\nChoose accommodation type:");
                     System.out.println("1) Hotel");
                     System.out.println("2) Hostel");
                     System.out.print("Enter choice: ");
-                    int a = readInt(keyboard);
+                    int accommodationTypeChoice = readInt(keyboard);
 
                     try {
+                        /** Read the common accommodation fields first. */
                         System.out.print("Name: ");
                         String name = keyboard.nextLine();
                         System.out.print("Location: ");
-                        String loc = keyboard.nextLine();
+                        String location = keyboard.nextLine();
                         System.out.print("Price per night: ");
-                        double ppn = readDouble(keyboard);
+                        double pricePerNight = readDouble(keyboard);
 
-                        if (a == 1) {
+                        if (accommodationTypeChoice == 1) {
+                            /** Read hotel-specific fields and add a Hotel object. */
                             System.out.print("Stars (1-5): ");
                             int stars = readInt(keyboard);
-                            Hotel h = new Hotel(name, loc, ppn, stars);
-                            svc.addAccommodation(h);
-                            System.out.println("Added: " + h);
+                            Hotel hotel = new Hotel(name, location, pricePerNight, stars);
+                            smartTravelService.addAccommodation(hotel);
+                            System.out.println("Added: " + hotel);
 
-                        } else if (a == 2) {
+                        } else if (accommodationTypeChoice == 2) {
+                            /** Read hostel-specific fields and add a Hostel object. */
                             System.out.print("Shared room capacity: ");
-                            int cap = readInt(keyboard);
-                            Hostel ho = new Hostel(name, loc, ppn, cap);
-                            svc.addAccommodation(ho);
-                            System.out.println("Added: " + ho);
+                            int sharedRoomCapacity = readInt(keyboard);
+                            Hostel hostel = new Hostel(name, location, pricePerNight, sharedRoomCapacity);
+                            smartTravelService.addAccommodation(hostel);
+                            System.out.println("Added: " + hostel);
 
                         } else {
                             System.out.println("Invalid accommodation type.");
                         }
 
-                    } catch (Exception ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 2:
                     try {
+                        /** Read the accommodation ID and request removal through the service. */
                         System.out.print("Enter accommodation ID to remove: ");
                         String accommodationId = keyboard.nextLine();
-                        svc.removeAccommodation(accommodationId);
+                        smartTravelService.removeAccommodation(accommodationId);
                         System.out.println("Accommodation removed.");
-                    } catch (Exception ex) {
-                        System.out.println("ERROR: " + ex.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 3:
+                    /** Filter the accommodation array by concrete subclass type. */
                     System.out.println("1) Hotel");
                     System.out.println("2) Hostel");
                     System.out.print("Choose type: ");
-                    int type = readInt(keyboard);
+                    int accommodationTypeFilter = readInt(keyboard);
 
-                    for (int i = 0; i < svc.getAccommodationCount(); i++) {
-                        Accommodation ac = svc.getAccommodations()[i];
-                        if (ac == null) continue;
+                    for (int accommodationIndex = 0; accommodationIndex < smartTravelService.getAccommodationCount(); accommodationIndex++) {
+                        Accommodation accommodation = smartTravelService.getAccommodations()[accommodationIndex];
+                        if (accommodation == null) continue;
 
-                        if (type == 1 && ac instanceof Hotel) System.out.println(ac);
-                        if (type == 2 && ac instanceof Hostel) System.out.println(ac);
+                        if (accommodationTypeFilter == 1 && accommodation instanceof Hotel) System.out.println(accommodation);
+                        if (accommodationTypeFilter == 2 && accommodation instanceof Hostel) System.out.println(accommodation);
                     }
                     break;
 
@@ -508,10 +556,12 @@ public class SmartTravelDriver {
         }
     }
 
-    private static void additionalOperationsMenu(Scanner keyboard, SmartTravelService svc) {
+    /** Handles the extra utility operations such as deep-copy tests and total-cost checks. */
+    private static void additionalOperationsMenu(Scanner keyboard, SmartTravelService smartTravelService) {
         boolean back = false;
 
         while (!back) {
+            /** Show the additional operations menu before reading the next action. */
             System.out.println("\n=== ADDITIONAL OPERATIONS ===");
             System.out.println("1) Display most expensive trip");
             System.out.println("2) Calculate total cost of a trip");
@@ -520,96 +570,103 @@ public class SmartTravelDriver {
             System.out.println("0) Back");
             System.out.print("Enter choice: ");
 
-            int choice = readInt(keyboard);
+            int additionalChoice = readInt(keyboard);
 
-            switch (choice) {
+            switch (additionalChoice) {
                 case 1:
                     try {
-                        Trip t = svc.findMostExpensiveTrip();
+                        /** Fetch and print the most expensive trip currently stored. */
+                        Trip mostExpensiveTrip = smartTravelService.findMostExpensiveTrip();
                         System.out.println("\nMost expensive trip:");
-                        System.out.println(t);
-                        System.out.println("Total cost: " + t.calculateTotalCost());
-                    } catch (EntityNotFoundException e) {
-                        System.out.println("ERROR: " + e.getMessage());
+                        System.out.println(mostExpensiveTrip);
+                        System.out.println("Total cost: " + mostExpensiveTrip.calculateTotalCost());
+                    } catch (EntityNotFoundException exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 2:
-                    if (svc.getTripCount() == 0) {
+                    /** Show indexed trips first so the user can choose a valid array position. */
+                    if (smartTravelService.getTripCount() == 0) {
                         System.out.println("No trips available.");
                         break;
                     }
 
                     System.out.println("\nTrips:");
-                    for (int i = 0; i < svc.getTripCount(); i++) {
-                        System.out.println(i + " -> " + svc.getTrips()[i]);
+                    for (int tripIndex = 0; tripIndex < smartTravelService.getTripCount(); tripIndex++) {
+                        System.out.println(tripIndex + " -> " + smartTravelService.getTrips()[tripIndex]);
                     }
 
                     System.out.print("Enter trip index: ");
-                    int index = readInt(keyboard);
+                    int tripIndex = readInt(keyboard);
 
                     try {
-                        double total = svc.calculateTripTotal(index);
-                        System.out.println("Total cost = " + total);
-                    } catch (InvalidTripDataException e) {
-                        System.out.println("ERROR: " + e.getMessage());
+                        /** Calculate the total cost using the selected trip index. */
+                        double totalCost = smartTravelService.calculateTripTotal(tripIndex);
+                        System.out.println("Total cost = " + totalCost);
+                    } catch (InvalidTripDataException exception) {
+                        System.out.println("ERROR: " + exception.getMessage());
                     }
                     break;
 
                 case 3:
-                    if (svc.getTransportCount() == 0) {
+                    /** Demonstrate that transportation deep copies do not affect originals. */
+                    if (smartTravelService.getTransportCount() == 0) {
                         System.out.println("No transportation records available.");
                         break;
                     }
 
-                    Transportation[] copyT = svc.deepCopyTransportationArray();
+                    Transportation[] copiedTransportations = smartTravelService.deepCopyTransportationArray();
 
                     System.out.println("\nBefore modifying copied transportation:");
-                    System.out.println("Original[0] = " + svc.getTransportations()[0]);
-                    System.out.println("Copy[0]     = " + copyT[0]);
+                    System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
+                    System.out.println("Copy[0]     = " + copiedTransportations[0]);
 
                     try {
-                        if (copyT[0] instanceof Flight) {
-                            ((Flight) copyT[0]).setAirlineName("ModifiedCopyAir");
-                        } else if (copyT[0] instanceof Train) {
-                            ((Train) copyT[0]).setTrainType("ModifiedType");
-                        } else if (copyT[0] instanceof Bus) {
-                            ((Bus) copyT[0]).setNumberOfStops(((Bus) copyT[0]).getNumberOfStops() + 1);
+                        /** Mutate only the copied object to prove the original stays unchanged. */
+                        if (copiedTransportations[0] instanceof Flight) {
+                            ((Flight) copiedTransportations[0]).setAirlineName("ModifiedCopyAir");
+                        } else if (copiedTransportations[0] instanceof Train) {
+                            ((Train) copiedTransportations[0]).setTrainType("ModifiedType");
+                        } else if (copiedTransportations[0] instanceof Bus) {
+                            ((Bus) copiedTransportations[0]).setNumberOfStops(((Bus) copiedTransportations[0]).getNumberOfStops() + 1);
                         }
-                    } catch (Exception e) {
-                        System.out.println("Modification error: " + e.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("Modification error: " + exception.getMessage());
                     }
 
                     System.out.println("\nAfter modifying copied transportation:");
-                    System.out.println("Original[0] = " + svc.getTransportations()[0]);
-                    System.out.println("Copy[0]     = " + copyT[0]);
+                    System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
+                    System.out.println("Copy[0]     = " + copiedTransportations[0]);
                     break;
 
                 case 4:
-                    if (svc.getAccommodationCount() == 0) {
+                    /** Demonstrate that accommodation deep copies do not affect originals. */
+                    if (smartTravelService.getAccommodationCount() == 0) {
                         System.out.println("No accommodation records available.");
                         break;
                     }
 
-                    Accommodation[] copyA = svc.deepCopyAccommodationArray();
+                    Accommodation[] copiedAccommodations = smartTravelService.deepCopyAccommodationArray();
 
                     System.out.println("\nBefore modifying copied accommodation:");
-                    System.out.println("Original[0] = " + svc.getAccommodations()[0]);
-                    System.out.println("Copy[0]     = " + copyA[0]);
+                    System.out.println("Original[0] = " + smartTravelService.getAccommodations()[0]);
+                    System.out.println("Copy[0]     = " + copiedAccommodations[0]);
 
                     try {
-                        if (copyA[0] instanceof Hotel) {
-                            ((Hotel) copyA[0]).setStars(1);
-                        } else if (copyA[0] instanceof Hostel) {
-                            ((Hostel) copyA[0]).setSharedRoomCapacity(((Hostel) copyA[0]).getSharedRoomCapacity() + 1);
+                        // Mutate only the copied object to prove the original stays unchanged.
+                        if (copiedAccommodations[0] instanceof Hotel) {
+                            ((Hotel) copiedAccommodations[0]).setStars(1);
+                        } else if (copiedAccommodations[0] instanceof Hostel) {
+                            ((Hostel) copiedAccommodations[0]).setSharedRoomCapacity(((Hostel) copiedAccommodations[0]).getSharedRoomCapacity() + 1);
                         }
-                    } catch (Exception e) {
-                        System.out.println("Modification error: " + e.getMessage());
+                    } catch (Exception exception) {
+                        System.out.println("Modification error: " + exception.getMessage());
                     }
 
                     System.out.println("\nAfter modifying copied accommodation:");
-                    System.out.println("Original[0] = " + svc.getAccommodations()[0]);
-                    System.out.println("Copy[0]     = " + copyA[0]);
+                    System.out.println("Original[0] = " + smartTravelService.getAccommodations()[0]);
+                    System.out.println("Copy[0]     = " + copiedAccommodations[0]);
                     break;
 
                 case 0:
@@ -622,186 +679,247 @@ public class SmartTravelDriver {
         }
     }
 
-    private static void listAllSummary(SmartTravelService svc) {
+    /** Prints all currently stored data grouped by category for quick review. */
+    private static void listAllSummary(SmartTravelService smartTravelService) {
         System.out.println("\n--- Clients ---");
-        for (int i = 0; i < svc.getClientCount(); i++) {
-            if (svc.getClients()[i] != null) System.out.println(svc.getClients()[i]);
+        for (int clientIndex = 0; clientIndex < smartTravelService.getClientCount(); clientIndex++) {
+            if (smartTravelService.getClients()[clientIndex] != null) {
+                System.out.println(smartTravelService.getClients()[clientIndex]);
+            }
         }
 
         System.out.println("\n--- Transportation (ALL) ---");
-        for (int i = 0; i < svc.getTransportCount(); i++) {
-            if (svc.getTransportations()[i] != null) System.out.println(svc.getTransportations()[i]);
+        for (int transportIndex = 0; transportIndex < smartTravelService.getTransportCount(); transportIndex++) {
+            if (smartTravelService.getTransportations()[transportIndex] != null) {
+                System.out.println(smartTravelService.getTransportations()[transportIndex]);
+            }
         }
 
         System.out.println("\n--- Accommodation (ALL) ---");
-        for (int i = 0; i < svc.getAccommodationCount(); i++) {
-            if (svc.getAccommodations()[i] != null) System.out.println(svc.getAccommodations()[i]);
+        for (int accommodationIndex = 0; accommodationIndex < smartTravelService.getAccommodationCount(); accommodationIndex++) {
+            if (smartTravelService.getAccommodations()[accommodationIndex] != null) {
+                System.out.println(smartTravelService.getAccommodations()[accommodationIndex]);
+            }
         }
 
         System.out.println("\n--- Trips ---");
-        for (int i = 0; i < svc.getTripCount(); i++) {
-            if (svc.getTrips()[i] != null) {
-                Trip t = svc.getTrips()[i];
-                System.out.println(t + " | total=" + String.format("%.2f", t.calculateTotalCost()));
+        for (int tripIndex = 0; tripIndex < smartTravelService.getTripCount(); tripIndex++) {
+            if (smartTravelService.getTrips()[tripIndex] != null) {
+                Trip trip = smartTravelService.getTrips()[tripIndex];
+                System.out.println(trip + " | total=" + String.format("%.2f", trip.calculateTotalCost()));
             }
         }
     }
 
-    private static void loadAllData(SmartTravelService svc) {
+    /** Loads all persisted CSV data through the service layer. */
+    private static void loadAllData(SmartTravelService smartTravelService) {
         try {
-            svc.loadAllData("data");
-            System.out.println("Loaded all data from data/*.csv (errors logged to output/logs/errors.txt).");
-        } catch (IOException ex) {
-            System.out.println("LOAD ERROR: " + ex.getMessage());
+            smartTravelService.loadAllData("output/data");
+            System.out.println("Loaded all data from output/data/*.csv (errors logged to output/logs/errors.txt).");
+        } catch (IOException exception) {
+            System.out.println("LOAD ERROR: " + exception.getMessage());
         }
     }
 
-    private static void saveAllData(SmartTravelService svc) {
+    /** Saves all current in-memory data to the CSV output folder. */
+    private static void saveAllData(SmartTravelService smartTravelService) {
         try {
-            svc.saveAllData("output/data");
+            smartTravelService.saveAllData("output/data");
             System.out.println("Saved all data to output/data/*.csv");
-        } catch (IOException ex) {
-            System.out.println("SAVE ERROR: " + ex.getMessage());
+        } catch (IOException exception) {
+            System.out.println("SAVE ERROR: " + exception.getMessage());
         }
     }
 
-    private static void generateDashboard(SmartTravelService svc) {
+    /** Calls the dashboard generator using the current service data. */
+    private static void generateDashboard(SmartTravelService smartTravelService) {
         try {
             DashboardGenerator.generateDashboard(
-                    svc.getClients(),
-                    svc.getClientCount(),
-                    svc.getTrips(),
-                    svc.getTripCount()
+                    smartTravelService.getClients(),
+                    smartTravelService.getClientCount(),
+                    smartTravelService.getTrips(),
+                    smartTravelService.getTripCount()
             );
             System.out.println("Dashboard generated in output/dashboard/ (and output/charts/ created).");
-        } catch (IOException ex) {
-            System.out.println("DASHBOARD ERROR: " + ex.getMessage());
+        } catch (IOException exception) {
+            System.out.println("DASHBOARD ERROR: " + exception.getMessage());
         }
     }
 
-    private static void runA1PredefinedScenario(SmartTravelService svc) {
+    /** Runs the A1-style hard-coded scenario to demonstrate core system features. */
+    private static void runA1PredefinedScenario(SmartTravelService smartTravelService) {
         try {
-            svc.clearAllData();
+            // Start from a clean in-memory state before building scenario data. */
+            smartTravelService.clearAllData();
 
-            Client c1 = new Client("Malcolm", "White", "malcolm@example.com");
-            Client c2 = new Client("Sara", "Black", "sara@example.com");
-            Client c3 = new Client("Danny", "Brown", "danny@example.com");
+            Client clientOne = new Client("Malcolm", "White", "malcolm@example.com");
+            Client clientTwo = new Client("Sara", "Black", "sara@example.com");
+            Client clientThree = new Client("Danny", "Brown", "danny@example.com");
 
-            svc.addClient(c1);
-            svc.addClient(c2);
-            svc.addClient(c3);
+            smartTravelService.addClient(clientOne);
+            smartTravelService.addClient(clientTwo);
+            smartTravelService.addClient(clientThree);
 
-            Flight f1 = new Flight("AirX", "Montreal", "Paris", "AirX", 25.0);
-            Flight f2 = new Flight("SkyJet", "Dubai", "Rome", "SkyJet", 18.0);
-            Train tr1 = new Train("RailPro", "Toronto", "Ottawa", "HighSpeed");
-            Train tr2 = new Train("EuroRail", "Rome", "Milan", "Standard");
-            Bus b1 = new Bus("Greyhound", "NYC", "Boston", 3);
-            Bus b2 = new Bus("CoachX", "Madrid", "Valencia", 2);
+            Flight flightOne = new Flight("AirX", "Montreal", "Paris", "AirX", 25.0);
+            Flight flightTwo = new Flight("SkyJet", "Dubai", "Rome", "SkyJet", 18.0);
+            Train trainOne = new Train("RailPro", "Toronto", "Ottawa", "HighSpeed");
+            Train trainTwo = new Train("EuroRail", "Rome", "Milan", "Standard");
+            Bus busOne = new Bus("Greyhound", "NYC", "Boston", 3);
+            Bus busTwo = new Bus("CoachX", "Madrid", "Valencia", 2);
 
-            svc.addTransportation(f1);
-            svc.addTransportation(f2);
-            svc.addTransportation(tr1);
-            svc.addTransportation(tr2);
-            svc.addTransportation(b1);
-            svc.addTransportation(b2);
+            smartTravelService.addTransportation(flightOne);
+            smartTravelService.addTransportation(flightTwo);
+            smartTravelService.addTransportation(trainOne);
+            smartTravelService.addTransportation(trainTwo);
+            smartTravelService.addTransportation(busOne);
+            smartTravelService.addTransportation(busTwo);
 
-            Hotel h1 = new Hotel("Hilton", "Rome", 280.0, 4);
-            Hotel h2 = new Hotel("Sheraton", "Paris", 320.0, 5);
-            Hostel ho1 = new Hostel("Backpackers", "Rome", 55.0, 6);
-            Hostel ho2 = new Hostel("CityHostel", "Ottawa", 70.0, 4);
+            Hotel hotelOne = new Hotel("Hilton", "Rome", 280.0, 4);
+            Hotel hotelTwo = new Hotel("Sheraton", "Paris", 320.0, 5);
+            Hostel hostelOne = new Hostel("Backpackers", "Rome", 55.0, 6);
+            Hostel hostelTwo = new Hostel("CityHostel", "Ottawa", 70.0, 4);
 
-            svc.addAccommodation(h1);
-            svc.addAccommodation(h2);
-            svc.addAccommodation(ho1);
-            svc.addAccommodation(ho2);
+            smartTravelService.addAccommodation(hotelOne);
+            smartTravelService.addAccommodation(hotelTwo);
+            smartTravelService.addAccommodation(hostelOne);
+            smartTravelService.addAccommodation(hostelTwo);
 
-            Trip t1 = new Trip(c1, f1, h1, "Rome", 5, 1800.0);
-            Trip t2 = new Trip(c2, tr1, ho2, "Ottawa", 3, 500.0);
-            Trip t3 = new Trip(c3, b2, ho1, "Valencia", 4, 700.0);
+            Trip tripOne = new Trip(clientOne, flightOne, hotelOne, "Rome", 5, 1800.0);
+            Trip tripTwo = new Trip(clientTwo, trainOne, hostelTwo, "Ottawa", 3, 500.0);
+            Trip tripThree = new Trip(clientThree, busTwo, hostelOne, "Valencia", 4, 700.0);
 
-            svc.addTrip(t1);
-            svc.addTrip(t2);
-            svc.addTrip(t3);
+            smartTravelService.addTrip(tripOne);
+            smartTravelService.addTrip(tripTwo);
+            smartTravelService.addTrip(tripThree);
 
             System.out.println("\n===== PREDEFINED SCENARIO =====");
-            listAllSummary(svc);
+            listAllSummary(smartTravelService);
 
+            /** Demonstrate equality behavior across different object cases. */
             System.out.println("\n===== EQUALS TESTS =====");
-            System.out.println("Different classes (Flight vs Hotel): " + f1.equals(h1));
-            System.out.println("Same class, different attributes (Hotel h1 vs h2): " + h1.equals(h2));
-            Hotel h3 = new Hotel("Hilton", "Rome", 280.0, 4);
-            System.out.println("Same class, identical attributes except ID: " + h1.equals(h3));
+            System.out.println("Different classes (Flight vs Hotel): " + flightOne.equals(hotelOne));
+            System.out.println("Same class, different attributes (Hotel h1 vs h2): " + hotelOne.equals(hotelTwo));
+            Hotel hotelThree = new Hotel("Hilton", "Rome", 280.0, 4);
+            System.out.println("Same class, identical attributes except ID: " + hotelOne.equals(hotelThree));
 
+            /** Show the most expensive trip returned by the service layer. */
             System.out.println("\n===== MOST EXPENSIVE TRIP =====");
-            Trip mostExp = svc.findMostExpensiveTrip();
-            System.out.println(mostExp);
-            System.out.println("Total = " + mostExp.calculateTotalCost());
+            Trip mostExpensiveTrip = smartTravelService.findMostExpensiveTrip();
+            System.out.println(mostExpensiveTrip);
+            System.out.println("Total = " + mostExpensiveTrip.calculateTotalCost());
 
+            /** Prove the transportation deep copy uses separate objects. */
             System.out.println("\n===== DEEP COPY TEST: TRANSPORT =====");
-            Transportation[] copyT = svc.deepCopyTransportationArray();
-            System.out.println("Original[0] = " + svc.getTransportations()[0]);
-            System.out.println("Copy[0]     = " + copyT[0]);
-            if (copyT[0] instanceof Flight) {
-                ((Flight) copyT[0]).setAirlineName("ChangedAirline");
+            Transportation[] copiedTransportations = smartTravelService.deepCopyTransportationArray();
+            System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
+            System.out.println("Copy[0]     = " + copiedTransportations[0]);
+            if (copiedTransportations[0] instanceof Flight) {
+                ((Flight) copiedTransportations[0]).setAirlineName("ChangedAirline");
             }
-            System.out.println("Original[0] = " + svc.getTransportations()[0]);
-            System.out.println("Copy[0]     = " + copyT[0]);
+            System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
+            System.out.println("Copy[0]     = " + copiedTransportations[0]);
 
+            /** Prove the accommodation deep copy uses separate objects. */
             System.out.println("\n===== DEEP COPY TEST: ACCOMMODATION =====");
-            Accommodation[] copyA = svc.deepCopyAccommodationArray();
-            System.out.println("Original[0] = " + svc.getAccommodations()[0]);
-            System.out.println("Copy[0]     = " + copyA[0]);
-            if (copyA[0] instanceof Hotel) {
-                ((Hotel) copyA[0]).setStars(1);
+            Accommodation[] copiedAccommodations = smartTravelService.deepCopyAccommodationArray();
+            System.out.println("Original[0] = " + smartTravelService.getAccommodations()[0]);
+            System.out.println("Copy[0]     = " + copiedAccommodations[0]);
+            if (copiedAccommodations[0] instanceof Hotel) {
+                ((Hotel) copiedAccommodations[0]).setStars(1);
             }
-            System.out.println("Original[0] = " + svc.getAccommodations()[0]);
-            System.out.println("Copy[0]     = " + copyA[0]);
+            System.out.println("Original[0] = " + smartTravelService.getAccommodations()[0]);
+            System.out.println("Copy[0]     = " + copiedAccommodations[0]);
 
-        } catch (Exception ex) {
-            System.out.println("SCENARIO ERROR: " + ex.getMessage());
+        } catch (Exception exception) {
+            System.out.println("SCENARIO ERROR: " + exception.getMessage());
         }
     }
 
-    private static void runA2PredefinedScenario(SmartTravelService svc) {
-        svc.clearAllData();
-        System.out.println("\nRunning A2 predefined scenario...");
+    /** Runs the A2-style scenario to demonstrate loading, saving, validation, and dashboard generation. */
+    private static void runA2PredefinedScenario(SmartTravelService smartTravelService) {
+        smartTravelService.clearAllData();
+        System.out.println("\n===== RUNNING A2 PREDEFINED SCENARIO =====");
 
-        loadAllData(svc);
+        /** First load any persisted data into memory. */
+        loadAllData(smartTravelService);
 
-        if (svc.getClientCount() > 0) {
+        /** Show the loaded state before adding new demo content. */
+        System.out.println("\n--- After Load ---");
+        listAllSummary(smartTravelService);
+
+        /** Intentionally trigger a duplicate email case to show exception handling. */
+        if (smartTravelService.getClientCount() > 0) {
             try {
-                String duplicateEmail = svc.getClients()[0].getEmail();
-                svc.addClient(new Client("Test", "User", duplicateEmail));
-            } catch (DuplicateEmailException ex) {
-                System.out.println("Caught expected DuplicateEmailException: " + ex.getMessage());
-            } catch (InvalidClientDataException ex) {
-                System.out.println("Unexpected client validation error: " + ex.getMessage());
+                String duplicateEmail = smartTravelService.getClients()[0].getEmail();
+                smartTravelService.addClient(new Client("Test", "User", duplicateEmail));
+            } catch (DuplicateEmailException exception) {
+                System.out.println("Caught expected DuplicateEmailException: " + exception.getMessage());
+            } catch (InvalidClientDataException exception) {
+                System.out.println("Unexpected client validation error: " + exception.getMessage());
             }
         }
 
-        saveAllData(svc);
-        generateDashboard(svc);
+        // Add one full set of valid demo objects to the current data. */
+        try {
+            Client demoClient = new Client("A2", "Demo", "a2demo@example.com");
+            smartTravelService.addClient(demoClient);
 
-        System.out.println("A2 scenario done.");
+            Flight demoFlight = new Flight("DemoAir", "Montreal", "Rome", "DemoAir", 23.0);
+            smartTravelService.addTransportation(demoFlight);
+
+            Hotel demoHotel = new Hotel("Demo Hotel", "Rome", 220.0, 4);
+            smartTravelService.addAccommodation(demoHotel);
+
+            Trip demoTrip = new Trip(demoClient, demoFlight, demoHotel, "Rome", 5, 1500.0);
+            smartTravelService.addTrip(demoTrip);
+
+            System.out.println("\nAdded valid hard-coded A2 demo data:");
+            System.out.println(demoClient);
+            System.out.println(demoFlight);
+            System.out.println(demoHotel);
+            System.out.println(demoTrip);
+            System.out.println("Trip total = " + String.format("%.2f", demoTrip.calculateTotalCost()));
+
+        } catch (Exception exception) {
+            System.out.println("Unexpected add error in A2 scenario: " + exception.getMessage());
+        }
+
+        // Intentionally trigger a validation failure for transportation rules. */
+        try {
+            new Bus("BadBus", "CityA", "CityB", 0);
+        } catch (InvalidTransportDataException exception) {
+            System.out.println("Caught expected InvalidTransportDataException: " + exception.getMessage());
+        }
+
+        /** Save the current state and generate the dashboard output. */
+        saveAllData(smartTravelService);
+        generateDashboard(smartTravelService);
+
+        System.out.println("\n--- Final Summary ---");
+        listAllSummary(smartTravelService);
+
+        System.out.println("\n===== A2 PREDEFINED SCENARIO COMPLETE =====");
     }
 
+    /** Reads an integer safely and keeps asking until the input is valid. */
     private static int readInt(Scanner keyboard) {
         while (true) {
-            String s = keyboard.nextLine();
+            String input = keyboard.nextLine();
             try {
-                return Integer.parseInt(s.trim());
-            } catch (NumberFormatException e) {
+                return Integer.parseInt(input.trim());
+            } catch (NumberFormatException exception) {
                 System.out.print("Enter an integer: ");
             }
         }
     }
 
+    /** Reads a double safely and keeps asking until the input is valid. */
     private static double readDouble(Scanner keyboard) {
         while (true) {
-            String s = keyboard.nextLine();
+            String input = keyboard.nextLine();
             try {
-                return Double.parseDouble(s.trim());
-            } catch (NumberFormatException e) {
+                return Double.parseDouble(input.trim());
+            } catch (NumberFormatException exception) {
                 System.out.print("Enter a number: ");
             }
         }

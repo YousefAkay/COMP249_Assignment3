@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: Hotel
-// Written by: Yousef Yousef (40299095) , Hamza Shadeed (4034172)
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package travel;
@@ -13,66 +13,75 @@ public class Hotel extends Accommodation {
 
     private int stars;
 
-    /** Default constructor */
+    /** Builds a default hotel with a middle-range star value. */
     public Hotel() {
         super();
         this.stars = 3;
     }
 
-    /** constructor */
-    public Hotel(String name, String location, double pricePerNight, int stars) throws InvalidAccommodationDataException {
+    /** Builds a hotel using validated user input. */
+    public Hotel(String name, String location, double pricePerNight, int stars)
+            throws InvalidAccommodationDataException {
         super(name, location, pricePerNight);
         setStars(stars);
     }
 
-    /** load-time constructor (explicit ID) */
+    /** Builds a hotel from file data using an explicit accommodation ID. */
     public Hotel(String accommodationId, String name, String location, double pricePerNight, int stars)
             throws InvalidAccommodationDataException {
         super(accommodationId, name, location, pricePerNight);
         setStars(stars);
     }
 
-    /** Copy constructor */
-    public Hotel(Hotel other) {
-        super(other);
-        this.stars = other.stars;
+    /** Creates a deep-style copy with a fresh generated ID. */
+    public Hotel(Hotel otherHotel) {
+        super(otherHotel);
+        this.stars = otherHotel.stars;
     }
 
     public int getStars() {
         return stars;
     }
 
+    /** Enforces the rule that hotel stars must stay between 1 and 5. */
     public void setStars(int stars) throws InvalidAccommodationDataException {
-        // A2 rule: stars 1–5
         if (stars < 1 || stars > 5) {
             throw new InvalidAccommodationDataException("Hotel stars must be between 1 and 5.");
         }
         this.stars = stars;
     }
 
-    /** Total : PricePerNight * numberOfDays * starRatingMultiplier */
+    /** Multiplies nightly cost by a bonus that depends on the star rating. */
     @Override
     public double calculateCost(int numberOfDays) {
-        double starBonus;
-        if      (stars == 1) starBonus = 1.0;
-        else if (stars == 2) starBonus = 1.2;
-        else if (stars == 3) starBonus = 1.5;
-        else if (stars == 4) starBonus = 1.8;
-        else                 starBonus = 2.2;  // 5 stars
-        return getPricePerNight() * numberOfDays * starBonus;
+        double starMultiplier;
 
+        if (stars == 1) {
+            starMultiplier = 1.0;
+        } else if (stars == 2) {
+            starMultiplier = 1.2;
+        } else if (stars == 3) {
+            starMultiplier = 1.5;
+        } else if (stars == 4) {
+            starMultiplier = 1.8;
+        } else {
+            starMultiplier = 2.2;
+        }
+
+        return getPricePerNight() * numberOfDays * starMultiplier;
     }
 
+    /** Compares the meaningful state of two hotel objects. */
     @Override
-    public boolean equals(Object oth) {
-        if (!super.equals(oth)) return false;
-        if (!(oth instanceof Hotel)) return false;
+    public boolean equals(Object otherObject) {
+        if (!super.equals(otherObject)) return false;
+        if (!(otherObject instanceof Hotel)) return false;
 
-        Hotel other = (Hotel) oth;
-        return stars == other.stars;
+        Hotel otherHotel = (Hotel) otherObject;
+        return stars == otherHotel.stars;
     }
 
-    /** Provides a clean summary for display */
+    /** Returns a clean text summary for menus, testing, and logging. */
     @Override
     public String toString() {
         return "Hotel{accommodationId='" + getAccommodationId() + "', name='" + getName() +
@@ -80,17 +89,8 @@ public class Hotel extends Accommodation {
                 ", stars=" + stars + "}";
     }
 
-    // EQUALS
     @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) return false;
-        Hotel other = (Hotel) obj;
-        return stars == other.stars;
+    public String getType() {
+        return "HOTEL";
     }
-
-    @Override
-    public String getType() { return "Hotel"; }
-
-
-
 }

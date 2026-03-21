@@ -1,136 +1,181 @@
+// -----------------------------------------------------
+// Assignment 2
+// Class: TransportationFileManager
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// -----------------------------------------------------
+
 package persistence;
 
 import exceptions.InvalidTransportDataException;
-import travel.*;
+import travel.Bus;
+import travel.Flight;
+import travel.Train;
+import travel.Transportation;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
+/** Handles CSV saving and loading for transportation records. */
 public class TransportationFileManager {
 
-    // Supported formats:
-    // FLIGHT;TR3001;Alitalia;JFK;FCO;850.00;23.0
-    // TRAIN;TR3002;Shinkansen;Tokyo;Kyoto;250.00;HighSpeed
-    // BUS;TR3003;Greyhound;NYC;Boston;75.00;3
-    public static void saveTransportations(Transportation[] arr, int count, String filePath) throws IOException {
+    /** Saves each transportation object using the subclass prefix required by the assignment. */
+    public static void saveTransportations(Transportation[] transportations, int transportCount, String filePath)
+            throws IOException {
         ensureParentDir(filePath);
 
-        PrintWriter out = new PrintWriter(new FileWriter(filePath));
+        PrintWriter outputWriter = new PrintWriter(new FileWriter(filePath));
 
-        for (int i = 0; i < count; i++) {
-            Transportation t = arr[i];
-            if (t == null) continue;
+        for (int transportationIndex = 0; transportationIndex < transportCount; transportationIndex++) {
+            Transportation transportation = transportations[transportationIndex];
+            if (transportation == null) continue;
 
-            if (t instanceof Flight) {
-                Flight f = (Flight) t;
-                out.println("FLIGHT;" + f.getTransportId() + ";" + f.getCompanyName() + ";" +
-                        f.getDepartureCity() + ";" + f.getArrivalCity() + ";" +
-                        f.getBaseFare() + ";" + f.getLuggageAllowanceKg());
+            if (transportation instanceof Flight) {
+                Flight flight = (Flight) transportation;
+                outputWriter.println(
+                        "FLIGHT;" + flight.getTransportId() + ";" + flight.getCompanyName() + ";" +
+                                flight.getDepartureCity() + ";" + flight.getArrivalCity() + ";" +
+                                flight.getAirlineName() + ";" + flight.getBaseFare() + ";" +
+                                flight.getLuggageAllowanceKg()
+                );
 
-            } else if (t instanceof Train) {
-                Train tr = (Train) t;
-                out.println("TRAIN;" + tr.getTransportId() + ";" + tr.getCompanyName() + ";" +
-                        tr.getDepartureCity() + ";" + tr.getArrivalCity() + ";" +
-                        tr.getBaseFare() + ";" + tr.getTrainType());
+            } else if (transportation instanceof Train) {
+                Train train = (Train) transportation;
+                outputWriter.println(
+                        "TRAIN;" + train.getTransportId() + ";" + train.getCompanyName() + ";" +
+                                train.getDepartureCity() + ";" + train.getArrivalCity() + ";" +
+                                train.getBaseFare() + ";" + train.getTrainType()
+                );
 
-            } else if (t instanceof Bus) {
-                Bus b = (Bus) t;
-                out.println("BUS;" + b.getTransportId() + ";" + b.getCompanyName() + ";" +
-                        b.getDepartureCity() + ";" + b.getArrivalCity() + ";" +
-                        b.getBaseFare() + ";" + b.getNumberOfStops());
+            } else if (transportation instanceof Bus) {
+                Bus bus = (Bus) transportation;
+                outputWriter.println(
+                        "BUS;" + bus.getTransportId() + ";" + bus.getCompanyName() + ";" +
+                                bus.getDepartureCity() + ";" + bus.getArrivalCity() + ";" +
+                                bus.getBaseFare() + ";" + bus.getNumberOfStops()
+                );
 
             } else {
-                ErrorLogger.log("TRANSPORT SAVE ERROR | Unknown transport subclass: " + t.getClass().getName());
+                ErrorLogger.log("TRANSPORT SAVE ERROR | Unknown transport subclass: " +
+                        transportation.getClass().getName());
             }
         }
 
-        out.close();
+        outputWriter.close();
     }
 
-    public static int loadTransportations(Transportation[] arr, String filePath) throws IOException {
-        int count = 0;
-        BufferedReader br = null;
+    /** Loads transportation rows, builds the right subclass, and logs invalid lines. */
+    public static int loadTransportations(Transportation[] transportations, String filePath) throws IOException {
+        int loadedCount = 0;
+        BufferedReader bufferedReader = null;
 
         try {
-            br = new BufferedReader(new FileReader(filePath));
+            bufferedReader = new BufferedReader(new FileReader(filePath));
             String line;
 
-            while ((line = br.readLine()) != null) {
-                String raw = line;
+            while ((line = bufferedReader.readLine()) != null) {
+                if (loadedCount >= transportations.length) break;
+
+                String rawLine = line;
                 line = line.trim();
                 if (line.isEmpty()) continue;
 
                 try {
-                    String[] p = line.split(";");
-                    String type = p[0].trim().toUpperCase();
+                    String[] tokens = line.split(";");
+                    String typePrefix = tokens[0].trim().toUpperCase();
 
-                    if ("FLIGHT".equals(type)) {
-                        if (p.length != 8) {
-                            throw new InvalidTransportDataException("Bad FLIGHT token count: " + raw);
+                    if ("FLIGHT".equals(typePrefix)) {
+                        if (tokens.length != 8) {
+                            throw new InvalidTransportDataException("Bad FLIGHT token count: " + rawLine);
                         }
 
-                        String id = p[1].trim();
-                        String company = p[2].trim();
-                        String dep = p[3].trim();
-                        String arrCity = p[4].trim();
-                        double baseFare = Double.parseDouble(p[5].trim());
-                        double luggage = Double.parseDouble(p[6].trim());
+                        String transportId = tokens[1].trim();
+                        String companyName = tokens[2].trim();
+                        String departureCity = tokens[3].trim();
+                        String arrivalCity = tokens[4].trim();
+                        String airlineName = tokens[5].trim();
+                        double baseFare = Double.parseDouble(tokens[6].trim());
+                        double luggageAllowanceKg = Double.parseDouble(tokens[7].trim());
 
-                        // NOTE: if your Flight constructor still expects airlineName too,
-                        // then keep your existing flight model format instead.
-                        // If your model is airline-based, do NOT use this branch blindly.
-                        throw new InvalidTransportDataException(
-                                "Flight CSV/model mismatch: check your Flight.java against assignment format."
+                        transportations[loadedCount++] = new Flight(
+                                transportId,
+                                companyName,
+                                departureCity,
+                                arrivalCity,
+                                airlineName,
+                                baseFare,
+                                luggageAllowanceKg
                         );
 
-                    } else if ("TRAIN".equals(type)) {
-                        if (p.length != 7) {
-                            throw new InvalidTransportDataException("Bad TRAIN token count: " + raw);
+                    } else if ("TRAIN".equals(typePrefix)) {
+                        if (tokens.length != 7) {
+                            throw new InvalidTransportDataException("Bad TRAIN token count: " + rawLine);
                         }
 
-                        String id = p[1].trim();
-                        String company = p[2].trim();
-                        String dep = p[3].trim();
-                        String arrCity = p[4].trim();
-                        double baseFare = Double.parseDouble(p[5].trim());
-                        String trainType = p[6].trim();
+                        String transportId = tokens[1].trim();
+                        String companyName = tokens[2].trim();
+                        String departureCity = tokens[3].trim();
+                        String arrivalCity = tokens[4].trim();
+                        double baseFare = Double.parseDouble(tokens[5].trim());
+                        String trainType = tokens[6].trim();
 
-                        arr[count++] = new Train(id, company, dep, arrCity, trainType, baseFare);
+                        transportations[loadedCount++] = new Train(
+                                transportId,
+                                companyName,
+                                departureCity,
+                                arrivalCity,
+                                trainType,
+                                baseFare
+                        );
 
-                    } else if ("BUS".equals(type)) {
-                        if (p.length != 7) {
-                            throw new InvalidTransportDataException("Bad BUS token count: " + raw);
+                    } else if ("BUS".equals(typePrefix)) {
+                        if (tokens.length != 7) {
+                            throw new InvalidTransportDataException("Bad BUS token count: " + rawLine);
                         }
 
-                        String id = p[1].trim();
-                        String company = p[2].trim();
-                        String dep = p[3].trim();
-                        String arrCity = p[4].trim();
-                        double baseFare = Double.parseDouble(p[5].trim());
-                        int stops = Integer.parseInt(p[6].trim());
+                        String transportId = tokens[1].trim();
+                        String companyName = tokens[2].trim();
+                        String departureCity = tokens[3].trim();
+                        String arrivalCity = tokens[4].trim();
+                        double baseFare = Double.parseDouble(tokens[5].trim());
+                        int numberOfStops = Integer.parseInt(tokens[6].trim());
 
-                        arr[count++] = new Bus(id, company, dep, arrCity, baseFare, stops);
+                        transportations[loadedCount++] = new Bus(
+                                transportId,
+                                companyName,
+                                departureCity,
+                                arrivalCity,
+                                baseFare,
+                                numberOfStops
+                        );
 
                     } else {
-                        throw new InvalidTransportDataException("Unknown transport type prefix: " + type);
+                        throw new InvalidTransportDataException(
+                                "Unknown transport type prefix: " + typePrefix
+                        );
                     }
 
-                } catch (Exception ex) {
-                    ErrorLogger.log("TRANSPORT LOAD ERROR | " + ex.getMessage() + " | line=" + raw);
+                } catch (Exception exception) {
+                    ErrorLogger.log("TRANSPORT LOAD ERROR | " + exception.getMessage() + " | line=" + rawLine);
                 }
-
-                if (count >= arr.length) break;
             }
 
         } finally {
-            if (br != null) br.close();
+            if (bufferedReader != null) bufferedReader.close();
         }
 
-        return count;
+        return loadedCount;
     }
 
+    /** Creates the output directory path before saving files into it. */
     private static void ensureParentDir(String filePath) {
-        File f = new File(filePath);
-        File parent = f.getParentFile();
-        if (parent != null && !parent.exists()) parent.mkdirs();
+        File outputFile = new File(filePath);
+        File parentDirectory = outputFile.getParentFile();
+        if (parentDirectory != null && !parentDirectory.exists()) {
+            parentDirectory.mkdirs();
+        }
     }
 }

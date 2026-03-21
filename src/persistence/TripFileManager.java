@@ -1,3 +1,9 @@
+// -----------------------------------------------------
+// Assignment 2
+// Class: TripFileManager
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// -----------------------------------------------------
+
 package persistence;
 
 import exceptions.EntityNotFoundException;
@@ -5,98 +11,123 @@ import exceptions.InvalidTripDataException;
 import service.SmartTravelService;
 import travel.Trip;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
+/** Handles CSV saving and loading for trip records. */
 public class TripFileManager {
 
-    // Format:
-    // TripID;ClientID;AccommodationID;TransportationID;Destination;DurationDays;BasePrice
-    public static void saveTrips(Trip[] arr, int count, String filePath) throws IOException {
+    /** Saves each trip while keeping optional accommodation and transportation IDs blank when absent. */
+    public static void saveTrips(Trip[] trips, int tripCount, String filePath) throws IOException {
         ensureParentDir(filePath);
 
-        PrintWriter out = new PrintWriter(new FileWriter(filePath));
+        PrintWriter outputWriter = new PrintWriter(new FileWriter(filePath));
 
-        for (int i = 0; i < count; i++) {
-            Trip t = arr[i];
-            if (t == null) continue;
+        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
+            Trip trip = trips[tripIndex];
+            if (trip == null) continue;
 
-            String accomId = (t.getAccommodationId() == null) ? "" : t.getAccommodationId();
-            String transId = (t.getTransportationId() == null) ? "" : t.getTransportationId();
+            String accommodationId = (trip.getAccommodationId() == null) ? "" : trip.getAccommodationId();
+            String transportationId = (trip.getTransportationId() == null) ? "" : trip.getTransportationId();
 
-            out.println(t.getTripId() + ";" + t.getClientId() + ";" + accomId + ";" + transId + ";" +
-                    t.getDestination() + ";" + t.getDurationInDays() + ";" + t.getBasePrice());
+            outputWriter.println(
+                    trip.getTripId() + ";" + trip.getClientId() + ";" + accommodationId + ";" +
+                            transportationId + ";" + trip.getDestination() + ";" +
+                            trip.getDurationInDays() + ";" + trip.getBasePrice()
+            );
         }
 
-        out.close();
+        outputWriter.close();
     }
 
-    public static int loadTrips(Trip[] arr, String filePath, SmartTravelService svc) throws IOException {
-        int count = 0;
-        BufferedReader br = null;
+    /** Loads trips only after checking that referenced clients and bookings already exist. */
+    public static int loadTrips(Trip[] trips, String filePath, SmartTravelService smartTravelService)
+            throws IOException {
+        int loadedCount = 0;
+        BufferedReader bufferedReader = null;
 
         try {
-            br = new BufferedReader(new FileReader(filePath));
+            bufferedReader = new BufferedReader(new FileReader(filePath));
             String line;
 
-            while ((line = br.readLine()) != null) {
-                if (count >= arr.length) break;
+            while ((line = bufferedReader.readLine()) != null) {
+                if (loadedCount >= trips.length) break;
 
-                String raw = line;
+                String rawLine = line;
                 line = line.trim();
                 if (line.isEmpty()) continue;
 
                 try {
-                    String[] p = line.split(";");
-                    if (p.length != 7) {
-                        throw new InvalidTripDataException("Bad TRIP token count: " + raw);
+                    String[] tokens = line.split(";");
+                    if (tokens.length != 7) {
+                        throw new InvalidTripDataException("Bad TRIP token count: " + rawLine);
                     }
 
-                    String tripId = p[0].trim();
-                    String clientId = p[1].trim();
-                    String accomId = p[2].trim();
-                    String transId = p[3].trim();
-                    String dest = p[4].trim();
-                    int days = Integer.parseInt(p[5].trim());
-                    double base = Double.parseDouble(p[6].trim());
+                    String tripId = tokens[0].trim();
+                    String clientId = tokens[1].trim();
+                    String accommodationId = tokens[2].trim();
+                    String transportationId = tokens[3].trim();
+                    String destination = tokens[4].trim();
+                    int durationInDays = Integer.parseInt(tokens[5].trim());
+                    double basePrice = Double.parseDouble(tokens[6].trim());
 
-                    if (accomId.isEmpty()) accomId = null;
-                    if (transId.isEmpty()) transId = null;
+                    if (accommodationId.isEmpty()) accommodationId = null;
+                    if (transportationId.isEmpty()) transportationId = null;
 
-                    if (accomId == null && transId == null) {
-                        throw new InvalidTripDataException("Trip must have accommodationId or transportationId: " + raw);
+                    /** Enforce the A2 rule that a trip needs at least one booking component. */
+                    if (accommodationId == null && transportationId == null) {
+                        throw new InvalidTripDataException(
+                                "Trip must have accommodationId or transportationId: " + rawLine
+                        );
                     }
 
-                    if (!svc.clientExists(clientId)) {
+                    /** Verify that all referenced IDs are already present in memory. */
+                    if (!smartTravelService.clientExists(clientId)) {
                         throw new EntityNotFoundException("Trip references missing clientId: " + clientId);
                     }
 
-                    if (accomId != null) {
-                        svc.findAccommodationById(accomId);
+                    if (accommodationId != null) {
+                        smartTravelService.findAccommodationById(accommodationId);
                     }
-                    if (transId != null) {
-                        svc.findTransportationById(transId);
+                    if (transportationId != null) {
+                        smartTravelService.findTransportationById(transportationId);
                     }
 
-                    Trip t = new Trip(tripId, clientId, accomId, transId, dest, days, base);
+                    Trip trip = new Trip(
+                            tripId,
+                            clientId,
+                            accommodationId,
+                            transportationId,
+                            destination,
+                            durationInDays,
+                            basePrice
+                    );
 
-                    svc.addTrip(t);
-                    count++;
+                    smartTravelService.addTrip(trip);
+                    loadedCount++;
 
-                } catch (Exception ex) {
-                    ErrorLogger.log("TRIP LOAD ERROR | " + ex.getMessage() + " | line=" + raw);
+                } catch (Exception exception) {
+                    ErrorLogger.log("TRIP LOAD ERROR | " + exception.getMessage() + " | line=" + rawLine);
                 }
             }
 
         } finally {
-            if (br != null) br.close();
+            if (bufferedReader != null) bufferedReader.close();
         }
 
-        return count;
+        return loadedCount;
     }
 
+    /** Creates the output directory path before saving files into it. */
     private static void ensureParentDir(String filePath) {
-        File f = new File(filePath);
-        File parent = f.getParentFile();
-        if (parent != null && !parent.exists()) parent.mkdirs();
+        File outputFile = new File(filePath);
+        File parentDirectory = outputFile.getParentFile();
+        if (parentDirectory != null && !parentDirectory.exists()) {
+            parentDirectory.mkdirs();
+        }
     }
 }

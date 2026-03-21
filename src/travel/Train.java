@@ -1,6 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: Train
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package travel;
@@ -11,15 +12,18 @@ public class Train extends Transportation {
 
     private String trainType;
 
+    /** Builds a default train with the assignment's standard base fare. */
     public Train() {
         super();
         this.trainType = "Standard";
+
         try {
             setBaseFare(120.0);
         } catch (InvalidTransportDataException ignore) {
         }
     }
 
+    /** Builds a train using user input and the standard train base fare. */
     public Train(String companyName, String departureCity, String arrivalCity, String trainType)
             throws InvalidTransportDataException {
         super(companyName, departureCity, arrivalCity);
@@ -27,29 +31,30 @@ public class Train extends Transportation {
         setBaseFare(120.0);
     }
 
-    public Train(String companyName, String departureCity, String arrivalCity, String trainType, double baseFare)
-            throws InvalidTransportDataException {
+    /** Builds a train using a base fare that usually comes from file data. */
+    public Train(String companyName, String departureCity, String arrivalCity,
+                 String trainType, double baseFare) throws InvalidTransportDataException {
         super(companyName, departureCity, arrivalCity, baseFare);
         setTrainType(trainType);
     }
 
-    public Train(String transportId, String companyName, String departureCity, String arrivalCity,
-                 String trainType, double baseFare) throws InvalidTransportDataException {
+    /** Builds a train from file data using an explicit transport ID. */
+    public Train(String transportId, String companyName, String departureCity,
+                 String arrivalCity, String trainType, double baseFare)
+            throws InvalidTransportDataException {
         super(transportId, companyName, departureCity, arrivalCity, baseFare);
         setTrainType(trainType);
     }
 
-    public Train(Train other) {
-        super(other);
-        this.trainType = other.trainType;
+    /** Creates a deep-style copy with a fresh generated ID. */
+    public Train(Train otherTrain) {
+        super(otherTrain);
+        this.trainType = otherTrain.trainType;
     }
 
-    public static void resetIdCounter() {
-        syncNextIdFromLoadedId("TR3000");
-    }
-
-    private static boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
+    /** Treats null or whitespace-only text as blank input. */
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     public String getTrainType() {
@@ -63,28 +68,31 @@ public class Train extends Transportation {
         this.trainType = trainType.trim();
     }
 
+    /** Adds a surcharge only when the train type is high-speed. */
     @Override
     public double calculateCost(int numberOfDays) {
-        double base = getBaseFare();
+        double trainCost = getBaseFare();
 
         if (trainType != null && trainType.equalsIgnoreCase("highspeed")) {
-            base += 40.0;
+            trainCost += 40.0;
         }
 
-        return base;
+        return trainCost;
     }
 
+    /** Compares the meaningful state of two train objects. */
     @Override
-    public boolean equals(Object oth) {
-        if (!super.equals(oth)) return false;
-        if (!(oth instanceof Train)) return false;
+    public boolean equals(Object otherObject) {
+        if (!super.equals(otherObject)) return false;
+        if (!(otherObject instanceof Train)) return false;
 
-        Train other = (Train) oth;
+        Train otherTrain = (Train) otherObject;
 
-        if (trainType == null) return other.trainType == null;
-        return trainType.equals(other.trainType);
+        if (trainType == null) return otherTrain.trainType == null;
+        return trainType.equals(otherTrain.trainType);
     }
 
+    /** Returns a clean text summary for menus, testing, and logging. */
     @Override
     public String toString() {
         return "Train{transportId='" + getTransportId() + "', companyName='" + getCompanyName() +
@@ -92,23 +100,8 @@ public class Train extends Transportation {
                 "', trainType='" + trainType + "', baseFare=" + getBaseFare() + "}";
     }
 
-    /** EQUALS */
     @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) return false;
-        Train other = (Train) obj;
-
-        if (trainType == null && other.trainType != null) return false;
-        if (trainType != null && !trainType.equals(other.trainType)) return false;
-
-        if (seatClass == null && other.seatClass != null) return false;
-        if (seatClass != null && !seatClass.equals(other.seatClass)) return false;
-
-        if (Double.compare(getBaseFare(), other.getBaseFare()) != 0) return false;
-
-        return true;
+    public String getType() {
+        return "TRAIN";
     }
-
-    @Override
-    public String getType() { return "Train"; }
 }

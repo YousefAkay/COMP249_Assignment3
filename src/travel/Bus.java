@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: Bus
-// Written by: Yousef Yousef (40299095) , Hamza Shadeed(40341727)
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package travel;
@@ -13,89 +13,84 @@ public class Bus extends Transportation {
 
     private int numberOfStops;
 
-    /** Default constructor: base fare = 60, stops = 1 */
+    /** Builds a default bus with the assignment's standard base fare. */
     public Bus() {
         super();
         this.numberOfStops = 1;
+
         try {
             setBaseFare(60.0);
         } catch (InvalidTransportDataException ignore) {
         }
     }
 
-    /** constructor: base fare = 60 */
-    public Bus(String companyName, String departureCity, String arrivalCity ,int numberOfStops)
+    /** Builds a bus using user input and the standard bus base fare. */
+    public Bus(String companyName, String departureCity, String arrivalCity, int numberOfStops)
             throws InvalidTransportDataException {
         super(companyName, departureCity, arrivalCity);
         setNumberOfStops(numberOfStops);
         setBaseFare(60.0);
     }
 
-    /** constructor (base fare comes from CSV) */
-    public Bus(String companyName, String departureCity, String arrivalCity, double baseFare, int numberOfStops)
-            throws InvalidTransportDataException {
+    /** Builds a bus using a base fare that usually comes from file data. */
+    public Bus(String companyName, String departureCity, String arrivalCity,
+               double baseFare, int numberOfStops) throws InvalidTransportDataException {
         super(companyName, departureCity, arrivalCity, baseFare);
         setNumberOfStops(numberOfStops);
     }
 
-    /** load-time constructor (explicit ID) */
-    public Bus(String transportId, String companyName, String departureCity, String arrivalCity,
-               double baseFare, int numberOfStops) throws InvalidTransportDataException {
+    /** Builds a bus from file data using an explicit transport ID. */
+    public Bus(String transportId, String companyName, String departureCity,
+               String arrivalCity, double baseFare, int numberOfStops)
+            throws InvalidTransportDataException {
         super(transportId, companyName, departureCity, arrivalCity, baseFare);
         setNumberOfStops(numberOfStops);
     }
 
-    /** Copy constructor */
-    public Bus(Bus other) {
-        super(other);
-        this.numberOfStops = other.numberOfStops;
+    /** Creates a deep-style copy with a fresh generated ID. */
+    public Bus(Bus otherBus) {
+        super(otherBus);
+        this.numberOfStops = otherBus.numberOfStops;
     }
 
-    // GETTERS & SETTERS
     public int getNumberOfStops() {
         return numberOfStops;
     }
 
+    /** Enforces that a bus must have at least one stop. */
     public void setNumberOfStops(int numberOfStops) throws InvalidTransportDataException {
-        // A2 rule: Bus requires >= 1 stop
         if (numberOfStops < 1) {
             throw new InvalidTransportDataException("Bus numberOfStops must be >= 1.");
         }
         this.numberOfStops = numberOfStops;
     }
 
-
-    /** calculateCost uses baseFare now */
+    /** Adds a fixed amount per stop to the stored base fare. */
     @Override
     public double calculateCost(int numberOfDays) {
         return getBaseFare() + (numberOfStops * 5.0);
     }
 
+    /** Compares the meaningful state of two bus objects. */
     @Override
-    public boolean equals(Object oth) {
-        if (!super.equals(oth)) return false;
-        if (!(oth instanceof Bus)) return false;
+    public boolean equals(Object otherObject) {
+        if (!super.equals(otherObject)) return false;
+        if (!(otherObject instanceof Bus)) return false;
 
-        Bus other = (Bus) oth;
-        return numberOfStops == other.numberOfStops;
+        Bus otherBus = (Bus) otherObject;
+        return numberOfStops == otherBus.numberOfStops;
     }
 
-    /** Provides a clean summary for display */
+    /** Returns a clean text summary for menus, testing, and logging. */
     @Override
     public String toString() {
-        return "Bus{transportId : " + getTransportId() + "', Company Name : " + getCompanyName() +
-                "', departureCity : " + getDepartureCity() + "', Arrival City : " + getArrivalCity() +
-                "', baseFare : " + getBaseFare() + ", numberOfStops :" + numberOfStops + "}";
-    }
-
-    /** EQUALS */
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) return false;
-        Bus other = (Bus) obj;
-        return numberOfStops == other.numberOfStops;
+        return "Bus{transportId='" + getTransportId() + "', companyName='" + getCompanyName() +
+                "', departureCity='" + getDepartureCity() + "', arrivalCity='" + getArrivalCity() +
+                "', baseFare=" + getBaseFare() + ", numberOfStops=" + numberOfStops + "}";
     }
 
     @Override
-    public String getType() { return "Bus"; }
+    public String getType() {
+        return "BUS";
+    }
 }

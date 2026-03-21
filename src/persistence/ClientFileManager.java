@@ -1,75 +1,98 @@
+// -----------------------------------------------------
+// Assignment 2
+// Class: ClientFileManager
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// -----------------------------------------------------
+
 package persistence;
 
 import client.Client;
 import exceptions.InvalidClientDataException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
+/** Handles CSV saving and loading for client records. */
 public class ClientFileManager {
 
-    // Format: ClientID;firstName;lastName;email
+    /** Saves each client as a semicolon-separated row in the assignment format. */
     public static void saveClients(Client[] clients, int clientCount, String filePath) throws IOException {
         ensureParentDir(filePath);
 
-        PrintWriter out = new PrintWriter(new FileWriter(filePath));
-        for (int i = 0; i < clientCount; i++) {
-            Client c = clients[i];
-            if (c == null) continue;
-            out.println(c.getClientId() + ";" + c.getFirstName() + ";" + c.getLastName() + ";" + c.getEmail());
+        PrintWriter outputWriter = new PrintWriter(new FileWriter(filePath));
+
+        for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
+            Client client = clients[clientIndex];
+            if (client == null) continue;
+
+            outputWriter.println(
+                    client.getClientId() + ";" + client.getFirstName() + ";" +
+                            client.getLastName() + ";" + client.getEmail()
+            );
         }
-        out.close();
+
+        outputWriter.close();
     }
 
+    /** Loads client rows, rejects duplicates within the file, and logs bad lines. */
     public static int loadClients(Client[] clients, String filePath) throws IOException {
-        int count = 0;
-        BufferedReader br = null;
+        int loadedCount = 0;
+        BufferedReader bufferedReader = null;
 
         try {
-            br = new BufferedReader(new FileReader(filePath));
+            bufferedReader = new BufferedReader(new FileReader(filePath));
             String line;
 
-            while ((line = br.readLine()) != null) {
-                String raw = line;
+            while ((line = bufferedReader.readLine()) != null) {
+                if (loadedCount >= clients.length) break;
+
+                String rawLine = line;
                 line = line.trim();
                 if (line.isEmpty()) continue;
 
                 try {
-                    String[] parts = line.split(";");
-                    if (parts.length != 4) {
-                        throw new InvalidClientDataException("Bad client CSV token count: " + raw);
+                    String[] tokens = line.split(";");
+                    if (tokens.length != 4) {
+                        throw new InvalidClientDataException("Bad client CSV token count: " + rawLine);
                     }
 
-                    String id = parts[0].trim();
-                    String fn = parts[1].trim();
-                    String ln = parts[2].trim();
-                    String em = parts[3].trim();
+                    String clientId = tokens[0].trim();
+                    String firstName = tokens[1].trim();
+                    String lastName = tokens[2].trim();
+                    String email = tokens[3].trim();
 
-                    for (int i = 0; i < count; i++) {
-                        if (clients[i] != null && clients[i].getEmail().equalsIgnoreCase(em)) {
-                            throw new InvalidClientDataException("Duplicate email in clients.csv: " + em);
+                    /** Prevent duplicate emails from being loaded into the in-memory array. */
+                    for (int clientIndex = 0; clientIndex < loadedCount; clientIndex++) {
+                        if (clients[clientIndex] != null &&
+                                clients[clientIndex].getEmail().equalsIgnoreCase(email)) {
+                            throw new InvalidClientDataException("Duplicate email in clients.csv: " + email);
                         }
                     }
 
-                    Client c = new Client(id, fn, ln, em, 0.0);
-                    clients[count++] = c;
+                    clients[loadedCount++] = new Client(clientId, firstName, lastName, email, 0.0);
 
-                } catch (Exception ex) {
-                    ErrorLogger.log("CLIENT LOAD ERROR | " + ex.getMessage() + " | line=" + raw);
+                } catch (Exception exception) {
+                    ErrorLogger.log("CLIENT LOAD ERROR | " + exception.getMessage() + " | line=" + rawLine);
                 }
-
-                if (count >= clients.length) break;
             }
 
         } finally {
-            if (br != null) br.close();
+            if (bufferedReader != null) bufferedReader.close();
         }
 
-        return count;
+        return loadedCount;
     }
 
+    /** Creates the output directory path before saving files into it. */
     private static void ensureParentDir(String filePath) {
-        File f = new File(filePath);
-        File parent = f.getParentFile();
-        if (parent != null && !parent.exists()) parent.mkdirs();
+        File outputFile = new File(filePath);
+        File parentDirectory = outputFile.getParentFile();
+        if (parentDirectory != null && !parentDirectory.exists()) {
+            parentDirectory.mkdirs();
+        }
     }
 }

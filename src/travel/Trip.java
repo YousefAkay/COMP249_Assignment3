@@ -1,7 +1,7 @@
 // -----------------------------------------------------
 // Assignment 2
 // Class: Trip
-// Written by: Yousef Yousef (40299095)
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package travel;
@@ -19,10 +19,10 @@ public class Trip {
         nextId = 2001;
     }
 
-    /** store IDs for persistence */
+    /** Store related entity IDs so trips can be saved and loaded through CSV files. */
     private String clientId;
-    private String accommodationId;     // optional
-    private String transportationId;    // optional
+    private String accommodationId;
+    private String transportationId;
 
     private Client client;
     private Accommodation accommodation;
@@ -32,34 +32,23 @@ public class Trip {
     private int durationInDays;
     private double basePrice;
 
-    /** Generates the next sequential ID for this category */
+    /** Generates the next sequential trip ID for new trip objects. */
     private static String generateId() {
         return "T" + nextId++;
     }
 
-    /** Sync nextId so IDs don't collide after CSV load */
+    /** Syncs the next ID after loading records so future generated IDs stay unique. */
     public static void syncNextIdFromLoadedId(String loadedId) {
         if (loadedId == null) return;
         if (!loadedId.startsWith("T")) return;
         try {
-            int n = Integer.parseInt(loadedId.substring(1));
-            if (n >= nextId) nextId = n + 1;
-        } catch (NumberFormatException ignore) {
+            int loadedNumber = Integer.parseInt(loadedId.substring(1));
+            if (loadedNumber >= nextId) nextId = loadedNumber + 1;
+        } catch (NumberFormatException ignoredException) {
         }
     }
 
-    /** Default constructor (valid) */
-    public Trip() {
-        this.tripId = generateId();
-        this.destination = "Unknown";
-        this.durationInDays = 1;
-        this.basePrice = 100.0;
-        this.clientId = null;
-        this.accommodationId = null;
-        this.transportationId = null;
-    }
-
-    /** constructor using object references (validated) */
+    /** Builds a trip directly from already-resolved object references. */
     public Trip(Client client, Transportation transportation, Accommodation accommodation,
                 String destination, int durationInDays, double basePrice) throws InvalidTripDataException {
         this.tripId = generateId();
@@ -71,7 +60,7 @@ public class Trip {
         this.transportation = transportation;
         this.accommodation = accommodation;
 
-        /** A2 persistence IDs derived from objects if present */
+        /** Derive persistence IDs from the linked objects whenever they are present. */
         this.clientId = (client == null) ? null : client.getClientId();
         this.transportationId = (transportation == null) ? null : transportation.getTransportId();
         this.accommodationId = (accommodation == null) ? null : accommodation.getAccommodationId();
@@ -80,7 +69,7 @@ public class Trip {
         validateClientIdExistsOrPresent();
     }
 
-    /** constructor from IDs (for CSV load) */
+    /** Builds a trip from IDs first, which is mainly useful during CSV loading. */
     public Trip(String tripId, String clientId, String accommodationId, String transportationId,
                 String destination, int durationInDays, double basePrice) throws InvalidTripDataException {
 
@@ -98,28 +87,29 @@ public class Trip {
         syncNextIdFromLoadedId(tripId);
     }
 
-    /** Copy constructor (new ID) */
-    public Trip(Trip other) {
+    /** Creates a copy of the trip data but gives the copy a fresh generated ID. */
+    public Trip(Trip otherTrip) {
         this.tripId = generateId();
 
-        this.clientId = other.clientId;
-        this.accommodationId = other.accommodationId;
-        this.transportationId = other.transportationId;
+        this.clientId = otherTrip.clientId;
+        this.accommodationId = otherTrip.accommodationId;
+        this.transportationId = otherTrip.transportationId;
 
-        this.client = other.client;
-        this.accommodation = other.accommodation;
-        this.transportation = other.transportation;
+        this.client = otherTrip.client;
+        this.accommodation = otherTrip.accommodation;
+        this.transportation = otherTrip.transportation;
 
-        this.destination = other.destination;
-        this.durationInDays = other.durationInDays;
-        this.basePrice = other.basePrice;
+        this.destination = otherTrip.destination;
+        this.durationInDays = otherTrip.durationInDays;
+        this.basePrice = otherTrip.basePrice;
     }
 
-    /** Validation helpers */
-    private static boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
+    /** Treats null or whitespace-only strings as blank input. */
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
+    /** Validates a loaded trip ID before storing it on the object. */
     private void setTripIdForLoad(String tripId) throws InvalidTripDataException {
         if (isBlank(tripId) || !tripId.startsWith("T")) {
             throw new InvalidTripDataException("Invalid tripId: " + tripId);
@@ -127,23 +117,22 @@ public class Trip {
         this.tripId = tripId.trim();
     }
 
+    /** Enforces the rule that a trip must contain accommodation, transportation, or both. */
     private void validateAtLeastOneBooking() throws InvalidTripDataException {
-        boolean hasAccom = !isBlank(accommodationId) || accommodation != null;
-        boolean hasTrans = !isBlank(transportationId) || transportation != null;
-        if (!hasAccom && !hasTrans) {
+        boolean hasAccommodation = !isBlank(accommodationId) || accommodation != null;
+        boolean hasTransportation = !isBlank(transportationId) || transportation != null;
+        if (!hasAccommodation && !hasTransportation) {
             throw new InvalidTripDataException("Trip must have at least one of: accommodation or transportation.");
         }
     }
 
+    /** Ensures the trip always has either a client ID or a linked client object. */
     private void validateClientIdExistsOrPresent() throws InvalidTripDataException {
-        // In A2, service layer verifies existence in clients[].
-        // Here we just ensure the field is present.
         if (isBlank(clientId) && client == null) {
             throw new InvalidTripDataException("Trip must have a clientId (or a Client reference).");
         }
     }
 
-    /** Getters & Setters (validated) */
     public String getTripId() {
         return tripId;
     }
@@ -152,6 +141,7 @@ public class Trip {
         return clientId;
     }
 
+    /** Validates the client ID format before storing it. */
     public void setClientId(String clientId) throws InvalidTripDataException {
         if (isBlank(clientId) || !clientId.trim().startsWith("C")) {
             throw new InvalidTripDataException("Invalid clientId: " + clientId);
@@ -166,29 +156,30 @@ public class Trip {
     public String getTransportationId() {
         return transportationId;
     }
+
+    /** Accepts a blank value as no accommodation, otherwise enforces the A-prefix format. */
     public void setAccommodationId(String accommodationId) throws InvalidTripDataException {
         if (isBlank(accommodationId)) {
             this.accommodationId = null;
-        }
-        else {
-            String value = accommodationId.trim();
-            if (!value.startsWith("A")) {
+        } else {
+            String trimmedAccommodationId = accommodationId.trim();
+            if (!trimmedAccommodationId.startsWith("A")) {
                 throw new InvalidTripDataException("Invalid accommodationId: " + accommodationId);
             }
-            this.accommodationId = value;
+            this.accommodationId = trimmedAccommodationId;
         }
     }
 
+    /** Accepts a blank value as no transportation, otherwise enforces the TR-prefix format. */
     public void setTransportationId(String transportationId) throws InvalidTripDataException {
         if (isBlank(transportationId)) {
             this.transportationId = null;
-        }
-        else {
-            String value = transportationId.trim();
-            if (!value.startsWith("TR")) {
+        } else {
+            String trimmedTransportationId = transportationId.trim();
+            if (!trimmedTransportationId.startsWith("TR")) {
                 throw new InvalidTripDataException("Invalid transportationId: " + transportationId);
             }
-            this.transportationId = value;
+            this.transportationId = trimmedTransportationId;
         }
     }
 
@@ -196,6 +187,7 @@ public class Trip {
         return client;
     }
 
+    /** Updates the linked client object and keeps the stored client ID in sync. */
     public void setClient(Client client) throws InvalidTripDataException {
         this.client = client;
         this.clientId = (client == null) ? this.clientId : client.getClientId();
@@ -206,9 +198,10 @@ public class Trip {
         return accommodation;
     }
 
+    /** Updates the linked accommodation object and keeps the stored ID in sync. */
     public void setAccommodation(Accommodation accommodation) throws InvalidTripDataException {
         this.accommodation = accommodation;
-        this.accommodationId = (accommodation == null) ? this.accommodationId : accommodation.getAccommodationId();
+        this.accommodationId = (accommodation == null) ? null : accommodation.getAccommodationId();
         validateAtLeastOneBooking();
     }
 
@@ -216,9 +209,10 @@ public class Trip {
         return transportation;
     }
 
+    /** Updates the linked transportation object and keeps the stored ID in sync. */
     public void setTransportation(Transportation transportation) throws InvalidTripDataException {
         this.transportation = transportation;
-        this.transportationId = (transportation == null) ? this.transportationId : transportation.getTransportId();
+        this.transportationId = (transportation == null) ? null : transportation.getTransportId();
         validateAtLeastOneBooking();
     }
 
@@ -226,6 +220,7 @@ public class Trip {
         return destination;
     }
 
+    /** Enforces that destination text cannot be blank. */
     public void setDestination(String destination) throws InvalidTripDataException {
         if (isBlank(destination)) {
             throw new InvalidTripDataException("Destination cannot be empty.");
@@ -237,8 +232,8 @@ public class Trip {
         return durationInDays;
     }
 
+    /** Enforces the rule that trip duration must stay between 1 and 20 days. */
     public void setDurationInDays(int durationInDays) throws InvalidTripDataException {
-        // A2 rule: 1–20
         if (durationInDays < 1 || durationInDays > 20) {
             throw new InvalidTripDataException("Duration must be between 1 and 20 days.");
         }
@@ -249,64 +244,64 @@ public class Trip {
         return basePrice;
     }
 
+    /** Enforces the rule that base price must be at least 100.00. */
     public void setBasePrice(double basePrice) throws InvalidTripDataException {
-        // A2 rule: base price >= 100.00
         if (basePrice < 100.0) {
             throw new InvalidTripDataException("Base price must be >= 100.00");
         }
         this.basePrice = basePrice;
     }
 
-
+    /** Calculates the full trip cost by adding optional transport and accommodation costs. */
     public double calculateTotalCost() {
-        double total = basePrice;
+        double totalCost = basePrice;
 
         if (transportation != null) {
-            total += transportation.calculateCost(durationInDays);
+            totalCost += transportation.calculateCost(durationInDays);
         }
         if (accommodation != null) {
-            total += accommodation.calculateCost(durationInDays);
+            totalCost += accommodation.calculateCost(durationInDays);
         }
 
-        return total;
+        return totalCost;
     }
 
     @Override
-    public boolean equals(Object oth) {
-        if (oth == null) return false;
-        if (!(oth instanceof Trip)) return false;
+    public boolean equals(Object otherObject) {
+        if (otherObject == null) return false;
+        if (!(otherObject instanceof Trip)) return false;
 
-        Trip other = (Trip) oth;
+        Trip otherTrip = (Trip) otherObject;
 
         if (clientId == null) {
-            if (other.clientId != null) return false;
-        } else if (!clientId.equals(other.clientId)) {
+            if (otherTrip.clientId != null) return false;
+        } else if (!clientId.equals(otherTrip.clientId)) {
             return false;
         }
 
         if (accommodationId == null) {
-            if (other.accommodationId != null) return false;
-        } else if (!accommodationId.equals(other.accommodationId)) {
+            if (otherTrip.accommodationId != null) return false;
+        } else if (!accommodationId.equals(otherTrip.accommodationId)) {
             return false;
         }
 
         if (transportationId == null) {
-            if (other.transportationId != null) return false;
-        } else if (!transportationId.equals(other.transportationId)) {
+            if (otherTrip.transportationId != null) return false;
+        } else if (!transportationId.equals(otherTrip.transportationId)) {
             return false;
         }
 
         if (destination == null) {
-            if (other.destination != null) return false;
-        } else if (!destination.equals(other.destination)) {
+            if (otherTrip.destination != null) return false;
+        } else if (!destination.equals(otherTrip.destination)) {
             return false;
         }
 
-        return durationInDays == other.durationInDays &&
-                Double.compare(basePrice, other.basePrice) == 0;
+        return durationInDays == otherTrip.durationInDays &&
+                Double.compare(basePrice, otherTrip.basePrice) == 0;
     }
 
-    /** Provides a clean summary for display */
+    /** Returns a compact summary of the trip data for display and debugging. */
     @Override
     public String toString() {
         return "Trip{tripId='" + tripId + "', clientId='" + clientId +

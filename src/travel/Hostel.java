@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 2 (based on Assignment 1 code)
+// Assignment 2
 // Class: Hostel
-// Written by: Yousef Yousef (40299095) , Hamza Shadeed(40341727)
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package travel;
@@ -13,22 +13,21 @@ public class Hostel extends Accommodation {
 
     private int sharedRoomCapacity;
 
-    /** Default constructor */
+    /** Builds a default hostel with a typical shared-room capacity. */
     public Hostel() {
         super();
         this.sharedRoomCapacity = 4;
     }
 
-    /** constructor */
+    /** Builds a hostel using validated user input. */
     public Hostel(String name, String location, double pricePerNight, int sharedRoomCapacity)
             throws InvalidAccommodationDataException {
         super(name, location, pricePerNight);
         setSharedRoomCapacity(sharedRoomCapacity);
-        // A2 rule: Hostel price <= 150
         validateHostelPrice(pricePerNight);
     }
 
-    /** load-time constructor (explicit ID) */
+    /** Builds a hostel from file data using an explicit accommodation ID. */
     public Hostel(String accommodationId, String name, String location, double pricePerNight, int sharedRoomCapacity)
             throws InvalidAccommodationDataException {
         super(accommodationId, name, location, pricePerNight);
@@ -36,12 +35,13 @@ public class Hostel extends Accommodation {
         validateHostelPrice(pricePerNight);
     }
 
-    /** Copy constructor */
-    public Hostel(Hostel other) {
-        super(other);
-        this.sharedRoomCapacity = other.sharedRoomCapacity;
+    /** Creates a deep-style copy with a fresh generated ID. */
+    public Hostel(Hostel otherHostel) {
+        super(otherHostel);
+        this.sharedRoomCapacity = otherHostel.sharedRoomCapacity;
     }
 
+    /** Enforces the hostel business rule for maximum nightly price. */
     private void validateHostelPrice(double pricePerNight) throws InvalidAccommodationDataException {
         if (pricePerNight > 150.0) {
             throw new InvalidAccommodationDataException("Hostel pricePerNight must be <= 150.");
@@ -52,6 +52,7 @@ public class Hostel extends Accommodation {
         return sharedRoomCapacity;
     }
 
+    /** Enforces that at least one person can fit in the room. */
     public void setSharedRoomCapacity(int sharedRoomCapacity) throws InvalidAccommodationDataException {
         if (sharedRoomCapacity < 1) {
             throw new InvalidAccommodationDataException("Hostel sharedRoomCapacity must be >= 1.");
@@ -59,27 +60,24 @@ public class Hostel extends Accommodation {
         this.sharedRoomCapacity = sharedRoomCapacity;
     }
 
-    /** multiply by 0.85 */
+    /** Applies the hostel discount to the total stay cost. */
     @Override
     public double calculateCost(int numberOfDays) {
-        double nights = numberOfDays;
-        double total = nights * getPricePerNight();
-
-        total = total * 0.85;
-
-        return total;
+        double totalCost = numberOfDays * getPricePerNight();
+        return totalCost * 0.85;
     }
 
+    /** Compares the meaningful state of two hostel objects. */
     @Override
-    public boolean equals(Object oth) {
-        if (!super.equals(oth)) return false;
-        if (!(oth instanceof Hostel)) return false;
+    public boolean equals(Object otherObject) {
+        if (!super.equals(otherObject)) return false;
+        if (!(otherObject instanceof Hostel)) return false;
 
-        Hostel other = (Hostel) oth;
-        return sharedRoomCapacity == other.sharedRoomCapacity;
+        Hostel otherHostel = (Hostel) otherObject;
+        return sharedRoomCapacity == otherHostel.sharedRoomCapacity;
     }
 
-    /** Provides a clean summary for display */
+    /** Returns a clean text summary for menus, testing, and logging. */
     @Override
     public String toString() {
         return "Hostel{accommodationId='" + getAccommodationId() + "', name='" + getName() +
@@ -88,13 +86,7 @@ public class Hostel extends Accommodation {
     }
 
     @Override
-    public String getType() { return "Hostel"; }
-
-    // EQUALS
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) return false;
-        Hostel other = (Hostel) obj;
-        return sharedRoomCapacity == other.sharedRoomCapacity;
+    public String getType() {
+        return "HOSTEL";
     }
 }
