@@ -84,6 +84,13 @@ public class Hostel extends Accommodation {
                 ", sharedRoomCapacity=" + sharedRoomCapacity + "}";
     }
 
+    /** Serializes the hostel using the current A2-compatible CSV format. */
+    @Override
+    public String toCsvRow() {
+        return "HOSTEL;" + getAccommodationId() + ";" + getName() + ";" +
+                getLocation() + ";" + getPricePerNight() + ";" + sharedRoomCapacity;
+    }
+
     @Override
     public String getType() {
         return "HOSTEL";

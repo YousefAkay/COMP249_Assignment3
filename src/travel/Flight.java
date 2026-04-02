@@ -124,6 +124,15 @@ public class Flight extends Transportation {
         return super.toString().replace("Transportation", "Flight").replace("}", "") +
                 ", airlineName='" + airlineName + "', luggageAllowanceKg=" + luggageAllowanceKg + "}";
     }
+
+    /** Serializes the flight using the current A2-compatible CSV format. */
+    @Override
+    public String toCsvRow() {
+        return "FLIGHT;" + getTransportId() + ";" + getCompanyName() + ";" +
+                getDepartureCity() + ";" + getArrivalCity() + ";" +
+                airlineName + ";" + getBaseFare() + ";" + luggageAllowanceKg;
+    }
+
     @Override
     public String getType() {
         return "FLIGHT";

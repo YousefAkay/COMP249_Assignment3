@@ -7,9 +7,12 @@
 package travel;
 
 import client.Client;
+import contracts.Billable;
+import contracts.CsvPersistable;
+import contracts.Identifiable;
 import exceptions.InvalidTripDataException;
 
-public class Trip {
+public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<Trip> {
 
     private static int nextId = 2001;
 
@@ -135,6 +138,11 @@ public class Trip {
 
     public String getTripId() {
         return tripId;
+    }
+
+    @Override
+    public String getId() {
+        return getTripId();
     }
 
     public String getClientId() {
@@ -308,5 +316,68 @@ public class Trip {
                 "', accommodationId='" + accommodationId + "', transportationId='" + transportationId +
                 "', destination='" + destination + "', durationInDays=" + durationInDays +
                 ", basePrice=" + basePrice + "}";
+    }
+
+    /** Exposes the trip's current total cost through the Billable contract. */
+    @Override
+    public double getBillableAmount() {
+        return calculateTotalCost();
+    }
+
+    /** Serializes the trip using the current A2-compatible CSV format. */
+    @Override
+    public String toCsvRow() {
+        String savedAccommodationId = (accommodationId == null) ? "" : accommodationId;
+        String savedTransportationId = (transportationId == null) ? "" : transportationId;
+
+        return tripId + ";" + clientId + ";" + savedAccommodationId + ";" +
+                savedTransportationId + ";" + destination + ";" + durationInDays + ";" + basePrice;
+    }
+
+    /** Reconstructs one trip from an A2-compatible CSV row. */
+    public static Trip fromCsvRow(String csvRow) throws InvalidTripDataException {
+        if (csvRow == null) {
+            throw new InvalidTripDataException("Trip CSV row cannot be null.");
+        }
+
+        String[] tokens = csvRow.split(";");
+        if (tokens.length != 7) {
+            throw new InvalidTripDataException("Bad TRIP token count: " + csvRow);
+        }
+
+        String savedAccommodationId = tokens[2].trim();
+        String savedTransportationId = tokens[3].trim();
+
+        if (savedAccommodationId.isEmpty()) {
+            savedAccommodationId = null;
+        }
+        if (savedTransportationId.isEmpty()) {
+            savedTransportationId = null;
+        }
+
+        return new Trip(
+                tokens[0].trim(),
+                tokens[1].trim(),
+                savedAccommodationId,
+                savedTransportationId,
+                tokens[4].trim(),
+                Integer.parseInt(tokens[5].trim()),
+                Double.parseDouble(tokens[6].trim())
+        );
+    }
+
+    /** Applies the A3 natural business ordering: total cost descending. */
+    @Override
+    public int compareTo(Trip otherTrip) {
+        if (otherTrip == null) {
+            return -1;
+        }
+
+        int costComparison = Double.compare(otherTrip.calculateTotalCost(), calculateTotalCost());
+        if (costComparison != 0) {
+            return costComparison;
+        }
+
+        return tripId.compareTo(otherTrip.tripId);
     }
 }

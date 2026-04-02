@@ -88,6 +88,14 @@ public class Bus extends Transportation {
                 ", numberOfStops=" + numberOfStops + "}";
     }
 
+    /** Serializes the bus using the current A2-compatible CSV format. */
+    @Override
+    public String toCsvRow() {
+        return "BUS;" + getTransportId() + ";" + getCompanyName() + ";" +
+                getDepartureCity() + ";" + getArrivalCity() + ";" +
+                getBaseFare() + ";" + numberOfStops;
+    }
+
     @Override
     public String getType() {
         return "BUS";

@@ -88,6 +88,13 @@ public class Hotel extends Accommodation {
                 ", stars=" + stars + "}";
     }
 
+    /** Serializes the hotel using the current A2-compatible CSV format. */
+    @Override
+    public String toCsvRow() {
+        return "HOTEL;" + getAccommodationId() + ";" + getName() + ";" +
+                getLocation() + ";" + getPricePerNight() + ";" + stars;
+    }
+
     @Override
     public String getType() {
         return "HOTEL";

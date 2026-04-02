@@ -6,10 +6,12 @@
 
 package travel;
 
+import contracts.CsvPersistable;
+import contracts.Identifiable;
 import exceptions.InvalidTransportDataException;
 
 /** Core Transportation entity in the SmartTravel system */
-public abstract class Transportation {
+public abstract class Transportation implements Identifiable, CsvPersistable, Comparable<Transportation> {
 
 	private static int nextId = 3001;
 
@@ -108,6 +110,11 @@ public abstract class Transportation {
 		return transportId;
 	}
 
+	@Override
+	public String getId() {
+		return getTransportId();
+	}
+
 	public String getCompanyName() {
 		return companyName;
 	}
@@ -194,4 +201,95 @@ public abstract class Transportation {
 	}
 
 	public abstract String getType();
+
+	/** Reconstructs one transportation object by dispatching on the CSV type prefix. */
+	public static Transportation fromCsvRow(String csvRow) throws InvalidTransportDataException {
+		if (csvRow == null) {
+			throw new InvalidTransportDataException("Transportation CSV row cannot be null.");
+		}
+
+		String[] tokens = csvRow.split(";");
+		if (tokens.length < 2) {
+			throw new InvalidTransportDataException("Bad transportation CSV row: " + csvRow);
+		}
+
+		String typePrefix = tokens[0].trim().toUpperCase();
+
+		if ("FLIGHT".equals(typePrefix)) {
+			if (tokens.length != 8) {
+				throw new InvalidTransportDataException("Bad FLIGHT token count: " + csvRow);
+			}
+
+			return new Flight(
+					tokens[1].trim(),
+					tokens[2].trim(),
+					tokens[3].trim(),
+					tokens[4].trim(),
+					tokens[5].trim(),
+					Double.parseDouble(tokens[6].trim()),
+					Double.parseDouble(tokens[7].trim())
+			);
+		}
+
+		if ("TRAIN".equals(typePrefix)) {
+			if (tokens.length != 7) {
+				throw new InvalidTransportDataException("Bad TRAIN token count: " + csvRow);
+			}
+
+			String possibleNumericToken = tokens[5].trim();
+			String possibleTrainTypeToken = tokens[6].trim();
+
+			try {
+				return new Train(
+						tokens[1].trim(),
+						tokens[2].trim(),
+						tokens[3].trim(),
+						tokens[4].trim(),
+						possibleTrainTypeToken,
+						Double.parseDouble(possibleNumericToken)
+				);
+			} catch (NumberFormatException exception) {
+				return new Train(
+						tokens[1].trim(),
+						tokens[2].trim(),
+						tokens[3].trim(),
+						tokens[4].trim(),
+						possibleNumericToken,
+						Double.parseDouble(possibleTrainTypeToken)
+				);
+			}
+		}
+
+		if ("BUS".equals(typePrefix)) {
+			if (tokens.length != 7) {
+				throw new InvalidTransportDataException("Bad BUS token count: " + csvRow);
+			}
+
+			return new Bus(
+					tokens[1].trim(),
+					tokens[2].trim(),
+					tokens[3].trim(),
+					tokens[4].trim(),
+					Double.parseDouble(tokens[5].trim()),
+					Integer.parseInt(tokens[6].trim())
+			);
+		}
+
+		throw new InvalidTransportDataException("Unknown transport type prefix: " + typePrefix);
+	}
+
+	/** Applies the A3 natural business ordering: baseFare descending. */
+	@Override
+	public int compareTo(Transportation otherTransportation) {
+		if (otherTransportation == null) {
+			return -1;
+		}
+
+		int fareComparison = Double.compare(otherTransportation.baseFare, baseFare);
+		if (fareComparison != 0) {
+			return fareComparison;
+		}
+
+		return transportId.compareTo(otherTransportation.transportId);
+	}
 }

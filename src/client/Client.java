@@ -6,10 +6,12 @@
 
 package client;
 
+import contracts.CsvPersistable;
+import contracts.Identifiable;
 import exceptions.InvalidClientDataException;
 
 /** Core Client entity in the SmartTravel system */
-public class Client {
+public class Client implements Identifiable, CsvPersistable, Comparable<Client> {
 
     private static int nextId = 1001;
 
@@ -126,6 +128,11 @@ public class Client {
         return clientId;
     }
 
+    @Override
+    public String getId() {
+        return getClientId();
+    }
+
     public String getFirstName() {
         return firstName;
     }
@@ -199,5 +206,46 @@ public class Client {
     public String toString() {
         return "Client{clientId='" + clientId + "', firstName='" + firstName + "', lastName='" + lastName +
                 "', email='" + email + "', amountSpent=" + amountSpent + "}";
+    }
+
+    /** Serializes the client using the current A2-compatible CSV format. */
+    @Override
+    public String toCsvRow() {
+        return clientId + ";" + firstName + ";" + lastName + ";" + email;
+    }
+
+    /** Reconstructs one client from an A2-compatible CSV row. */
+    public static Client fromCsvRow(String csvRow) throws InvalidClientDataException {
+        if (csvRow == null) {
+            throw new InvalidClientDataException("Client CSV row cannot be null.");
+        }
+
+        String[] tokens = csvRow.split(";");
+        if (tokens.length != 4) {
+            throw new InvalidClientDataException("Bad client CSV token count: " + csvRow);
+        }
+
+        return new Client(
+                tokens[0].trim(),
+                tokens[1].trim(),
+                tokens[2].trim(),
+                tokens[3].trim(),
+                0.0
+        );
+    }
+
+    /** Applies the A3 natural business ordering: amountSpent descending. */
+    @Override
+    public int compareTo(Client otherClient) {
+        if (otherClient == null) {
+            return -1;
+        }
+
+        int spendingComparison = Double.compare(otherClient.amountSpent, amountSpent);
+        if (spendingComparison != 0) {
+            return spendingComparison;
+        }
+
+        return clientId.compareTo(otherClient.clientId);
     }
 }

@@ -8,55 +8,79 @@ package service;
 
 import client.Client;
 import exceptions.*;
-import persistence.*;
+import persistence.GenericFileManager;
+import repository.Repository;
 import travel.*;
+import util.RecentList;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SmartTravelService {
 
-    private final Client[] clients;
-    private final Trip[] trips;
-    private final Transportation[] transportations;
-    private final Accommodation[] accommodations;
+    private static final String DEFAULT_INPUT_DIRECTORY = "data";
+    private static final String DEFAULT_OUTPUT_DIRECTORY = "output/data";
 
-    private int clientCount;
-    private int tripCount;
-    private int transportCount;
-    private int accommodationCount;
+    private final List<Client> clients;
+    private final List<Trip> trips;
+    private final List<Transportation> transportations;
+    private final List<Accommodation> accommodations;
 
-    /** Stores the shared arrays that hold all system data in memory. */
+    private final Repository<Client> clientRepository;
+    private final Repository<Trip> tripRepository;
+    private final Repository<Transportation> transportationRepository;
+    private final Repository<Accommodation> accommodationRepository;
+
+    private final RecentList<Trip> recentTrips;
+
+    /** Preserves the old constructor signature while migrating internal storage to collections. */
     public SmartTravelService(Client[] clients, Trip[] trips, Transportation[] transportations, Accommodation[] accommodations) {
-        this.clients = clients;
-        this.trips = trips;
-        this.transportations = transportations;
-        this.accommodations = accommodations;
-        this.clientCount = 0;
-        this.tripCount = 0;
-        this.transportCount = 0;
-        this.accommodationCount = 0;
+        this();
+        initializeFromArrays(clients, trips, transportations, accommodations);
     }
 
-    public int getClientCount() { return clientCount; }
-    public int getTripCount() { return tripCount; }
-    public int getTransportCount() { return transportCount; }
-    public int getAccommodationCount() { return accommodationCount; }
+    /** Preferred collection-backed constructor for A3. */
+    public SmartTravelService() {
+        this.clients = new ArrayList<Client>();
+        this.trips = new ArrayList<Trip>();
+        this.transportations = new ArrayList<Transportation>();
+        this.accommodations = new ArrayList<Accommodation>();
 
-    public Client[] getClients() { return clients; }
-    public Trip[] getTrips() { return trips; }
-    public Transportation[] getTransportations() { return transportations; }
-    public Accommodation[] getAccommodations() { return accommodations; }
+        this.clientRepository = new Repository<Client>();
+        this.tripRepository = new Repository<Trip>();
+        this.transportationRepository = new Repository<Transportation>();
+        this.accommodationRepository = new Repository<Accommodation>();
 
-    /** Adds a client only after checking for null input, duplicates, and free array space. */
+        this.recentTrips = new RecentList<Trip>();
+    }
+
+    public int getClientCount() { return clients.size(); }
+    public int getTripCount() { return trips.size(); }
+    public int getTransportCount() { return transportations.size(); }
+    public int getAccommodationCount() { return accommodations.size(); }
+
+    /** Returns an array snapshot for A2-compatible callers such as the current driver and dashboard. */
+    public Client[] getClients() { return clients.toArray(new Client[clients.size()]); }
+    public Trip[] getTrips() { return trips.toArray(new Trip[trips.size()]); }
+    public Transportation[] getTransportations() { return transportations.toArray(new Transportation[transportations.size()]); }
+    public Accommodation[] getAccommodations() { return accommodations.toArray(new Accommodation[accommodations.size()]); }
+
+    /** Exposes the live lists for A3 collection-based logic. */
+    public List<Client> getClientList() { return new ArrayList<Client>(clients); }
+    public List<Trip> getTripList() { return new ArrayList<Trip>(trips); }
+    public List<Transportation> getTransportationList() { return new ArrayList<Transportation>(transportations); }
+    public List<Accommodation> getAccommodationList() { return new ArrayList<Accommodation>(accommodations); }
+
+    /** Adds a client only after checking for null input and duplicate emails. */
     public void addClient(Client client) throws DuplicateEmailException, InvalidClientDataException {
         if (client == null) throw new InvalidClientDataException("Cannot add null client.");
         if (emailExists(client.getEmail())) {
             throw new DuplicateEmailException("Duplicate email: " + client.getEmail());
         }
-        if (clientCount >= clients.length) {
-            throw new InvalidClientDataException("Client list is full.");
-        }
-        clients[clientCount++] = client;
+
+        clients.add(client);
+        clientRepository.add(client);
     }
 
     /** Validates the replacement client data first so the object is not left half-updated. */
@@ -107,100 +131,98 @@ public class SmartTravelService {
 
     /** Deletes a client only if no existing trip still references that client. */
     public void deleteClient(String clientId) throws EntityNotFoundException, InvalidClientDataException {
-        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
-            if (trips[tripIndex] != null && clientId.equals(trips[tripIndex].getClientId())) {
+        for (int tripIndex = 0; tripIndex < trips.size(); tripIndex++) {
+            Trip trip = trips.get(tripIndex);
+            if (trip != null && clientId.equals(trip.getClientId())) {
                 throw new InvalidClientDataException("Cannot delete client with existing trips.");
             }
         }
 
-        int clientIndex = findClientIndexById(clientId);
-        shiftClientsLeft(clientIndex);
-        clientCount--;
+        Client client = findClientById(clientId);
+        clients.remove(client);
+        clientRepository.removeById(clientId);
     }
 
-    /** Searches the active client range to see whether an email is already used. */
+    /** Searches the active client list to see whether an email is already used. */
     public boolean emailExists(String email) {
         if (email == null) return false;
-        for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-            if (clients[clientIndex] != null && email.equalsIgnoreCase(clients[clientIndex].getEmail())) return true;
+        for (int clientIndex = 0; clientIndex < clients.size(); clientIndex++) {
+            Client client = clients.get(clientIndex);
+            if (client != null && email.equalsIgnoreCase(client.getEmail())) return true;
         }
         return false;
     }
 
-    /** Checks whether the given client ID exists in the active client array. */
+    /** Checks whether the given client ID exists in the repository. */
     public boolean clientExists(String clientId) {
-        for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-            if (clients[clientIndex] != null && clients[clientIndex].getClientId().equals(clientId)) return true;
-        }
-        return false;
+        return clientRepository.findById(clientId) != null;
     }
 
     /** Finds and returns a client by ID or throws if the client does not exist. */
     public Client findClientById(String clientId) throws EntityNotFoundException {
-        for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-            if (clients[clientIndex] != null && clients[clientIndex].getClientId().equals(clientId)) return clients[clientIndex];
+        Client client = clientRepository.findById(clientId);
+        if (client != null) {
+            return client;
         }
         throw new EntityNotFoundException("Client not found: " + clientId);
     }
 
-    /** Adds transportation only after checking for null input and available array capacity. */
+    /** Adds transportation after checking for null input. */
     public void addTransportation(Transportation transportation) throws InvalidTransportDataException {
         if (transportation == null) throw new InvalidTransportDataException("Cannot add null transportation.");
-        if (transportCount >= transportations.length) throw new InvalidTransportDataException("Transportation list is full.");
-        transportations[transportCount++] = transportation;
+        transportations.add(transportation);
+        transportationRepository.add(transportation);
     }
 
     /** Removes transportation only if no existing trip is still using it. */
     public void removeTransportation(String transportId) throws EntityNotFoundException, InvalidTransportDataException {
-        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
-            if (trips[tripIndex] != null && transportId.equals(trips[tripIndex].getTransportationId())) {
+        for (int tripIndex = 0; tripIndex < trips.size(); tripIndex++) {
+            Trip trip = trips.get(tripIndex);
+            if (trip != null && transportId.equals(trip.getTransportationId())) {
                 throw new InvalidTransportDataException("Cannot remove transportation used by a trip.");
             }
         }
 
-        int transportationIndex = findTransportationIndexById(transportId);
-        shiftTransportationsLeft(transportationIndex);
-        transportCount--;
+        Transportation transportation = findTransportationById(transportId);
+        transportations.remove(transportation);
+        transportationRepository.removeById(transportId);
     }
 
     /** Finds and returns transportation by ID or throws if it does not exist. */
     public Transportation findTransportationById(String transportId) throws EntityNotFoundException {
-        for (int transportationIndex = 0; transportationIndex < transportCount; transportationIndex++) {
-            if (transportations[transportationIndex] != null &&
-                    transportations[transportationIndex].getTransportId().equals(transportId)) {
-                return transportations[transportationIndex];
-            }
+        Transportation transportation = transportationRepository.findById(transportId);
+        if (transportation != null) {
+            return transportation;
         }
         throw new EntityNotFoundException("Transportation not found: " + transportId);
     }
 
-    /** Adds accommodation only after checking for null input and available array capacity. */
+    /** Adds accommodation after checking for null input. */
     public void addAccommodation(Accommodation accommodation) throws InvalidAccommodationDataException {
         if (accommodation == null) throw new InvalidAccommodationDataException("Cannot add null accommodation.");
-        if (accommodationCount >= accommodations.length) throw new InvalidAccommodationDataException("Accommodation list is full.");
-        accommodations[accommodationCount++] = accommodation;
+        accommodations.add(accommodation);
+        accommodationRepository.add(accommodation);
     }
 
     /** Removes accommodation only if no existing trip is still using it. */
     public void removeAccommodation(String accommodationId) throws EntityNotFoundException, InvalidAccommodationDataException {
-        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
-            if (trips[tripIndex] != null && accommodationId.equals(trips[tripIndex].getAccommodationId())) {
+        for (int tripIndex = 0; tripIndex < trips.size(); tripIndex++) {
+            Trip trip = trips.get(tripIndex);
+            if (trip != null && accommodationId.equals(trip.getAccommodationId())) {
                 throw new InvalidAccommodationDataException("Cannot remove accommodation used by a trip.");
             }
         }
 
-        int accommodationIndex = findAccommodationIndexById(accommodationId);
-        shiftAccommodationsLeft(accommodationIndex);
-        accommodationCount--;
+        Accommodation accommodation = findAccommodationById(accommodationId);
+        accommodations.remove(accommodation);
+        accommodationRepository.removeById(accommodationId);
     }
 
     /** Finds and returns accommodation by ID or throws if it does not exist. */
     public Accommodation findAccommodationById(String accommodationId) throws EntityNotFoundException {
-        for (int accommodationIndex = 0; accommodationIndex < accommodationCount; accommodationIndex++) {
-            if (accommodations[accommodationIndex] != null &&
-                    accommodations[accommodationIndex].getAccommodationId().equals(accommodationId)) {
-                return accommodations[accommodationIndex];
-            }
+        Accommodation accommodation = accommodationRepository.findById(accommodationId);
+        if (accommodation != null) {
+            return accommodation;
         }
         throw new EntityNotFoundException("Accommodation not found: " + accommodationId);
     }
@@ -208,9 +230,9 @@ public class SmartTravelService {
     /** Adds a trip after resolving any referenced objects and updating client spending. */
     public void addTrip(Trip trip) throws InvalidTripDataException, EntityNotFoundException, InvalidClientDataException {
         if (trip == null) throw new InvalidTripDataException("Cannot add null trip.");
-        if (tripCount >= trips.length) throw new InvalidTripDataException("Trip list is full.");
 
         Client client = findClientById(trip.getClientId());
+        trip.setClient(client);
 
         if (trip.getTransportation() == null && trip.getTransportationId() != null) {
             trip.setTransportation(findTransportationById(trip.getTransportationId()));
@@ -219,7 +241,8 @@ public class SmartTravelService {
             trip.setAccommodation(findAccommodationById(trip.getAccommodationId()));
         }
 
-        trips[tripCount++] = trip;
+        trips.add(trip);
+        tripRepository.add(trip);
         client.addToAmountSpent(trip.calculateTotalCost());
     }
 
@@ -278,44 +301,46 @@ public class SmartTravelService {
         recomputeAllClientSpending();
     }
 
-    /** Cancels a trip by shifting the array left and rebuilding client spending totals. */
+    /** Cancels a trip and rebuilds client spending totals. */
     public void cancelTrip(String tripId) throws EntityNotFoundException, InvalidClientDataException {
-        int tripIndex = findTripIndexById(tripId);
-        shiftTripsLeft(tripIndex);
-        tripCount--;
+        Trip trip = findTripById(tripId);
+        trips.remove(trip);
+        tripRepository.removeById(tripId);
         recomputeAllClientSpending();
     }
 
     /** Finds and returns a trip by ID or throws if it does not exist. */
     public Trip findTripById(String tripId) throws EntityNotFoundException {
-        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
-            if (trips[tripIndex] != null && trips[tripIndex].getTripId().equals(tripId)) return trips[tripIndex];
+        Trip trip = tripRepository.findById(tripId);
+        if (trip != null) {
+            return trip;
         }
         throw new EntityNotFoundException("Trip not found: " + tripId);
     }
 
-    /** Calculates the total cost for a trip using its array index. */
+    /** Calculates the total cost for a trip using its current list index. */
     public double calculateTripTotal(int tripIndex) throws InvalidTripDataException {
-        if (tripIndex < 0 || tripIndex >= tripCount || trips[tripIndex] == null) {
+        if (tripIndex < 0 || tripIndex >= trips.size()) {
             throw new InvalidTripDataException("Invalid trip index: " + tripIndex);
         }
-        return trips[tripIndex].calculateTotalCost();
+        return trips.get(tripIndex).calculateTotalCost();
     }
 
-    /** Scans the active trip list and returns the trip with the highest total cost. */
+    /** Scans the current trip list and returns the trip with the highest total cost. */
     public Trip findMostExpensiveTrip() throws EntityNotFoundException {
-        if (tripCount == 0) {
+        if (trips.isEmpty()) {
             throw new EntityNotFoundException("No trips available.");
         }
 
         Trip mostExpensiveTrip = null;
         double highestTripCost = -1;
 
-        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
-            if (trips[tripIndex] != null) {
-                double currentTripCost = trips[tripIndex].calculateTotalCost();
+        for (int tripIndex = 0; tripIndex < trips.size(); tripIndex++) {
+            Trip trip = trips.get(tripIndex);
+            if (trip != null) {
+                double currentTripCost = trip.calculateTotalCost();
                 if (mostExpensiveTrip == null || currentTripCost > highestTripCost) {
-                    mostExpensiveTrip = trips[tripIndex];
+                    mostExpensiveTrip = trip;
                     highestTripCost = currentTripCost;
                 }
             }
@@ -326,15 +351,16 @@ public class SmartTravelService {
 
     /** Builds a deep-copied transportation array using the correct subclass copy constructor. */
     public Transportation[] deepCopyTransportationArray() {
-        Transportation[] copiedTransportations = new Transportation[transportCount];
+        Transportation[] copiedTransportations = new Transportation[transportations.size()];
 
-        for (int transportationIndex = 0; transportationIndex < transportCount; transportationIndex++) {
-            if (transportations[transportationIndex] instanceof Flight) {
-                copiedTransportations[transportationIndex] = new Flight((Flight) transportations[transportationIndex]);
-            } else if (transportations[transportationIndex] instanceof Train) {
-                copiedTransportations[transportationIndex] = new Train((Train) transportations[transportationIndex]);
-            } else if (transportations[transportationIndex] instanceof Bus) {
-                copiedTransportations[transportationIndex] = new Bus((Bus) transportations[transportationIndex]);
+        for (int transportationIndex = 0; transportationIndex < transportations.size(); transportationIndex++) {
+            Transportation transportation = transportations.get(transportationIndex);
+            if (transportation instanceof Flight) {
+                copiedTransportations[transportationIndex] = new Flight((Flight) transportation);
+            } else if (transportation instanceof Train) {
+                copiedTransportations[transportationIndex] = new Train((Train) transportation);
+            } else if (transportation instanceof Bus) {
+                copiedTransportations[transportationIndex] = new Bus((Bus) transportation);
             }
         }
 
@@ -343,13 +369,14 @@ public class SmartTravelService {
 
     /** Builds a deep-copied accommodation array using the correct subclass copy constructor. */
     public Accommodation[] deepCopyAccommodationArray() {
-        Accommodation[] copiedAccommodations = new Accommodation[accommodationCount];
+        Accommodation[] copiedAccommodations = new Accommodation[accommodations.size()];
 
-        for (int accommodationIndex = 0; accommodationIndex < accommodationCount; accommodationIndex++) {
-            if (accommodations[accommodationIndex] instanceof Hotel) {
-                copiedAccommodations[accommodationIndex] = new Hotel((Hotel) accommodations[accommodationIndex]);
-            } else if (accommodations[accommodationIndex] instanceof Hostel) {
-                copiedAccommodations[accommodationIndex] = new Hostel((Hostel) accommodations[accommodationIndex]);
+        for (int accommodationIndex = 0; accommodationIndex < accommodations.size(); accommodationIndex++) {
+            Accommodation accommodation = accommodations.get(accommodationIndex);
+            if (accommodation instanceof Hotel) {
+                copiedAccommodations[accommodationIndex] = new Hotel((Hotel) accommodation);
+            } else if (accommodation instanceof Hostel) {
+                copiedAccommodations[accommodationIndex] = new Hostel((Hostel) accommodation);
             }
         }
 
@@ -358,58 +385,132 @@ public class SmartTravelService {
 
     /** Recomputes every client's amount spent from scratch using the current trip list. */
     public void recomputeAllClientSpending() throws InvalidClientDataException {
-        for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-            if (clients[clientIndex] != null) clients[clientIndex].setAmountSpent(0.0);
+        for (int clientIndex = 0; clientIndex < clients.size(); clientIndex++) {
+            clients.get(clientIndex).setAmountSpent(0.0);
         }
 
-        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
-            Trip trip = trips[tripIndex];
-            if (trip == null) continue;
+        for (int tripIndex = 0; tripIndex < trips.size(); tripIndex++) {
+            Trip trip = trips.get(tripIndex);
+            Client client = trip.getClient();
 
-            for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-                if (clients[clientIndex] != null && clients[clientIndex].getClientId().equals(trip.getClientId())) {
-                    clients[clientIndex].addToAmountSpent(trip.calculateTotalCost());
-                    break;
+            if (client == null && trip.getClientId() != null) {
+                try {
+                    client = findClientById(trip.getClientId());
+                    trip.setClient(client);
+                } catch (EntityNotFoundException exception) {
+                    continue;
+                } catch (InvalidTripDataException exception) {
+                    continue;
                 }
+            }
+
+            if (client != null) {
+                client.addToAmountSpent(trip.calculateTotalCost());
             }
         }
     }
 
-    /** Loads clients first, then related entities, and trips last to preserve dependencies. */
-    public void loadAllData(String dataDirectory) throws IOException {
+    /** Loads all CSV data using the A3 generic persistence flow and A2 relationship ordering. */
+    public void loadAllData(String ignoredDataDirectory) throws IOException {
         clearAllData();
 
-        clientCount = ClientFileManager.loadClients(clients, dataDirectory + "/clients.csv");
-        transportCount = TransportationFileManager.loadTransportations(transportations, dataDirectory + "/transports.csv");
-        accommodationCount = AccommodationFileManager.loadAccommodations(accommodations, dataDirectory + "/accommodations.csv");
-        tripCount = TripFileManager.loadTrips(trips, dataDirectory + "/trips.csv", this);
+        List<Client> loadedClients = GenericFileManager.loadAll(
+                DEFAULT_INPUT_DIRECTORY + "/clients.csv",
+                new GenericFileManager.CsvParser<Client>() {
+                    @Override
+                    public Client parse(String csvRow) throws Exception {
+                        return Client.fromCsvRow(csvRow);
+                    }
+                }
+        );
+
+        for (int index = 0; index < loadedClients.size(); index++) {
+            Client client = loadedClients.get(index);
+            if (emailExists(client.getEmail())) {
+                throw new IOException("Duplicate email in clients.csv: " + client.getEmail());
+            }
+            clients.add(client);
+            clientRepository.add(client);
+        }
+
+        List<Transportation> loadedTransportations = GenericFileManager.loadAll(
+                DEFAULT_INPUT_DIRECTORY + "/transports.csv",
+                new GenericFileManager.CsvParser<Transportation>() {
+                    @Override
+                    public Transportation parse(String csvRow) throws Exception {
+                        return Transportation.fromCsvRow(csvRow);
+                    }
+                }
+        );
+
+        for (int index = 0; index < loadedTransportations.size(); index++) {
+            Transportation transportation = loadedTransportations.get(index);
+            transportations.add(transportation);
+            transportationRepository.add(transportation);
+        }
+
+        List<Accommodation> loadedAccommodations = GenericFileManager.loadAll(
+                DEFAULT_INPUT_DIRECTORY + "/accommodations.csv",
+                new GenericFileManager.CsvParser<Accommodation>() {
+                    @Override
+                    public Accommodation parse(String csvRow) throws Exception {
+                        return Accommodation.fromCsvRow(csvRow);
+                    }
+                }
+        );
+
+        for (int index = 0; index < loadedAccommodations.size(); index++) {
+            Accommodation accommodation = loadedAccommodations.get(index);
+            accommodations.add(accommodation);
+            accommodationRepository.add(accommodation);
+        }
+
+        List<Trip> loadedTrips = GenericFileManager.loadAll(
+                DEFAULT_INPUT_DIRECTORY + "/trips.csv",
+                new GenericFileManager.CsvParser<Trip>() {
+                    @Override
+                    public Trip parse(String csvRow) throws Exception {
+                        return Trip.fromCsvRow(csvRow);
+                    }
+                }
+        );
+
+        for (int index = 0; index < loadedTrips.size(); index++) {
+            try {
+                addTrip(loadedTrips.get(index));
+            } catch (Exception exception) {
+                persistence.ErrorLogger.log("TRIP LOAD ERROR | " + exception.getMessage() + " | line=" + loadedTrips.get(index).toCsvRow());
+            }
+        }
 
         try {
             recomputeAllClientSpending();
         } catch (InvalidClientDataException exception) {
-            ErrorLogger.log("Recompute spending error: " + exception.getMessage());
+            persistence.ErrorLogger.log("Recompute spending error: " + exception.getMessage());
         }
     }
 
-    /** Saves all current in-memory arrays to the expected CSV output files. */
-    public void saveAllData(String outputDirectory) throws IOException {
-        ClientFileManager.saveClients(clients, clientCount, outputDirectory + "/clients.csv");
-        TransportationFileManager.saveTransportations(transportations, transportCount, outputDirectory + "/transports.csv");
-        AccommodationFileManager.saveAccommodations(accommodations, accommodationCount, outputDirectory + "/accommodations.csv");
-        TripFileManager.saveTrips(trips, tripCount, outputDirectory + "/trips.csv");
+    /** Saves all current in-memory lists to the required output directory. */
+    public void saveAllData(String ignoredOutputDirectory) throws IOException {
+        GenericFileManager.saveAll(clients, DEFAULT_OUTPUT_DIRECTORY + "/clients.csv");
+        GenericFileManager.saveAll(transportations, DEFAULT_OUTPUT_DIRECTORY + "/transports.csv");
+        GenericFileManager.saveAll(accommodations, DEFAULT_OUTPUT_DIRECTORY + "/accommodations.csv");
+        GenericFileManager.saveAll(trips, DEFAULT_OUTPUT_DIRECTORY + "/trips.csv");
     }
 
-    /** Clears every array slot and resets all counters and ID generators. */
+    /** Clears all lists, repositories, recent history, and ID generators. */
     public void clearAllData() {
-        for (int clientIndex = 0; clientIndex < clients.length; clientIndex++) clients[clientIndex] = null;
-        for (int tripIndex = 0; tripIndex < trips.length; tripIndex++) trips[tripIndex] = null;
-        for (int transportationIndex = 0; transportationIndex < transportations.length; transportationIndex++) transportations[transportationIndex] = null;
-        for (int accommodationIndex = 0; accommodationIndex < accommodations.length; accommodationIndex++) accommodations[accommodationIndex] = null;
+        clients.clear();
+        trips.clear();
+        transportations.clear();
+        accommodations.clear();
 
-        clientCount = 0;
-        tripCount = 0;
-        transportCount = 0;
-        accommodationCount = 0;
+        clientRepository.clear();
+        tripRepository.clear();
+        transportationRepository.clear();
+        accommodationRepository.clear();
+
+        recentTrips.clear();
 
         Client.resetIdCounter();
         Trip.resetIdCounter();
@@ -417,73 +518,114 @@ public class SmartTravelService {
         Accommodation.resetIdCounter();
     }
 
-    /** Finds the client array index used by delete and shift operations. */
-    private int findClientIndexById(String clientId) throws EntityNotFoundException {
-        for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
-            if (clients[clientIndex] != null && clients[clientIndex].getClientId().equals(clientId)) return clientIndex;
-        }
-        throw new EntityNotFoundException("Client not found: " + clientId);
+    /** Filters trips by destination and records the viewed trips in recent history. */
+    public List<Trip> filterTripsByDestination(String destination) {
+        String normalizedDestination = (destination == null) ? "" : destination.trim();
+        List<Trip> filteredTrips = tripRepository.filter(new java.util.function.Predicate<Trip>() {
+            @Override
+            public boolean test(Trip trip) {
+                return trip != null && trip.getDestination().equalsIgnoreCase(normalizedDestination);
+            }
+        });
+
+        rememberTrips(filteredTrips);
+        return filteredTrips;
     }
 
-    /** Finds the trip array index used by delete and shift operations. */
-    private int findTripIndexById(String tripId) throws EntityNotFoundException {
-        for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
-            if (trips[tripIndex] != null && trips[tripIndex].getTripId().equals(tripId)) return tripIndex;
-        }
-        throw new EntityNotFoundException("Trip not found: " + tripId);
+    /** Filters trips whose total cost lies within the provided inclusive range. */
+    public List<Trip> filterTripsByTotalCostRange(double minimumTotalCost, double maximumTotalCost) {
+        List<Trip> filteredTrips = tripRepository.filter(new java.util.function.Predicate<Trip>() {
+            @Override
+            public boolean test(Trip trip) {
+                if (trip == null) {
+                    return false;
+                }
+                double totalCost = trip.calculateTotalCost();
+                return totalCost >= minimumTotalCost && totalCost <= maximumTotalCost;
+            }
+        });
+
+        rememberTrips(filteredTrips);
+        return filteredTrips;
     }
 
-    /** Finds the transportation array index used by delete and shift operations. */
-    private int findTransportationIndexById(String transportId) throws EntityNotFoundException {
-        for (int transportationIndex = 0; transportationIndex < transportCount; transportationIndex++) {
-            if (transportations[transportationIndex] != null &&
-                    transportations[transportationIndex].getTransportId().equals(transportId)) {
-                return transportationIndex;
+    /** Returns clients sorted by their natural business ordering. */
+    public List<Client> getTopClientsBySpending() {
+        return clientRepository.getSorted();
+    }
+
+    /** Returns the recent trip history snapshot from newest to oldest. */
+    public List<Trip> getRecentTrips() {
+        return recentTrips.getItems();
+    }
+
+    /** Returns trips sorted by their natural business ordering. */
+    public List<Trip> getSmartSortedTrips() {
+        return tripRepository.getSorted();
+    }
+
+    /** Returns clients sorted by their natural business ordering. */
+    public List<Client> getSmartSortedClients() {
+        return clientRepository.getSorted();
+    }
+
+    /** Returns accommodations sorted by their natural business ordering. */
+    public List<Accommodation> getSmartSortedAccommodations() {
+        return accommodationRepository.getSorted();
+    }
+
+    /** Returns transportation objects sorted by their natural business ordering. */
+    public List<Transportation> getSmartSortedTransportations() {
+        return transportationRepository.getSorted();
+    }
+
+    /** Adds a group of trips to the recent-trip history. */
+    private void rememberTrips(List<Trip> viewedTrips) {
+        for (int index = 0; index < viewedTrips.size(); index++) {
+            Trip trip = viewedTrips.get(index);
+            if (trip != null) {
+                recentTrips.addRecent(trip);
             }
         }
-        throw new EntityNotFoundException("Transportation not found: " + transportId);
     }
 
-    /** Finds the accommodation array index used by delete and shift operations. */
-    private int findAccommodationIndexById(String accommodationId) throws EntityNotFoundException {
-        for (int accommodationIndex = 0; accommodationIndex < accommodationCount; accommodationIndex++) {
-            if (accommodations[accommodationIndex] != null &&
-                    accommodations[accommodationIndex].getAccommodationId().equals(accommodationId)) {
-                return accommodationIndex;
+    /** Preserves the old array-based startup data path when the driver still passes arrays in. */
+    private void initializeFromArrays(Client[] initialClients, Trip[] initialTrips,
+                                      Transportation[] initialTransportations, Accommodation[] initialAccommodations) {
+        if (initialClients != null) {
+            for (int index = 0; index < initialClients.length; index++) {
+                if (initialClients[index] != null) {
+                    clients.add(initialClients[index]);
+                    clientRepository.add(initialClients[index]);
+                }
             }
         }
-        throw new EntityNotFoundException("Accommodation not found: " + accommodationId);
-    }
 
-    /** Shifts client elements left after deletion to keep the active range contiguous. */
-    private void shiftClientsLeft(int startIndex) {
-        for (int clientIndex = startIndex; clientIndex < clientCount - 1; clientIndex++) {
-            clients[clientIndex] = clients[clientIndex + 1];
+        if (initialTransportations != null) {
+            for (int index = 0; index < initialTransportations.length; index++) {
+                if (initialTransportations[index] != null) {
+                    transportations.add(initialTransportations[index]);
+                    transportationRepository.add(initialTransportations[index]);
+                }
+            }
         }
-        clients[clientCount - 1] = null;
-    }
 
-    /** Shifts trip elements left after deletion to keep the active range contiguous. */
-    private void shiftTripsLeft(int startIndex) {
-        for (int tripIndex = startIndex; tripIndex < tripCount - 1; tripIndex++) {
-            trips[tripIndex] = trips[tripIndex + 1];
+        if (initialAccommodations != null) {
+            for (int index = 0; index < initialAccommodations.length; index++) {
+                if (initialAccommodations[index] != null) {
+                    accommodations.add(initialAccommodations[index]);
+                    accommodationRepository.add(initialAccommodations[index]);
+                }
+            }
         }
-        trips[tripCount - 1] = null;
-    }
 
-    /** Shifts transportation elements left after deletion to keep the active range contiguous. */
-    private void shiftTransportationsLeft(int startIndex) {
-        for (int transportationIndex = startIndex; transportationIndex < transportCount - 1; transportationIndex++) {
-            transportations[transportationIndex] = transportations[transportationIndex + 1];
+        if (initialTrips != null) {
+            for (int index = 0; index < initialTrips.length; index++) {
+                if (initialTrips[index] != null) {
+                    trips.add(initialTrips[index]);
+                    tripRepository.add(initialTrips[index]);
+                }
+            }
         }
-        transportations[transportCount - 1] = null;
-    }
-
-    /** Shifts accommodation elements left after deletion to keep the active range contiguous. */
-    private void shiftAccommodationsLeft(int startIndex) {
-        for (int accommodationIndex = startIndex; accommodationIndex < accommodationCount - 1; accommodationIndex++) {
-            accommodations[accommodationIndex] = accommodations[accommodationIndex + 1];
-        }
-        accommodations[accommodationCount - 1] = null;
     }
 }

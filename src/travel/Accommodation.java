@@ -6,10 +6,12 @@
 
 package travel;
 
+import contracts.CsvPersistable;
+import contracts.Identifiable;
 import exceptions.InvalidAccommodationDataException;
 
 /** Core Accommodation entity in the SmartTravel system */
-public abstract class Accommodation {
+public abstract class Accommodation implements Identifiable, CsvPersistable, Comparable<Accommodation> {
 
     private static int nextId = 4001;
 
@@ -93,6 +95,11 @@ public abstract class Accommodation {
         return accommodationId;
     }
 
+    @Override
+    public String getId() {
+        return getAccommodationId();
+    }
+
     public String getName() {
         return name;
     }
@@ -160,5 +167,64 @@ public abstract class Accommodation {
     public String toString() {
         return "Accommodation{accommodationId='" + accommodationId + "', name='" + name +
                 "', location='" + location + "', pricePerNight=" + pricePerNight + "}";
+    }
+
+    /** Reconstructs one accommodation object by dispatching on the CSV type prefix. */
+    public static Accommodation fromCsvRow(String csvRow) throws InvalidAccommodationDataException {
+        if (csvRow == null) {
+            throw new InvalidAccommodationDataException("Accommodation CSV row cannot be null.");
+        }
+
+        String[] tokens = csvRow.split(";");
+        if (tokens.length < 2) {
+            throw new InvalidAccommodationDataException("Bad accommodation CSV row: " + csvRow);
+        }
+
+        String typePrefix = tokens[0].trim().toUpperCase();
+
+        if ("HOTEL".equals(typePrefix)) {
+            if (tokens.length != 6) {
+                throw new InvalidAccommodationDataException("Bad HOTEL token count: " + csvRow);
+            }
+
+            return new Hotel(
+                    tokens[1].trim(),
+                    tokens[2].trim(),
+                    tokens[3].trim(),
+                    Double.parseDouble(tokens[4].trim()),
+                    Integer.parseInt(tokens[5].trim())
+            );
+        }
+
+        if ("HOSTEL".equals(typePrefix)) {
+            if (tokens.length != 6) {
+                throw new InvalidAccommodationDataException("Bad HOSTEL token count: " + csvRow);
+            }
+
+            return new Hostel(
+                    tokens[1].trim(),
+                    tokens[2].trim(),
+                    tokens[3].trim(),
+                    Double.parseDouble(tokens[4].trim()),
+                    Integer.parseInt(tokens[5].trim())
+            );
+        }
+
+        throw new InvalidAccommodationDataException("Unknown accommodation type prefix: " + typePrefix);
+    }
+
+    /** Applies the A3 natural business ordering: pricePerNight descending. */
+    @Override
+    public int compareTo(Accommodation otherAccommodation) {
+        if (otherAccommodation == null) {
+            return -1;
+        }
+
+        int priceComparison = Double.compare(otherAccommodation.pricePerNight, pricePerNight);
+        if (priceComparison != 0) {
+            return priceComparison;
+        }
+
+        return accommodationId.compareTo(otherAccommodation.accommodationId);
     }
 }

@@ -13,6 +13,7 @@ import travel.*;
 import visualization.DashboardGenerator;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 public class SmartTravelDriver {
@@ -27,15 +28,8 @@ public class SmartTravelDriver {
         System.out.println("Developed by: Yousef Yousef & Hamza Shaheed");
         System.out.println("===========================================\n");
 
-        /* Create the fixed-size arrays required by the assignment. */
-        Client[] clients = new Client[100];
-        Trip[] trips = new Trip[200];
-        Transportation[] transportations = new Transportation[50];
-        Accommodation[] accommodations = new Accommodation[50];
-
-        /* Pass the shared arrays into the service layer so all logic uses the same data. */
-        SmartTravelService smartTravelService =
-                new SmartTravelService(clients, trips, transportations, accommodations);
+        /* Build the collection-backed service while keeping A2 behavior intact. */
+        SmartTravelService smartTravelService = new SmartTravelService();
 
         /* Keep the program running until the user selects the exit option. */
         boolean done = false;
@@ -49,7 +43,7 @@ public class SmartTravelDriver {
             System.out.println("4) Accommodation Management");
             System.out.println("5) Additional Operations");
             System.out.println("6) Run A1 Predefined Scenario");
-            System.out.println("7) List All Data Summary");
+            System.out.println("7) Advanced Analytics");
             System.out.println("8) Load All Data");
             System.out.println("9) Save All Data");
             System.out.println("10) Run Predefined Scenario");
@@ -80,7 +74,7 @@ public class SmartTravelDriver {
                     runA1PredefinedScenario(smartTravelService);
                     break;
                 case 7:
-                    listAllSummary(smartTravelService);
+                    advancedAnalyticsMenu(keyboard, smartTravelService);
                     break;
                 case 8:
                     loadAllData(smartTravelService);
@@ -710,11 +704,163 @@ public class SmartTravelDriver {
         }
     }
 
+    /** Handles the A3 analytics submenu while preserving the rest of the A2 menu structure. */
+    private static void advancedAnalyticsMenu(Scanner keyboard, SmartTravelService smartTravelService) {
+        boolean back = false;
+
+        while (!back) {
+            System.out.println("\n=== ADVANCED ANALYTICS ===");
+            System.out.println("1) Trips by Destination");
+            System.out.println("2) Trips by Cost Range");
+            System.out.println("3) Top Clients by Spending");
+            System.out.println("4) Recent Trips");
+            System.out.println("5) Smart Sort Collections");
+            System.out.println("6) Back to Main Menu");
+            System.out.print("Enter choice: ");
+
+            int analyticsChoice = readInt(keyboard);
+
+            switch (analyticsChoice) {
+                case 1:
+                    System.out.print("Enter destination: ");
+                    String destination = keyboard.nextLine();
+                    List<Trip> destinationTrips = smartTravelService.filterTripsByDestination(destination);
+                    printTripResults(destinationTrips);
+                    break;
+
+                case 2:
+                    System.out.print("Enter minimum total cost: ");
+                    double minimumCost = readDouble(keyboard);
+                    System.out.print("Enter maximum total cost: ");
+                    double maximumCost = readDouble(keyboard);
+
+                    if (maximumCost < minimumCost) {
+                        System.out.println("ERROR: maximum cost must be >= minimum cost.");
+                        break;
+                    }
+
+                    List<Trip> rangedTrips = smartTravelService.filterTripsByTotalCostRange(minimumCost, maximumCost);
+                    printTripResults(rangedTrips);
+                    break;
+
+                case 3:
+                    printClients(smartTravelService.getTopClientsBySpending());
+                    break;
+
+                case 4:
+                    printTripResults(smartTravelService.getRecentTrips());
+                    break;
+
+                case 5:
+                    smartSortCollectionsMenu(keyboard, smartTravelService);
+                    break;
+
+                case 6:
+                    back = true;
+                    break;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    /** Displays one of the naturally sorted collections required by the A3 analytics workflow. */
+    private static void smartSortCollectionsMenu(Scanner keyboard, SmartTravelService smartTravelService) {
+        boolean back = false;
+
+        while (!back) {
+            System.out.println("\n=== SMART SORT COLLECTIONS ===");
+            System.out.println("1) Clients");
+            System.out.println("2) Trips");
+            System.out.println("3) Accommodations");
+            System.out.println("4) Transportations");
+            System.out.println("5) Back");
+            System.out.print("Enter choice: ");
+
+            int sortChoice = readInt(keyboard);
+
+            switch (sortChoice) {
+                case 1:
+                    printClients(smartTravelService.getSmartSortedClients());
+                    break;
+
+                case 2:
+                    printTripResults(smartTravelService.getSmartSortedTrips());
+                    break;
+
+                case 3:
+                    printAccommodations(smartTravelService.getSmartSortedAccommodations());
+                    break;
+
+                case 4:
+                    printTransportations(smartTravelService.getSmartSortedTransportations());
+                    break;
+
+                case 5:
+                    back = true;
+                    break;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    /** Prints trip results consistently for analytics screens. */
+    private static void printTripResults(List<Trip> trips) {
+        if (trips == null || trips.isEmpty()) {
+            System.out.println("No trips found.");
+            return;
+        }
+
+        for (int index = 0; index < trips.size(); index++) {
+            Trip trip = trips.get(index);
+            System.out.println(trip + " | total=" + String.format("%.2f", trip.calculateTotalCost()));
+        }
+    }
+
+    /** Prints client results consistently for analytics screens. */
+    private static void printClients(List<Client> clients) {
+        if (clients == null || clients.isEmpty()) {
+            System.out.println("No clients found.");
+            return;
+        }
+
+        for (int index = 0; index < clients.size(); index++) {
+            System.out.println(clients.get(index));
+        }
+    }
+
+    /** Prints accommodation results consistently for analytics screens. */
+    private static void printAccommodations(List<Accommodation> accommodations) {
+        if (accommodations == null || accommodations.isEmpty()) {
+            System.out.println("No accommodations found.");
+            return;
+        }
+
+        for (int index = 0; index < accommodations.size(); index++) {
+            System.out.println(accommodations.get(index));
+        }
+    }
+
+    /** Prints transportation results consistently for analytics screens. */
+    private static void printTransportations(List<Transportation> transportations) {
+        if (transportations == null || transportations.isEmpty()) {
+            System.out.println("No transportations found.");
+            return;
+        }
+
+        for (int index = 0; index < transportations.size(); index++) {
+            System.out.println(transportations.get(index));
+        }
+    }
+
     /** Loads all persisted CSV data through the service layer. */
     private static void loadAllData(SmartTravelService smartTravelService) {
         try {
-            smartTravelService.loadAllData("output/data");
-            System.out.println("Loaded all data from output/data/*.csv (errors logged to output/logs/errors.txt).");
+            smartTravelService.loadAllData("data");
+            System.out.println("Loaded all data from data/*.csv (errors logged to output/logs/errors.txt).");
         } catch (IOException exception) {
             System.out.println("LOAD ERROR: " + exception.getMessage());
         }

@@ -99,6 +99,14 @@ public class Train extends Transportation {
                 ", trainType='" + trainType + "'}";
     }
 
+    /** Serializes the train using the current A2-compatible CSV format. */
+    @Override
+    public String toCsvRow() {
+        return "TRAIN;" + getTransportId() + ";" + getCompanyName() + ";" +
+                getDepartureCity() + ";" + getArrivalCity() + ";" +
+                getBaseFare() + ";" + trainType;
+    }
+
     @Override
     public String getType() {
         return "TRAIN";
