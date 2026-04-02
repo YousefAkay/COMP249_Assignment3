@@ -81,12 +81,11 @@ public class Bus extends Transportation {
         return numberOfStops == otherBus.numberOfStops;
     }
 
-    /** Returns a clean text summary for menus, testing, and logging. */
+    /** Returns a clean text summary for menus, testing, and logging using super. */
     @Override
     public String toString() {
-        return "Bus{transportId='" + getTransportId() + "', companyName='" + getCompanyName() +
-                "', departureCity='" + getDepartureCity() + "', arrivalCity='" + getArrivalCity() +
-                "', baseFare=" + getBaseFare() + ", numberOfStops=" + numberOfStops + "}";
+        return super.toString().replace("Transportation", "Bus").replace("}", "") +
+                ", numberOfStops=" + numberOfStops + "}";
     }
 
     @Override

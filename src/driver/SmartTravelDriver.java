@@ -21,27 +21,27 @@ public class SmartTravelDriver {
     public static void main(String[] args) {
         Scanner keyboard = new Scanner(System.in);
 
-        /** Build the startup banner shown when the program launches. */
+        /* Build the startup banner shown when the program launches. */
         System.out.println("\n===========================================");
         System.out.println("SMART TRAVEL MANAGEMENT SYSTEM");
         System.out.println("Developed by: Yousef Yousef & Hamza Shaheed");
         System.out.println("===========================================\n");
 
-        /** Create the fixed-size arrays required by the assignment. */
+        /* Create the fixed-size arrays required by the assignment. */
         Client[] clients = new Client[100];
         Trip[] trips = new Trip[200];
         Transportation[] transportations = new Transportation[50];
         Accommodation[] accommodations = new Accommodation[50];
 
-        /** Pass the shared arrays into the service layer so all logic uses the same data. */
+        /* Pass the shared arrays into the service layer so all logic uses the same data. */
         SmartTravelService smartTravelService =
                 new SmartTravelService(clients, trips, transportations, accommodations);
 
-        /** Keep the program running until the user selects the exit option. */
+        /* Keep the program running until the user selects the exit option. */
         boolean done = false;
 
         while (!done) {
-            /** Display the main menu before reading the user's next action. */
+            /* Display the main menu before reading the user's next action. */
             System.out.println("\n=== MAIN MENU ===");
             System.out.println("1) Client Management");
             System.out.println("2) Trip Management");
@@ -59,7 +59,7 @@ public class SmartTravelDriver {
 
             int mainChoice = readInt(keyboard);
 
-            /** Route the user's menu choice to the matching operation. */
+            /* Route the user's menu choice to the matching operation. */
             switch (mainChoice) {
                 case 1:
                     clientMenu(keyboard, smartTravelService);
@@ -102,7 +102,6 @@ public class SmartTravelDriver {
             }
         }
 
-        /** Close the scanner cleanly before the program ends. */
         keyboard.close();
         System.out.println("\nThank You for Using SmartTravel, Goodbye!");
         System.out.println("Program terminated.");
@@ -113,7 +112,7 @@ public class SmartTravelDriver {
         boolean back = false;
 
         while (!back) {
-            /** Show the client submenu before reading the next client action. */
+            /* Show the client submenu before reading the next client action. */
             System.out.println("\n=== CLIENT MENU ===");
             System.out.println("1) Add Client");
             System.out.println("2) Edit Client");
@@ -127,7 +126,7 @@ public class SmartTravelDriver {
             switch (clientMenuChoice) {
                 case 1:
                     try {
-                        /** Read the new client's basic details from the keyboard. */
+                        /* Read the new client's basic details from the keyboard. */
                         System.out.print("First name: ");
                         String firstName = keyboard.nextLine();
                         System.out.print("Last name: ");
@@ -135,7 +134,7 @@ public class SmartTravelDriver {
                         System.out.print("Email: ");
                         String email = keyboard.nextLine();
 
-                        /** Create the client object and pass it to the service layer. */
+                        /* Create the client object and pass it to the service layer. */
                         Client client = new Client(firstName, lastName, email);
                         smartTravelService.addClient(client);
                         System.out.println("Added: " + client);
@@ -147,7 +146,7 @@ public class SmartTravelDriver {
 
                 case 2:
                     try {
-                        /** Read the target ID and the replacement client values. */
+                        /* Read the target ID and the replacement client values. */
                         System.out.print("Enter client ID to edit: ");
                         String clientId = keyboard.nextLine();
 
@@ -160,7 +159,7 @@ public class SmartTravelDriver {
                         System.out.print("New email: ");
                         String newEmail = keyboard.nextLine();
 
-                        /** Forward the edit request to the service layer. */
+                        /* Forward the edit request to the service layer. */
                         smartTravelService.editClient(clientId, newFirstName, newLastName, newEmail);
                         System.out.println("Client updated.");
 
@@ -171,7 +170,7 @@ public class SmartTravelDriver {
 
                 case 3:
                     try {
-                        /** Read the client ID and request deletion through the service. */
+                        /* Read the client ID and request deletion through the service. */
                         System.out.print("Enter client ID to delete: ");
                         String clientId = keyboard.nextLine();
                         smartTravelService.deleteClient(clientId);
@@ -182,7 +181,7 @@ public class SmartTravelDriver {
                     break;
 
                 case 4:
-                    /** Print every active client currently stored in the array. */
+                    /* Print every active client currently stored in the array. */
                     for (int clientIndex = 0; clientIndex < smartTravelService.getClientCount(); clientIndex++) {
                         if (smartTravelService.getClients()[clientIndex] != null) {
                             System.out.println(smartTravelService.getClients()[clientIndex]);
@@ -205,7 +204,7 @@ public class SmartTravelDriver {
         boolean back = false;
 
         while (!back) {
-            /** Show the trip submenu before reading the next trip action. */
+            /* Show the trip submenu before reading the next trip action. */
             System.out.println("\n=== TRIP MENU ===");
             System.out.println("1) Create Trip");
             System.out.println("2) Edit Trip");
@@ -220,7 +219,7 @@ public class SmartTravelDriver {
             switch (tripMenuChoice) {
                 case 1:
                     try {
-                        /** Read the booking IDs and trip details needed to create a trip. */
+                        /* Read the booking IDs and trip details needed to create a trip. */
                         System.out.print("Client ID: ");
                         String clientId = keyboard.nextLine();
 
@@ -239,7 +238,7 @@ public class SmartTravelDriver {
                         System.out.print("Base price (>=100): ");
                         double basePrice = readDouble(keyboard);
 
-                        /** Resolve the referenced objects before building the trip. */
+                        /* Resolve the referenced objects before building the trip. */
                         Client client = smartTravelService.findClientById(clientId);
                         Accommodation accommodation = accommodationId.trim().isEmpty()
                                 ? null
@@ -248,7 +247,7 @@ public class SmartTravelDriver {
                                 ? null
                                 : smartTravelService.findTransportationById(transportationId.trim());
 
-                        /** Create the trip and store it through the service layer. */
+                        /* Create the trip and store it through the service layer. */
                         Trip trip = new Trip(client, transportation, accommodation, destination, durationInDays, basePrice);
                         smartTravelService.addTrip(trip);
 
@@ -261,7 +260,7 @@ public class SmartTravelDriver {
 
                 case 2:
                     try {
-                        /** Read the trip ID and the replacement values for the edit. */
+                        /* Read the trip ID and the replacement values for the edit. */
                         System.out.print("Enter trip ID to edit: ");
                         String tripId = keyboard.nextLine();
 
@@ -280,7 +279,7 @@ public class SmartTravelDriver {
                         System.out.print("New transportation ID (blank if none): ");
                         String transportationId = keyboard.nextLine();
 
-                        /** Normalize blank optional IDs to null before calling the service. */
+                        /* Normalize blank optional IDs to null before calling the service. */
                         smartTravelService.editTrip(
                                 tripId,
                                 destination,
@@ -299,7 +298,7 @@ public class SmartTravelDriver {
 
                 case 3:
                     try {
-                        /** Read the trip ID and cancel it through the service. */
+                        /* Read the trip ID and cancel it through the service. */
                         System.out.print("Enter trip ID to cancel: ");
                         String tripId = keyboard.nextLine();
                         smartTravelService.cancelTrip(tripId);
@@ -310,7 +309,7 @@ public class SmartTravelDriver {
                     break;
 
                 case 4:
-                    /** Print every active trip along with its computed total cost. */
+                    /* Print every active trip along with its computed total cost. */
                     for (int tripIndex = 0; tripIndex < smartTravelService.getTripCount(); tripIndex++) {
                         if (smartTravelService.getTrips()[tripIndex] != null) {
                             System.out.println(smartTravelService.getTrips()[tripIndex] + " | total=" +
@@ -320,7 +319,7 @@ public class SmartTravelDriver {
                     break;
 
                 case 5:
-                    /** Filter the trip list manually to show only one client's trips. */
+                    /* Filter the trip list manually to show only one client's trips. */
                     System.out.print("Enter client ID: ");
                     String clientId = keyboard.nextLine();
                     boolean found = false;
@@ -353,7 +352,7 @@ public class SmartTravelDriver {
         boolean back = false;
 
         while (!back) {
-            /** Show the transportation submenu before reading the next action. */
+            /* Show the transportation submenu before reading the next action. */
             System.out.println("\n=== TRANSPORTATION MENU ===");
             System.out.println("1) Add Transportation");
             System.out.println("2) Remove Transportation");
@@ -365,7 +364,7 @@ public class SmartTravelDriver {
 
             switch (transportMenuChoice) {
                 case 1:
-                    /** Ask the user which concrete transportation subclass to create. */
+                    /* Ask the user which concrete transportation subclass to create. */
                     System.out.println("\nChoose transport type:");
                     System.out.println("1) Flight");
                     System.out.println("2) Train");
@@ -374,7 +373,7 @@ public class SmartTravelDriver {
                     int transportTypeChoice = readInt(keyboard);
 
                     try {
-                        /** Read the common transportation fields first. */
+                        /* Read the common transportation fields first. */
                         System.out.print("Company name: ");
                         String companyName = keyboard.nextLine();
                         System.out.print("Departure city: ");
@@ -383,7 +382,7 @@ public class SmartTravelDriver {
                         String arrivalCity = keyboard.nextLine();
 
                         if (transportTypeChoice == 1) {
-                            /** Read flight-specific fields and add a Flight object. */
+                            /* Read flight-specific fields and add a Flight object. */
                             System.out.print("Airline name: ");
                             String airlineName = keyboard.nextLine();
                             System.out.print("Luggage allowance (kg): ");
@@ -394,7 +393,7 @@ public class SmartTravelDriver {
                             System.out.println("Added: " + flight);
 
                         } else if (transportTypeChoice == 2) {
-                            /** Read train-specific fields and add a Train object. */
+                            /* Read train-specific fields and add a Train object. */
                             System.out.print("Train type: ");
                             String trainType = keyboard.nextLine();
 
@@ -403,7 +402,7 @@ public class SmartTravelDriver {
                             System.out.println("Added: " + train);
 
                         } else if (transportTypeChoice == 3) {
-                            /** Read bus-specific fields and add a Bus object. */
+                            /* Read bus-specific fields and add a Bus object. */
                             System.out.print("Number of stops: ");
                             int numberOfStops = readInt(keyboard);
 
@@ -422,7 +421,7 @@ public class SmartTravelDriver {
 
                 case 2:
                     try {
-                        /** Read the transportation ID and request removal through the service. */
+                        /* Read the transportation ID and request removal through the service. */
                         System.out.print("Enter transportation ID to remove: ");
                         String transportId = keyboard.nextLine();
                         smartTravelService.removeTransportation(transportId);
@@ -433,7 +432,7 @@ public class SmartTravelDriver {
                     break;
 
                 case 3:
-                    /** Filter the transportation array by concrete subclass type. */
+                    /* Filter the transportation array by concrete subclass type. */
                     System.out.println("1) Flight");
                     System.out.println("2) Train");
                     System.out.println("3) Bus");
@@ -465,7 +464,7 @@ public class SmartTravelDriver {
         boolean back = false;
 
         while (!back) {
-            /** Show the accommodation submenu before reading the next action. */
+            /* Show the accommodation submenu before reading the next action. */
             System.out.println("\n=== ACCOMMODATION MENU ===");
             System.out.println("1) Add Accommodation");
             System.out.println("2) Remove Accommodation");
@@ -477,7 +476,7 @@ public class SmartTravelDriver {
 
             switch (accommodationMenuChoice) {
                 case 1:
-                    /** Ask the user which concrete accommodation subclass to create. */
+                    /* Ask the user which concrete accommodation subclass to create. */
                     System.out.println("\nChoose accommodation type:");
                     System.out.println("1) Hotel");
                     System.out.println("2) Hostel");
@@ -485,7 +484,7 @@ public class SmartTravelDriver {
                     int accommodationTypeChoice = readInt(keyboard);
 
                     try {
-                        /** Read the common accommodation fields first. */
+                        /* Read the common accommodation fields first. */
                         System.out.print("Name: ");
                         String name = keyboard.nextLine();
                         System.out.print("Location: ");
@@ -494,7 +493,7 @@ public class SmartTravelDriver {
                         double pricePerNight = readDouble(keyboard);
 
                         if (accommodationTypeChoice == 1) {
-                            /** Read hotel-specific fields and add a Hotel object. */
+                            /* Read hotel-specific fields and add a Hotel object. */
                             System.out.print("Stars (1-5): ");
                             int stars = readInt(keyboard);
                             Hotel hotel = new Hotel(name, location, pricePerNight, stars);
@@ -502,7 +501,7 @@ public class SmartTravelDriver {
                             System.out.println("Added: " + hotel);
 
                         } else if (accommodationTypeChoice == 2) {
-                            /** Read hostel-specific fields and add a Hostel object. */
+                            /* Read hostel-specific fields and add a Hostel object. */
                             System.out.print("Shared room capacity: ");
                             int sharedRoomCapacity = readInt(keyboard);
                             Hostel hostel = new Hostel(name, location, pricePerNight, sharedRoomCapacity);
@@ -520,7 +519,7 @@ public class SmartTravelDriver {
 
                 case 2:
                     try {
-                        /** Read the accommodation ID and request removal through the service. */
+                        /* Read the accommodation ID and request removal through the service. */
                         System.out.print("Enter accommodation ID to remove: ");
                         String accommodationId = keyboard.nextLine();
                         smartTravelService.removeAccommodation(accommodationId);
@@ -531,7 +530,7 @@ public class SmartTravelDriver {
                     break;
 
                 case 3:
-                    /** Filter the accommodation array by concrete subclass type. */
+                    /* Filter the accommodation array by concrete subclass type. */
                     System.out.println("1) Hotel");
                     System.out.println("2) Hostel");
                     System.out.print("Choose type: ");
@@ -561,7 +560,7 @@ public class SmartTravelDriver {
         boolean back = false;
 
         while (!back) {
-            /** Show the additional operations menu before reading the next action. */
+            /* Show the additional operations menu before reading the next action. */
             System.out.println("\n=== ADDITIONAL OPERATIONS ===");
             System.out.println("1) Display most expensive trip");
             System.out.println("2) Calculate total cost of a trip");
@@ -575,7 +574,7 @@ public class SmartTravelDriver {
             switch (additionalChoice) {
                 case 1:
                     try {
-                        /** Fetch and print the most expensive trip currently stored. */
+                        /* Fetch and print the most expensive trip currently stored. */
                         Trip mostExpensiveTrip = smartTravelService.findMostExpensiveTrip();
                         System.out.println("\nMost expensive trip:");
                         System.out.println(mostExpensiveTrip);
@@ -586,7 +585,7 @@ public class SmartTravelDriver {
                     break;
 
                 case 2:
-                    /** Show indexed trips first so the user can choose a valid array position. */
+                    /* Show indexed trips first so the user can choose a valid array position. */
                     if (smartTravelService.getTripCount() == 0) {
                         System.out.println("No trips available.");
                         break;
@@ -601,7 +600,7 @@ public class SmartTravelDriver {
                     int tripIndex = readInt(keyboard);
 
                     try {
-                        /** Calculate the total cost using the selected trip index. */
+                        /* Calculate the total cost using the selected trip index. */
                         double totalCost = smartTravelService.calculateTripTotal(tripIndex);
                         System.out.println("Total cost = " + totalCost);
                     } catch (InvalidTripDataException exception) {
@@ -610,7 +609,7 @@ public class SmartTravelDriver {
                     break;
 
                 case 3:
-                    /** Demonstrate that transportation deep copies do not affect originals. */
+                    /* Demonstrate that transportation deep copies do not affect originals. */
                     if (smartTravelService.getTransportCount() == 0) {
                         System.out.println("No transportation records available.");
                         break;
@@ -623,7 +622,7 @@ public class SmartTravelDriver {
                     System.out.println("Copy[0]     = " + copiedTransportations[0]);
 
                     try {
-                        /** Mutate only the copied object to prove the original stays unchanged. */
+                        /* Mutate only the copied object to prove the original stays unchanged. */
                         if (copiedTransportations[0] instanceof Flight) {
                             ((Flight) copiedTransportations[0]).setAirlineName("ModifiedCopyAir");
                         } else if (copiedTransportations[0] instanceof Train) {
@@ -641,7 +640,7 @@ public class SmartTravelDriver {
                     break;
 
                 case 4:
-                    /** Demonstrate that accommodation deep copies do not affect originals. */
+                    /* Demonstrate that accommodation deep copies do not affect originals. */
                     if (smartTravelService.getAccommodationCount() == 0) {
                         System.out.println("No accommodation records available.");
                         break;
@@ -795,20 +794,20 @@ public class SmartTravelDriver {
             System.out.println("\n===== PREDEFINED SCENARIO =====");
             listAllSummary(smartTravelService);
 
-            /** Demonstrate equality behavior across different object cases. */
+            /* Demonstrate equality behavior across different object cases. */
             System.out.println("\n===== EQUALS TESTS =====");
             System.out.println("Different classes (Flight vs Hotel): " + flightOne.equals(hotelOne));
             System.out.println("Same class, different attributes (Hotel h1 vs h2): " + hotelOne.equals(hotelTwo));
             Hotel hotelThree = new Hotel("Hilton", "Rome", 280.0, 4);
             System.out.println("Same class, identical attributes except ID: " + hotelOne.equals(hotelThree));
 
-            /** Show the most expensive trip returned by the service layer. */
+            /* Show the most expensive trip returned by the service layer. */
             System.out.println("\n===== MOST EXPENSIVE TRIP =====");
             Trip mostExpensiveTrip = smartTravelService.findMostExpensiveTrip();
             System.out.println(mostExpensiveTrip);
             System.out.println("Total = " + mostExpensiveTrip.calculateTotalCost());
 
-            /** Prove the transportation deep copy uses separate objects. */
+            /* Prove the transportation deep copy uses separate objects. */
             System.out.println("\n===== DEEP COPY TEST: TRANSPORT =====");
             Transportation[] copiedTransportations = smartTravelService.deepCopyTransportationArray();
             System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
@@ -819,7 +818,7 @@ public class SmartTravelDriver {
             System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
             System.out.println("Copy[0]     = " + copiedTransportations[0]);
 
-            /** Prove the accommodation deep copy uses separate objects. */
+            /* Prove the accommodation deep copy uses separate objects. */
             System.out.println("\n===== DEEP COPY TEST: ACCOMMODATION =====");
             Accommodation[] copiedAccommodations = smartTravelService.deepCopyAccommodationArray();
             System.out.println("Original[0] = " + smartTravelService.getAccommodations()[0]);
@@ -840,14 +839,14 @@ public class SmartTravelDriver {
         smartTravelService.clearAllData();
         System.out.println("\n===== RUNNING A2 PREDEFINED SCENARIO =====");
 
-        /** First load any persisted data into memory. */
+        /* First load any persisted data into memory. */
         loadAllData(smartTravelService);
 
-        /** Show the loaded state before adding new demo content. */
+        /* Show the loaded state before adding new demo content. */
         System.out.println("\n--- After Load ---");
         listAllSummary(smartTravelService);
 
-        /** Intentionally trigger a duplicate email case to show exception handling. */
+        /* Intentionally trigger a duplicate email case to show exception handling. */
         if (smartTravelService.getClientCount() > 0) {
             try {
                 String duplicateEmail = smartTravelService.getClients()[0].getEmail();
@@ -891,7 +890,7 @@ public class SmartTravelDriver {
             System.out.println("Caught expected InvalidTransportDataException: " + exception.getMessage());
         }
 
-        /** Save the current state and generate the dashboard output. */
+        /* Save the current state and generate the dashboard output. */
         saveAllData(smartTravelService);
         generateDashboard(smartTravelService);
 

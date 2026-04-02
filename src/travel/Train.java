@@ -92,12 +92,11 @@ public class Train extends Transportation {
         return trainType.equals(otherTrain.trainType);
     }
 
-    /** Returns a clean text summary for menus, testing, and logging. */
+    /** Returns a clean text summary for menus, testing, and logging using super. */
     @Override
     public String toString() {
-        return "Train{transportId='" + getTransportId() + "', companyName='" + getCompanyName() +
-                "', departureCity='" + getDepartureCity() + "', arrivalCity='" + getArrivalCity() +
-                "', trainType='" + trainType + "', baseFare=" + getBaseFare() + "}";
+        return super.toString().replace("Transportation", "Train").replace("}", "") +
+                ", trainType='" + trainType + "'}";
     }
 
     @Override

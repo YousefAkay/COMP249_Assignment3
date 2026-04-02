@@ -81,11 +81,10 @@ public class Hotel extends Accommodation {
         return stars == otherHotel.stars;
     }
 
-    /** Returns a clean text summary for menus, testing, and logging. */
+    /** Returns a clean text summary for menus, testing, and logging using super. */
     @Override
     public String toString() {
-        return "Hotel{accommodationId='" + getAccommodationId() + "', name='" + getName() +
-                "', location='" + getLocation() + "', pricePerNight=" + getPricePerNight() +
+        return super.toString().replace("Accommodation", "Hotel").replace("}", "") +
                 ", stars=" + stars + "}";
     }
 

@@ -118,15 +118,12 @@ public class Flight extends Transportation {
         return Double.compare(luggageAllowanceKg, otherFlight.luggageAllowanceKg) == 0;
     }
 
-    /** Returns a clean text summary for menus, testing, and logging. */
+    /** Returns a clean text summary for menus, testing, and logging using super. */
     @Override
     public String toString() {
-        return "Flight{transportId='" + getTransportId() + "', companyName='" + getCompanyName() +
-                "', departureCity='" + getDepartureCity() + "', arrivalCity='" + getArrivalCity() +
-                "', airlineName='" + airlineName + "', baseFare=" + getBaseFare() +
-                ", luggageAllowanceKg=" + luggageAllowanceKg + "}";
+        return super.toString().replace("Transportation", "Flight").replace("}", "") +
+                ", airlineName='" + airlineName + "', luggageAllowanceKg=" + luggageAllowanceKg + "}";
     }
-
     @Override
     public String getType() {
         return "FLIGHT";

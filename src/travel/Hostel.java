@@ -77,11 +77,10 @@ public class Hostel extends Accommodation {
         return sharedRoomCapacity == otherHostel.sharedRoomCapacity;
     }
 
-    /** Returns a clean text summary for menus, testing, and logging. */
+    /** Returns a clean text summary for menus, testing, and logging using super. */
     @Override
     public String toString() {
-        return "Hostel{accommodationId='" + getAccommodationId() + "', name='" + getName() +
-                "', location='" + getLocation() + "', pricePerNight=" + getPricePerNight() +
+        return super.toString().replace("Accommodation", "Hostel").replace("}", "") +
                 ", sharedRoomCapacity=" + sharedRoomCapacity + "}";
     }
 
