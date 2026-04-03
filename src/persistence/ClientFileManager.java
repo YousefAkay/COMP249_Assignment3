@@ -1,5 +1,5 @@
 // -----------------------------------------------------
-// Assignment 2
+// Assignment 3
 // Class: ClientFileManager
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
@@ -16,7 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/** Handles CSV saving and loading for client records. */
+/** Legacy fallback CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager. */
 public class ClientFileManager {
 
     /** Saves each client as a semicolon-separated row in the assignment format. */

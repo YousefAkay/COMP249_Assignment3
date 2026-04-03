@@ -1,13 +1,13 @@
 // -----------------------------------------------------
-// Assignment 2
+// Assignment 3
 // Class: Transportation
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package travel;
 
-import contracts.CsvPersistable;
-import contracts.Identifiable;
+import interfaces.CsvPersistable;
+import interfaces.Identifiable;
 import exceptions.InvalidTransportDataException;
 
 /** Core Transportation entity in the SmartTravel system */

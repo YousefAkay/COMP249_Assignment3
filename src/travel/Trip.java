@@ -1,5 +1,5 @@
 // -----------------------------------------------------
-// Assignment 2
+// Assignment 3
 // Class: Trip
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
@@ -7,9 +7,9 @@
 package travel;
 
 import client.Client;
-import contracts.Billable;
-import contracts.CsvPersistable;
-import contracts.Identifiable;
+import interfaces.Billable;
+import interfaces.CsvPersistable;
+import interfaces.Identifiable;
 import exceptions.InvalidTripDataException;
 
 public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<Trip> {
@@ -274,6 +274,12 @@ public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<
         return totalCost;
     }
 
+    /** Exposes the trip's current total cost through the A3 Billable contract. */
+    @Override
+    public double getTotalCost() {
+        return calculateTotalCost();
+    }
+
     @Override
     public boolean equals(Object otherObject) {
         if (otherObject == null) return false;
@@ -318,10 +324,9 @@ public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<
                 ", basePrice=" + basePrice + "}";
     }
 
-    /** Exposes the trip's current total cost through the Billable contract. */
-    @Override
+    /** Preserves the A2-style billable accessor for backward compatibility. */
     public double getBillableAmount() {
-        return calculateTotalCost();
+        return getTotalCost();
     }
 
     /** Serializes the trip using the current A2-compatible CSV format. */

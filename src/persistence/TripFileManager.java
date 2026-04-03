@@ -1,5 +1,5 @@
 // -----------------------------------------------------
-// Assignment 2
+// Assignment 3
 // Class: TripFileManager
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
@@ -18,7 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/** Handles CSV saving and loading for trip records. */
+/** Legacy fallback CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager. */
 public class TripFileManager {
 
     /** Saves each trip while keeping optional accommodation and transportation IDs blank when absent. */
@@ -78,14 +78,14 @@ public class TripFileManager {
                     if (accommodationId.isEmpty()) accommodationId = null;
                     if (transportationId.isEmpty()) transportationId = null;
 
-                    /** Enforce the A2 rule that a trip needs at least one booking component. */
+                    /* Enforce the A2 rule that a trip needs at least one booking component. */
                     if (accommodationId == null && transportationId == null) {
                         throw new InvalidTripDataException(
                                 "Trip must have accommodationId or transportationId: " + rawLine
                         );
                     }
 
-                    /** Verify that all referenced IDs are already present in memory. */
+                    /* Verify that all referenced IDs are already present in memory. */
                     if (!smartTravelService.clientExists(clientId)) {
                         throw new EntityNotFoundException("Trip references missing clientId: " + clientId);
                     }

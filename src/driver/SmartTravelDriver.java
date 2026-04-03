@@ -1,5 +1,5 @@
 // -----------------------------------------------------
-// Assignment 2
+// Assignment 3
 // Class: SmartTravelDriver
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
@@ -28,7 +28,7 @@ public class SmartTravelDriver {
         System.out.println("Developed by: Yousef Yousef & Hamza Shaheed");
         System.out.println("===========================================\n");
 
-        /* Build the collection-backed service while keeping A2 behavior intact. */
+        /* Build the collection-backed service while preserving compatibility behavior. */
         SmartTravelService smartTravelService = new SmartTravelService();
 
         /* Keep the program running until the user selects the exit option. */
@@ -71,7 +71,7 @@ public class SmartTravelDriver {
                     additionalOperationsMenu(keyboard, smartTravelService);
                     break;
                 case 6:
-                    runA1PredefinedScenario(smartTravelService);
+                    runCoreScenarioDemo(smartTravelService);
                     break;
                 case 7:
                     advancedAnalyticsMenu(keyboard, smartTravelService);
@@ -83,7 +83,7 @@ public class SmartTravelDriver {
                     saveAllData(smartTravelService);
                     break;
                 case 10:
-                    runA2PredefinedScenario(smartTravelService);
+                    runPersistenceScenarioDemo(smartTravelService);
                     break;
                 case 11:
                     generateDashboard(smartTravelService);
@@ -704,31 +704,33 @@ public class SmartTravelDriver {
         }
     }
 
-    /** Handles the A3 analytics submenu while preserving the rest of the A2 menu structure. */
+    /** Handles the A3 analytics submenu while preserving the rest of the driver flow. */
     private static void advancedAnalyticsMenu(Scanner keyboard, SmartTravelService smartTravelService) {
         boolean back = false;
 
         while (!back) {
             System.out.println("\n=== ADVANCED ANALYTICS ===");
-            System.out.println("1) Trips by Destination");
-            System.out.println("2) Trips by Cost Range");
-            System.out.println("3) Top Clients by Spending");
-            System.out.println("4) Recent Trips");
-            System.out.println("5) Smart Sort Collections");
-            System.out.println("6) Back to Main Menu");
+            System.out.println("7.1) Trips by Destination");
+            System.out.println("7.2) Trips by Cost Range");
+            System.out.println("7.3) Top Clients by Spending");
+            System.out.println("7.4) Recent Trips");
+            System.out.println("7.5) Smart Sort Collections");
+            System.out.println("7.6) Back");
             System.out.print("Enter choice: ");
 
-            int analyticsChoice = readInt(keyboard);
+            String analyticsChoice = keyboard.nextLine().trim();
 
             switch (analyticsChoice) {
-                case 1:
+                case "7.1":
+                case "1":
                     System.out.print("Enter destination: ");
                     String destination = keyboard.nextLine();
                     List<Trip> destinationTrips = smartTravelService.filterTripsByDestination(destination);
                     printTripResults(destinationTrips);
                     break;
 
-                case 2:
+                case "7.2":
+                case "2":
                     System.out.print("Enter minimum total cost: ");
                     double minimumCost = readDouble(keyboard);
                     System.out.print("Enter maximum total cost: ");
@@ -743,20 +745,24 @@ public class SmartTravelDriver {
                     printTripResults(rangedTrips);
                     break;
 
-                case 3:
+                case "7.3":
+                case "3":
                     printClients(smartTravelService.getTopClientsBySpending());
                     break;
 
-                case 4:
+                case "7.4":
+                case "4":
                     printTripResults(smartTravelService.getRecentTrips());
                     break;
 
-                case 5:
+                case "7.5":
+                case "5":
                     smartSortCollectionsMenu(keyboard, smartTravelService);
                     break;
 
-                case 6:
-                    back = true;
+                case "7.6":
+                case "6":
+                back = true;
                     break;
 
                 default:
@@ -891,8 +897,8 @@ public class SmartTravelDriver {
         }
     }
 
-    /** Runs the A1-style hard-coded scenario to demonstrate core system features. */
-    private static void runA1PredefinedScenario(SmartTravelService smartTravelService) {
+    /** Runs the Assignment 3 core scenario to demonstrate the main system features. */
+    private static void runCoreScenarioDemo(SmartTravelService smartTravelService) {
         try {
             // Start from a clean in-memory state before building scenario data. */
             smartTravelService.clearAllData();
@@ -937,7 +943,7 @@ public class SmartTravelDriver {
             smartTravelService.addTrip(tripTwo);
             smartTravelService.addTrip(tripThree);
 
-            System.out.println("\n===== PREDEFINED SCENARIO =====");
+            System.out.println("\n===== CORE SCENARIO DEMO =====");
             listAllSummary(smartTravelService);
 
             /* Demonstrate equality behavior across different object cases. */
@@ -980,10 +986,10 @@ public class SmartTravelDriver {
         }
     }
 
-    /** Runs the A2-style scenario to demonstrate loading, saving, validation, and dashboard generation. */
-    private static void runA2PredefinedScenario(SmartTravelService smartTravelService) {
+    /** Runs the Assignment 3 persistence scenario to demonstrate loading, saving, validation, and dashboard generation. */
+    private static void runPersistenceScenarioDemo(SmartTravelService smartTravelService) {
         smartTravelService.clearAllData();
-        System.out.println("\n===== RUNNING A2 PREDEFINED SCENARIO =====");
+        System.out.println("\n===== RUNNING PERSISTENCE SCENARIO DEMO =====");
 
         /* First load any persisted data into memory. */
         loadAllData(smartTravelService);
@@ -1006,7 +1012,7 @@ public class SmartTravelDriver {
 
         // Add one full set of valid demo objects to the current data. */
         try {
-            Client demoClient = new Client("A2", "Demo", "a2demo@example.com");
+            Client demoClient = new Client("A3", "Demo", "a3demo@example.com");
             smartTravelService.addClient(demoClient);
 
             Flight demoFlight = new Flight("DemoAir", "Montreal", "Rome", "DemoAir", 23.0);
@@ -1018,7 +1024,7 @@ public class SmartTravelDriver {
             Trip demoTrip = new Trip(demoClient, demoFlight, demoHotel, "Rome", 5, 1500.0);
             smartTravelService.addTrip(demoTrip);
 
-            System.out.println("\nAdded valid hard-coded A2 demo data:");
+            System.out.println("\nAdded valid Assignment 3 demo data:");
             System.out.println(demoClient);
             System.out.println(demoFlight);
             System.out.println(demoHotel);
@@ -1026,7 +1032,7 @@ public class SmartTravelDriver {
             System.out.println("Trip total = " + String.format("%.2f", demoTrip.calculateTotalCost()));
 
         } catch (Exception exception) {
-            System.out.println("Unexpected add error in A2 scenario: " + exception.getMessage());
+            System.out.println("Unexpected add error in persistence scenario: " + exception.getMessage());
         }
 
         // Intentionally trigger a validation failure for transportation rules. */
@@ -1043,7 +1049,7 @@ public class SmartTravelDriver {
         System.out.println("\n--- Final Summary ---");
         listAllSummary(smartTravelService);
 
-        System.out.println("\n===== A2 PREDEFINED SCENARIO COMPLETE =====");
+        System.out.println("\n===== PERSISTENCE SCENARIO DEMO COMPLETE =====");
     }
 
     /** Reads an integer safely and keeps asking until the input is valid. */

@@ -1,5 +1,5 @@
 // -----------------------------------------------------
-// Assignment 2
+// Assignment 3
 // Class: DashboardGenerator
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------

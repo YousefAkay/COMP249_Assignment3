@@ -1,5 +1,5 @@
 // -----------------------------------------------------
-// Assignment 2
+// Assignment 3
 // Class: SmartTravelService
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
@@ -21,6 +21,10 @@ public class SmartTravelService {
 
     private static final String DEFAULT_INPUT_DIRECTORY = "data";
     private static final String DEFAULT_OUTPUT_DIRECTORY = "output/data";
+    private static final String CLIENTS_FILE_NAME = "clients.csv";
+    private static final String TRANSPORTATIONS_FILE_NAME = "transports.csv";
+    private static final String ACCOMMODATIONS_FILE_NAME = "accommodations.csv";
+    private static final String TRIPS_FILE_NAME = "trips.csv";
 
     private final List<Client> clients;
     private final List<Trip> trips;
@@ -155,16 +159,17 @@ public class SmartTravelService {
 
     /** Checks whether the given client ID exists in the repository. */
     public boolean clientExists(String clientId) {
-        return clientRepository.findById(clientId) != null;
+        try {
+            clientRepository.findById(clientId);
+            return true;
+        } catch (EntityNotFoundException exception) {
+            return false;
+        }
     }
 
     /** Finds and returns a client by ID or throws if the client does not exist. */
     public Client findClientById(String clientId) throws EntityNotFoundException {
-        Client client = clientRepository.findById(clientId);
-        if (client != null) {
-            return client;
-        }
-        throw new EntityNotFoundException("Client not found: " + clientId);
+        return clientRepository.findById(clientId);
     }
 
     /** Adds transportation after checking for null input. */
@@ -190,11 +195,7 @@ public class SmartTravelService {
 
     /** Finds and returns transportation by ID or throws if it does not exist. */
     public Transportation findTransportationById(String transportId) throws EntityNotFoundException {
-        Transportation transportation = transportationRepository.findById(transportId);
-        if (transportation != null) {
-            return transportation;
-        }
-        throw new EntityNotFoundException("Transportation not found: " + transportId);
+        return transportationRepository.findById(transportId);
     }
 
     /** Adds accommodation after checking for null input. */
@@ -220,11 +221,7 @@ public class SmartTravelService {
 
     /** Finds and returns accommodation by ID or throws if it does not exist. */
     public Accommodation findAccommodationById(String accommodationId) throws EntityNotFoundException {
-        Accommodation accommodation = accommodationRepository.findById(accommodationId);
-        if (accommodation != null) {
-            return accommodation;
-        }
-        throw new EntityNotFoundException("Accommodation not found: " + accommodationId);
+        return accommodationRepository.findById(accommodationId);
     }
 
     /** Adds a trip after resolving any referenced objects and updating client spending. */
@@ -311,11 +308,7 @@ public class SmartTravelService {
 
     /** Finds and returns a trip by ID or throws if it does not exist. */
     public Trip findTripById(String tripId) throws EntityNotFoundException {
-        Trip trip = tripRepository.findById(tripId);
-        if (trip != null) {
-            return trip;
-        }
-        throw new EntityNotFoundException("Trip not found: " + tripId);
+        return tripRepository.findById(tripId);
     }
 
     /** Calculates the total cost for a trip using its current list index. */
@@ -397,9 +390,7 @@ public class SmartTravelService {
                 try {
                     client = findClientById(trip.getClientId());
                     trip.setClient(client);
-                } catch (EntityNotFoundException exception) {
-                    continue;
-                } catch (InvalidTripDataException exception) {
+                } catch (EntityNotFoundException | InvalidTripDataException exception) {
                     continue;
                 }
             }
@@ -411,36 +402,31 @@ public class SmartTravelService {
     }
 
     /** Loads all CSV data using the A3 generic persistence flow and A2 relationship ordering. */
-    public void loadAllData(String ignoredDataDirectory) throws IOException {
+    public void loadAllData(String directory) throws IOException {
         clearAllData();
+        String dataDirectory = resolveDirectory(directory, DEFAULT_INPUT_DIRECTORY);
 
-        List<Client> loadedClients = GenericFileManager.loadAll(
-                DEFAULT_INPUT_DIRECTORY + "/clients.csv",
-                new GenericFileManager.CsvParser<Client>() {
-                    @Override
-                    public Client parse(String csvRow) throws Exception {
-                        return Client.fromCsvRow(csvRow);
-                    }
-                }
+        List<Client> loadedClients = GenericFileManager.load(
+                buildCsvPath(dataDirectory, CLIENTS_FILE_NAME),
+                Client.class
         );
 
         for (int index = 0; index < loadedClients.size(); index++) {
             Client client = loadedClients.get(index);
             if (emailExists(client.getEmail())) {
-                throw new IOException("Duplicate email in clients.csv: " + client.getEmail());
+                persistence.ErrorLogger.log(
+                        "CLIENT LOAD ERROR | Duplicate email in clients.csv: " +
+                                client.getEmail() + " | line=" + client.toCsvRow()
+                );
+                continue;
             }
             clients.add(client);
             clientRepository.add(client);
         }
 
-        List<Transportation> loadedTransportations = GenericFileManager.loadAll(
-                DEFAULT_INPUT_DIRECTORY + "/transports.csv",
-                new GenericFileManager.CsvParser<Transportation>() {
-                    @Override
-                    public Transportation parse(String csvRow) throws Exception {
-                        return Transportation.fromCsvRow(csvRow);
-                    }
-                }
+        List<Transportation> loadedTransportations = GenericFileManager.load(
+                buildCsvPath(dataDirectory, TRANSPORTATIONS_FILE_NAME),
+                Transportation.class
         );
 
         for (int index = 0; index < loadedTransportations.size(); index++) {
@@ -449,14 +435,9 @@ public class SmartTravelService {
             transportationRepository.add(transportation);
         }
 
-        List<Accommodation> loadedAccommodations = GenericFileManager.loadAll(
-                DEFAULT_INPUT_DIRECTORY + "/accommodations.csv",
-                new GenericFileManager.CsvParser<Accommodation>() {
-                    @Override
-                    public Accommodation parse(String csvRow) throws Exception {
-                        return Accommodation.fromCsvRow(csvRow);
-                    }
-                }
+        List<Accommodation> loadedAccommodations = GenericFileManager.load(
+                buildCsvPath(dataDirectory, ACCOMMODATIONS_FILE_NAME),
+                Accommodation.class
         );
 
         for (int index = 0; index < loadedAccommodations.size(); index++) {
@@ -465,14 +446,9 @@ public class SmartTravelService {
             accommodationRepository.add(accommodation);
         }
 
-        List<Trip> loadedTrips = GenericFileManager.loadAll(
-                DEFAULT_INPUT_DIRECTORY + "/trips.csv",
-                new GenericFileManager.CsvParser<Trip>() {
-                    @Override
-                    public Trip parse(String csvRow) throws Exception {
-                        return Trip.fromCsvRow(csvRow);
-                    }
-                }
+        List<Trip> loadedTrips = GenericFileManager.load(
+                buildCsvPath(dataDirectory, TRIPS_FILE_NAME),
+                Trip.class
         );
 
         for (int index = 0; index < loadedTrips.size(); index++) {
@@ -491,11 +467,13 @@ public class SmartTravelService {
     }
 
     /** Saves all current in-memory lists to the required output directory. */
-    public void saveAllData(String ignoredOutputDirectory) throws IOException {
-        GenericFileManager.saveAll(clients, DEFAULT_OUTPUT_DIRECTORY + "/clients.csv");
-        GenericFileManager.saveAll(transportations, DEFAULT_OUTPUT_DIRECTORY + "/transports.csv");
-        GenericFileManager.saveAll(accommodations, DEFAULT_OUTPUT_DIRECTORY + "/accommodations.csv");
-        GenericFileManager.saveAll(trips, DEFAULT_OUTPUT_DIRECTORY + "/trips.csv");
+    public void saveAllData(String directory) throws IOException {
+        String outputDirectory = resolveDirectory(directory, DEFAULT_OUTPUT_DIRECTORY);
+
+        GenericFileManager.save(clients, buildCsvPath(outputDirectory, CLIENTS_FILE_NAME));
+        GenericFileManager.save(transportations, buildCsvPath(outputDirectory, TRANSPORTATIONS_FILE_NAME));
+        GenericFileManager.save(accommodations, buildCsvPath(outputDirectory, ACCOMMODATIONS_FILE_NAME));
+        GenericFileManager.save(trips, buildCsvPath(outputDirectory, TRIPS_FILE_NAME));
     }
 
     /** Clears all lists, repositories, recent history, and ID generators. */
@@ -587,6 +565,22 @@ public class SmartTravelService {
                 recentTrips.addRecent(trip);
             }
         }
+    }
+
+    /** Falls back to the default directory only when the caller passes null or blank text. */
+    private String resolveDirectory(String directory, String defaultDirectory) {
+        if (directory == null || directory.trim().isEmpty()) {
+            return defaultDirectory;
+        }
+        return directory.trim();
+    }
+
+    /** Builds one CSV file path while accepting directory values with or without a trailing slash. */
+    private String buildCsvPath(String directory, String fileName) {
+        if (directory.endsWith("/") || directory.endsWith("\\")) {
+            return directory + fileName;
+        }
+        return directory + "/" + fileName;
     }
 
     /** Preserves the old array-based startup data path when the driver still passes arrays in. */

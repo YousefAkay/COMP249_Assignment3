@@ -1,8 +1,12 @@
+// -----------------------------------------------------
+// Assignment 3
+// Interface: Billable
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// -----------------------------------------------------
+
 package contracts;
 
-/** Common contract for models that can report a billable amount. */
-public interface Billable {
-
-    /** Returns the billable amount represented by the model. */
-    double getBillableAmount();
+/** Backward-compatible bridge to the A3 interfaces package. */
+@Deprecated
+public interface Billable extends interfaces.Billable {
 }

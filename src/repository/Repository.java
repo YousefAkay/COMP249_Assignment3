@@ -1,9 +1,15 @@
+// -----------------------------------------------------
+// Assignment 3
+// Class: Repository
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// -----------------------------------------------------
+
 package repository;
 
-import contracts.Identifiable;
+import exceptions.EntityNotFoundException;
+import interfaces.Identifiable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -23,10 +29,10 @@ public class Repository<T extends Identifiable & Comparable<? super T>> {
         }
     }
 
-    /** Finds an item by ID or returns null when not found. */
-    public T findById(String id) {
+    /** Finds an item by ID or throws when the repository does not contain it. */
+    public T findById(String id) throws EntityNotFoundException {
         if (id == null) {
-            return null;
+            throw new EntityNotFoundException("Entity not found: null");
         }
 
         for (int index = 0; index < items.size(); index++) {
@@ -36,7 +42,7 @@ public class Repository<T extends Identifiable & Comparable<? super T>> {
             }
         }
 
-        return null;
+        throw new EntityNotFoundException("Entity not found: " + id);
     }
 
     /** Returns all items matching the provided predicate in encounter order. */
@@ -59,7 +65,26 @@ public class Repository<T extends Identifiable & Comparable<? super T>> {
     /** Returns a new list sorted using the model's natural ordering. */
     public List<T> getSorted() {
         List<T> sortedItems = new ArrayList<T>(items);
-        Collections.sort(sortedItems);
+
+        for (int outerIndex = 0; outerIndex < sortedItems.size() - 1; outerIndex++) {
+            int smallestIndex = outerIndex;
+
+            for (int innerIndex = outerIndex + 1; innerIndex < sortedItems.size(); innerIndex++) {
+                T currentItem = sortedItems.get(innerIndex);
+                T smallestItem = sortedItems.get(smallestIndex);
+
+                if (currentItem.compareTo(smallestItem) < 0) {
+                    smallestIndex = innerIndex;
+                }
+            }
+
+            if (smallestIndex != outerIndex) {
+                T temp = sortedItems.get(outerIndex);
+                sortedItems.set(outerIndex, sortedItems.get(smallestIndex));
+                sortedItems.set(smallestIndex, temp);
+            }
+        }
+
         return sortedItems;
     }
 

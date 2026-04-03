@@ -1,13 +1,13 @@
 // -----------------------------------------------------
-// Assignment 2
+// Assignment 3
 // Class: Client
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
 package client;
 
-import contracts.CsvPersistable;
-import contracts.Identifiable;
+import interfaces.CsvPersistable;
+import interfaces.Identifiable;
 import exceptions.InvalidClientDataException;
 
 /** Core Client entity in the SmartTravel system */

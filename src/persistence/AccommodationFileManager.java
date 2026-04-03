@@ -1,5 +1,5 @@
 // -----------------------------------------------------
-// Assignment 2
+// Assignment 3
 // Class: AccommodationFileManager
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
@@ -18,7 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/** Handles CSV saving and loading for accommodation records. */
+/** Legacy fallback CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager. */
 public class AccommodationFileManager {
 
     /** Saves each accommodation object using the subclass prefix required by the assignment. */
