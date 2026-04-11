@@ -48,6 +48,13 @@ public class Hostel extends Accommodation {
         }
     }
 
+    /** Preserves base positive-price validation and adds the hostel maximum-price rule. */
+    @Override
+    public void setPricePerNight(double pricePerNight) throws InvalidAccommodationDataException {
+        validateHostelPrice(pricePerNight);
+        super.setPricePerNight(pricePerNight);
+    }
+
     public int getSharedRoomCapacity() {
         return sharedRoomCapacity;
     }

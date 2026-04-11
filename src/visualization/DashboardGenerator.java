@@ -20,12 +20,17 @@ public class DashboardGenerator {
     /** Creates the dashboard folder structure, charts, stylesheet, and HTML page. */
     public static void generateDashboard(Client[] clients, int clientCount, Trip[] trips, int tripCount)
             throws IOException {
+        Client[] safeClients = (clients == null) ? new Client[0] : clients;
+        Trip[] safeTrips = (trips == null) ? new Trip[0] : trips;
+        int safeClientCount = Math.min(Math.max(clientCount, 0), safeClients.length);
+        int safeTripCount = Math.min(Math.max(tripCount, 0), safeTrips.length);
+
         ensureDir("output/dashboard");
         ensureDir("output/charts");
 
-        TripChartGenerator.generateAllCharts(trips, tripCount);
+        TripChartGenerator.generateAllCharts(safeTrips, safeTripCount);
         writeCss("output/dashboard/styles.css");
-        writeHtml("output/dashboard/dashboard.html", clients, clientCount, trips, tripCount);
+        writeHtml("output/dashboard/dashboard.html", safeClients, safeClientCount, safeTrips, safeTripCount);
     }
 
     /** Writes a simple stylesheet used by the generated dashboard page. */
@@ -50,12 +55,15 @@ public class DashboardGenerator {
         double totalRevenue = 0.0;
         double highestTripCost = -1.0;
         String highestTripLabel = "N/A";
+        int activeTripCount = 0;
+        int activeClientCount = 0;
 
         /** Compute dashboard summary values from the trip array. */
         for (int tripIndex = 0; tripIndex < tripCount; tripIndex++) {
             if (trips[tripIndex] != null) {
                 double currentTripCost = trips[tripIndex].calculateTotalCost();
                 totalRevenue += currentTripCost;
+                activeTripCount++;
 
                 if (currentTripCost > highestTripCost) {
                     highestTripCost = currentTripCost;
@@ -65,7 +73,13 @@ public class DashboardGenerator {
             }
         }
 
-        double averageTripCost = (tripCount > 0) ? totalRevenue / tripCount : 0.0;
+        for (int clientIndex = 0; clientIndex < clientCount; clientIndex++) {
+            if (clients[clientIndex] != null) {
+                activeClientCount++;
+            }
+        }
+
+        double averageTripCost = (activeTripCount > 0) ? totalRevenue / activeTripCount : 0.0;
 
         outputWriter.println("<!DOCTYPE html><html><head><meta charset='utf-8'/>");
         outputWriter.println("<title>SmartTravel Dashboard</title>");
@@ -77,8 +91,8 @@ public class DashboardGenerator {
 
         outputWriter.println("<div class='card'>");
         outputWriter.println("<h2>Summary</h2>");
-        outputWriter.println("<div class='row'>Clients: " + clientCount + "</div>");
-        outputWriter.println("<div class='row'>Trips: " + tripCount + "</div>");
+        outputWriter.println("<div class='row'>Clients: " + activeClientCount + "</div>");
+        outputWriter.println("<div class='row'>Trips: " + activeTripCount + "</div>");
         outputWriter.println("<div class='row'>Total Revenue: $" + String.format("%.2f", totalRevenue) + "</div>");
         outputWriter.println("<div class='row'>Average Trip Cost: $" +
                 String.format("%.2f", averageTripCost) + "</div>");

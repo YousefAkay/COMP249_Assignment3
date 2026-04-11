@@ -19,10 +19,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/** Legacy fallback CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager. */
+/** Legacy array-based CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager via model toCsvRow/fromCsvRow methods. */
 public class TransportationFileManager {
 
-    /** Saves each transportation object using the subclass prefix required by the assignment. */
+    /** Saves each transportation object for the older array-based flow using the required subclass prefix. */
     public static void saveTransportations(Transportation[] transportations, int transportCount, String filePath)
             throws IOException {
         ensureParentDir(filePath);
@@ -67,7 +67,7 @@ public class TransportationFileManager {
         outputWriter.close();
     }
 
-    /** Loads transportation rows, builds the right subclass, and logs invalid lines. */
+    /** Loads transportation rows for the legacy path, building the right subclass and logging invalid lines. */
     public static int loadTransportations(Transportation[] transportations, String filePath) throws IOException {
         int loadedCount = 0;
         BufferedReader bufferedReader = null;
@@ -84,7 +84,7 @@ public class TransportationFileManager {
                 if (line.isEmpty()) continue;
 
                 try {
-                    String[] tokens = line.split(";");
+                    String[] tokens = line.split(";", -1);
                     String typePrefix = tokens[0].trim().toUpperCase();
 
                     if ("FLIGHT".equals(typePrefix)) {

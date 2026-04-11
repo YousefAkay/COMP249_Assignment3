@@ -16,10 +16,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/** Legacy fallback CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager. */
+/** Legacy array-based CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager via SmartTravelService. */
 public class ClientFileManager {
 
-    /** Saves each client as a semicolon-separated row in the assignment format. */
+    /** Saves each client as a semicolon-separated row in the older array-based persistence flow. */
     public static void saveClients(Client[] clients, int clientCount, String filePath) throws IOException {
         ensureParentDir(filePath);
 
@@ -38,7 +38,7 @@ public class ClientFileManager {
         outputWriter.close();
     }
 
-    /** Loads client rows, rejects duplicates within the file, and logs bad lines. */
+    /** Loads client rows for the legacy array-based path, rejecting duplicate emails within that in-memory load. */
     public static int loadClients(Client[] clients, String filePath) throws IOException {
         int loadedCount = 0;
         BufferedReader bufferedReader = null;
@@ -55,7 +55,7 @@ public class ClientFileManager {
                 if (line.isEmpty()) continue;
 
                 try {
-                    String[] tokens = line.split(";");
+                    String[] tokens = line.split(";", -1);
                     if (tokens.length != 4) {
                         throw new InvalidClientDataException("Bad client CSV token count: " + rawLine);
                     }
@@ -65,7 +65,7 @@ public class ClientFileManager {
                     String lastName = tokens[2].trim();
                     String email = tokens[3].trim();
 
-                    /** Prevent duplicate emails from being loaded into the in-memory array. */
+                    /* Prevent duplicate emails from being loaded into the in-memory array. */
                     for (int clientIndex = 0; clientIndex < loadedCount; clientIndex++) {
                         if (clients[clientIndex] != null &&
                                 clients[clientIndex].getEmail().equalsIgnoreCase(email)) {

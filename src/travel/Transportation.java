@@ -208,7 +208,7 @@ public abstract class Transportation implements Identifiable, CsvPersistable, Co
 			throw new InvalidTransportDataException("Transportation CSV row cannot be null.");
 		}
 
-		String[] tokens = csvRow.split(";");
+		String[] tokens = csvRow.split(";", -1);
 		if (tokens.length < 2) {
 			throw new InvalidTransportDataException("Bad transportation CSV row: " + csvRow);
 		}
@@ -236,28 +236,14 @@ public abstract class Transportation implements Identifiable, CsvPersistable, Co
 				throw new InvalidTransportDataException("Bad TRAIN token count: " + csvRow);
 			}
 
-			String possibleNumericToken = tokens[5].trim();
-			String possibleTrainTypeToken = tokens[6].trim();
-
-			try {
-				return new Train(
-						tokens[1].trim(),
-						tokens[2].trim(),
-						tokens[3].trim(),
-						tokens[4].trim(),
-						possibleTrainTypeToken,
-						Double.parseDouble(possibleNumericToken)
-				);
-			} catch (NumberFormatException exception) {
-				return new Train(
-						tokens[1].trim(),
-						tokens[2].trim(),
-						tokens[3].trim(),
-						tokens[4].trim(),
-						possibleNumericToken,
-						Double.parseDouble(possibleTrainTypeToken)
-				);
-			}
+			return new Train(
+					tokens[1].trim(),
+					tokens[2].trim(),
+					tokens[3].trim(),
+					tokens[4].trim(),
+					tokens[6].trim(),
+					Double.parseDouble(tokens[5].trim())
+			);
 		}
 
 		if ("BUS".equals(typePrefix)) {

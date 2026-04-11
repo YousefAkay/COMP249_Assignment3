@@ -8,6 +8,7 @@ package travel;
 
 import exceptions.InvalidTransportDataException;
 
+/** Core Train entity in the SmartTravel system */
 public class Train extends Transportation {
 
     private String trainType;

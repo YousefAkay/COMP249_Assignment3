@@ -12,6 +12,7 @@ import interfaces.CsvPersistable;
 import interfaces.Identifiable;
 import exceptions.InvalidTripDataException;
 
+/** Core Trip entity in the SmartTravel system */
 public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<Trip> {
 
     private static int nextId = 2001;
@@ -345,7 +346,7 @@ public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<
             throw new InvalidTripDataException("Trip CSV row cannot be null.");
         }
 
-        String[] tokens = csvRow.split(";");
+        String[] tokens = csvRow.split(";", -1);
         if (tokens.length != 7) {
             throw new InvalidTripDataException("Bad TRIP token count: " + csvRow);
         }

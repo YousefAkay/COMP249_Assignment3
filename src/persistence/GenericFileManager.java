@@ -21,10 +21,16 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Generic CSV persistence helper for A3 entities that implement CsvPersistable. */
+/** Primary Assignment 3 CSV persistence helper for entities that implement CsvPersistable.
+ *  The current load path supports only the four root model classes: Client, Trip,
+ *  Accommodation, and Transportation.
+ */
 public class GenericFileManager {
 
-    /** Loads CSV rows by dispatching to the model class's existing fromCsvRow factory. */
+    /** Primary A3 load entry point: reads rows, delegates parsing to each model's fromCsvRow factory, and logs bad records.
+     *  This method currently supports only Client.class, Trip.class, Accommodation.class,
+     *  and Transportation.class.
+     */
     public static <T extends CsvPersistable> List<T> load(String filePath, Class<T> clazz) throws IOException {
         List<T> loadedItems = new ArrayList<T>();
         BufferedReader bufferedReader = null;
@@ -43,7 +49,7 @@ public class GenericFileManager {
                 try {
                     loadedItems.add(parseCsvRow(line, clazz));
                 } catch (Exception exception) {
-                    ErrorLogger.log("GENERIC LOAD ERROR | " + exception.getMessage() + " | line=" + rawLine);
+                    ErrorLogger.log(getLoadErrorPrefix(clazz) + " | " + exception.getMessage() + " | line=" + rawLine);
                 }
             }
         } finally {
@@ -55,7 +61,7 @@ public class GenericFileManager {
         return loadedItems;
     }
 
-    /** Saves all provided entities as one CSV row per line. */
+    /** Primary A3 save entry point: writes each entity using its own toCsvRow implementation. */
     public static <T extends CsvPersistable> void save(List<T> items, String filePath) throws IOException {
         ensureParentDir(filePath);
 
@@ -76,7 +82,9 @@ public class GenericFileManager {
         }
     }
 
-    /** Keeps the class-based CSV dispatch simple for TA demos and debugging. */
+    /** Centralizes the small class-to-factory dispatch so the service can keep one generic load path.
+     *  Only the four root Assignment 3 model classes are recognized here.
+     */
     private static <T extends CsvPersistable> T parseCsvRow(String csvRow, Class<T> clazz) throws Exception {
         if (clazz == Client.class) {
             return clazz.cast(Client.fromCsvRow(csvRow));
@@ -92,6 +100,24 @@ public class GenericFileManager {
         }
 
         throw new IllegalArgumentException("Unsupported CSV class: " + clazz.getName());
+    }
+
+    /** Maps each supported root model class to the legacy load-error prefix used elsewhere in persistence. */
+    private static <T extends CsvPersistable> String getLoadErrorPrefix(Class<T> clazz) {
+        if (clazz == Client.class) {
+            return "CLIENT LOAD ERROR";
+        }
+        if (clazz == Trip.class) {
+            return "TRIP LOAD ERROR";
+        }
+        if (clazz == Accommodation.class) {
+            return "ACCOM LOAD ERROR";
+        }
+        if (clazz == Transportation.class) {
+            return "TRANSPORT LOAD ERROR";
+        }
+
+        return "GENERIC LOAD ERROR";
     }
 
     /** Creates the output directory path before saving files into it. */

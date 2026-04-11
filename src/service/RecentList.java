@@ -1,4 +1,10 @@
-package util;
+// -----------------------------------------------------
+// Assignment 3
+// Class: RecentList
+// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// -----------------------------------------------------
+
+package service;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -29,12 +35,22 @@ public class RecentList<T> {
 
     /** Prints up to the requested number of recent items from newest to oldest. */
     public void printRecent(int maxToShow) {
+        if (recentItems.isEmpty()) {
+            System.out.println("No recent items found.");
+            return;
+        }
+
         int limit = maxToShow;
         if (limit < 0) {
             limit = 0;
         }
         if (limit > recentItems.size()) {
             limit = recentItems.size();
+        }
+
+        if (limit == 0) {
+            System.out.println("No items requested.");
+            return;
         }
 
         for (int index = 0; index < limit; index++) {

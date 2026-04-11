@@ -205,7 +205,7 @@ public class Client implements Identifiable, CsvPersistable, Comparable<Client> 
     @Override
     public String toString() {
         return "Client{clientId='" + clientId + "', firstName='" + firstName + "', lastName='" + lastName +
-                "', email='" + email + "', amountSpent=" + amountSpent + "}";
+                "', email='" + email + "', amountSpent=" + String.format("%.2f", amountSpent) + "}";
     }
 
     /** Serializes the client using the current A2-compatible CSV format. */
@@ -220,7 +220,7 @@ public class Client implements Identifiable, CsvPersistable, Comparable<Client> 
             throw new InvalidClientDataException("Client CSV row cannot be null.");
         }
 
-        String[] tokens = csvRow.split(";");
+        String[] tokens = csvRow.split(";", -1);
         if (tokens.length != 4) {
             throw new InvalidClientDataException("Bad client CSV token count: " + csvRow);
         }

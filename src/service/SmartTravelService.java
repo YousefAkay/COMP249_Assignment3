@@ -9,14 +9,13 @@ package service;
 import client.Client;
 import exceptions.*;
 import persistence.GenericFileManager;
-import repository.Repository;
 import travel.*;
-import util.RecentList;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Core service layer that coordinates SmartTravel data, validation, and analytics. */
 public class SmartTravelService {
 
     private static final String DEFAULT_INPUT_DIRECTORY = "data";
@@ -316,7 +315,9 @@ public class SmartTravelService {
         if (tripIndex < 0 || tripIndex >= trips.size()) {
             throw new InvalidTripDataException("Invalid trip index: " + tripIndex);
         }
-        return trips.get(tripIndex).calculateTotalCost();
+        Trip trip = trips.get(tripIndex);
+        rememberTrip(trip);
+        return trip.calculateTotalCost();
     }
 
     /** Scans the current trip list and returns the trip with the highest total cost. */
@@ -339,6 +340,7 @@ public class SmartTravelService {
             }
         }
 
+        rememberTrip(mostExpensiveTrip);
         return mostExpensiveTrip;
     }
 
@@ -401,55 +403,83 @@ public class SmartTravelService {
         }
     }
 
-    /** Loads all CSV data using the A3 generic persistence flow and A2 relationship ordering. */
+    /** Loads all CSV data through the primary A3 GenericFileManager path, then applies service-level validation and relationship resolution in A2-compatible order. */
     public void loadAllData(String directory) throws IOException {
         clearAllData();
         String dataDirectory = resolveDirectory(directory, DEFAULT_INPUT_DIRECTORY);
 
-        List<Client> loadedClients = GenericFileManager.load(
-                buildCsvPath(dataDirectory, CLIENTS_FILE_NAME),
-                Client.class
-        );
+        List<Client> loadedClients = new ArrayList<Client>();
+        try {
+            loadedClients = GenericFileManager.load(
+                    buildCsvPath(dataDirectory, CLIENTS_FILE_NAME),
+                    Client.class
+            );
+        } catch (IOException exception) {
+            persistence.ErrorLogger.log("CLIENT LOAD ERROR | " + exception.getMessage());
+        }
 
         for (int index = 0; index < loadedClients.size(); index++) {
-            Client client = loadedClients.get(index);
-            if (emailExists(client.getEmail())) {
+            try {
+                addClient(loadedClients.get(index));
+            } catch (Exception exception) {
                 persistence.ErrorLogger.log(
-                        "CLIENT LOAD ERROR | Duplicate email in clients.csv: " +
-                                client.getEmail() + " | line=" + client.toCsvRow()
+                        "CLIENT LOAD ERROR | " + exception.getMessage() +
+                                " | line=" + loadedClients.get(index).toCsvRow()
                 );
-                continue;
             }
-            clients.add(client);
-            clientRepository.add(client);
         }
 
-        List<Transportation> loadedTransportations = GenericFileManager.load(
-                buildCsvPath(dataDirectory, TRANSPORTATIONS_FILE_NAME),
-                Transportation.class
-        );
+        List<Transportation> loadedTransportations = new ArrayList<Transportation>();
+        try {
+            loadedTransportations = GenericFileManager.load(
+                    buildCsvPath(dataDirectory, TRANSPORTATIONS_FILE_NAME),
+                    Transportation.class
+            );
+        } catch (IOException exception) {
+            persistence.ErrorLogger.log("TRANSPORT LOAD ERROR | " + exception.getMessage());
+        }
 
         for (int index = 0; index < loadedTransportations.size(); index++) {
-            Transportation transportation = loadedTransportations.get(index);
-            transportations.add(transportation);
-            transportationRepository.add(transportation);
+            try {
+                addTransportation(loadedTransportations.get(index));
+            } catch (Exception exception) {
+                persistence.ErrorLogger.log(
+                        "TRANSPORT LOAD ERROR | " + exception.getMessage() +
+                                " | line=" + loadedTransportations.get(index).toCsvRow()
+                );
+            }
         }
 
-        List<Accommodation> loadedAccommodations = GenericFileManager.load(
-                buildCsvPath(dataDirectory, ACCOMMODATIONS_FILE_NAME),
-                Accommodation.class
-        );
+        List<Accommodation> loadedAccommodations = new ArrayList<Accommodation>();
+        try {
+            loadedAccommodations = GenericFileManager.load(
+                    buildCsvPath(dataDirectory, ACCOMMODATIONS_FILE_NAME),
+                    Accommodation.class
+            );
+        } catch (IOException exception) {
+            persistence.ErrorLogger.log("ACCOM LOAD ERROR | " + exception.getMessage());
+        }
 
         for (int index = 0; index < loadedAccommodations.size(); index++) {
-            Accommodation accommodation = loadedAccommodations.get(index);
-            accommodations.add(accommodation);
-            accommodationRepository.add(accommodation);
+            try {
+                addAccommodation(loadedAccommodations.get(index));
+            } catch (Exception exception) {
+                persistence.ErrorLogger.log(
+                        "ACCOM LOAD ERROR | " + exception.getMessage() +
+                                " | line=" + loadedAccommodations.get(index).toCsvRow()
+                );
+            }
         }
 
-        List<Trip> loadedTrips = GenericFileManager.load(
-                buildCsvPath(dataDirectory, TRIPS_FILE_NAME),
-                Trip.class
-        );
+        List<Trip> loadedTrips = new ArrayList<Trip>();
+        try {
+            loadedTrips = GenericFileManager.load(
+                    buildCsvPath(dataDirectory, TRIPS_FILE_NAME),
+                    Trip.class
+            );
+        } catch (IOException exception) {
+            persistence.ErrorLogger.log("TRIP LOAD ERROR | " + exception.getMessage());
+        }
 
         for (int index = 0; index < loadedTrips.size(); index++) {
             try {
@@ -466,7 +496,7 @@ public class SmartTravelService {
         }
     }
 
-    /** Saves all current in-memory lists to the required output directory. */
+    /** Saves all current in-memory lists through the primary A3 GenericFileManager path. */
     public void saveAllData(String directory) throws IOException {
         String outputDirectory = resolveDirectory(directory, DEFAULT_OUTPUT_DIRECTORY);
 
@@ -537,9 +567,16 @@ public class SmartTravelService {
         return recentTrips.getItems();
     }
 
+    /** Prints up to the requested number of recent trips using the RecentList display path. */
+    public void printRecentTrips(int maxToShow) {
+        recentTrips.printRecent(maxToShow);
+    }
+
     /** Returns trips sorted by their natural business ordering. */
     public List<Trip> getSmartSortedTrips() {
-        return tripRepository.getSorted();
+        List<Trip> sortedTrips = tripRepository.getSorted();
+        rememberTrips(sortedTrips);
+        return sortedTrips;
     }
 
     /** Returns clients sorted by their natural business ordering. */
@@ -559,11 +596,15 @@ public class SmartTravelService {
 
     /** Adds a group of trips to the recent-trip history. */
     private void rememberTrips(List<Trip> viewedTrips) {
-        for (int index = 0; index < viewedTrips.size(); index++) {
-            Trip trip = viewedTrips.get(index);
-            if (trip != null) {
-                recentTrips.addRecent(trip);
-            }
+        for (int index = viewedTrips.size() - 1; index >= 0; index--) {
+            rememberTrip(viewedTrips.get(index));
+        }
+    }
+
+    /** Adds one viewed trip to the recent-trip history. */
+    private void rememberTrip(Trip viewedTrip) {
+        if (viewedTrip != null) {
+            recentTrips.addRecent(viewedTrip);
         }
     }
 
@@ -620,6 +661,11 @@ public class SmartTravelService {
                     tripRepository.add(initialTrips[index]);
                 }
             }
+        }
+
+        try {
+            recomputeAllClientSpending();
+        } catch (InvalidClientDataException ignore) {
         }
     }
 }

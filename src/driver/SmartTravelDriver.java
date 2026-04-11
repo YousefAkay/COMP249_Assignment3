@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
+/** Console driver for the SmartTravel system */
 public class SmartTravelDriver {
 
     /** Starts the full SmartTravel menu system and keeps running until the user exits. */
@@ -176,9 +177,10 @@ public class SmartTravelDriver {
 
                 case 4:
                     /* Print every active client currently stored in the array. */
+                    Client[] clientSnapshot = smartTravelService.getClients();
                     for (int clientIndex = 0; clientIndex < smartTravelService.getClientCount(); clientIndex++) {
-                        if (smartTravelService.getClients()[clientIndex] != null) {
-                            System.out.println(smartTravelService.getClients()[clientIndex]);
+                        if (clientSnapshot[clientIndex] != null) {
+                            System.out.println(clientSnapshot[clientIndex]);
                         }
                     }
                     break;
@@ -304,10 +306,11 @@ public class SmartTravelDriver {
 
                 case 4:
                     /* Print every active trip along with its computed total cost. */
+                    Trip[] tripSnapshot = smartTravelService.getTrips();
                     for (int tripIndex = 0; tripIndex < smartTravelService.getTripCount(); tripIndex++) {
-                        if (smartTravelService.getTrips()[tripIndex] != null) {
-                            System.out.println(smartTravelService.getTrips()[tripIndex] + " | total=" +
-                                    String.format("%.2f", smartTravelService.getTrips()[tripIndex].calculateTotalCost()));
+                        if (tripSnapshot[tripIndex] != null) {
+                            System.out.println(tripSnapshot[tripIndex] + " | total=" +
+                                    String.format("%.2f", tripSnapshot[tripIndex].calculateTotalCost()));
                         }
                     }
                     break;
@@ -317,9 +320,10 @@ public class SmartTravelDriver {
                     System.out.print("Enter client ID: ");
                     String clientId = keyboard.nextLine();
                     boolean found = false;
+                    Trip[] clientTripSnapshot = smartTravelService.getTrips();
 
                     for (int tripIndex = 0; tripIndex < smartTravelService.getTripCount(); tripIndex++) {
-                        Trip trip = smartTravelService.getTrips()[tripIndex];
+                        Trip trip = clientTripSnapshot[tripIndex];
                         if (trip != null && clientId.equals(trip.getClientId())) {
                             System.out.println(trip + " | total=" + String.format("%.2f", trip.calculateTotalCost()));
                             found = true;
@@ -432,9 +436,10 @@ public class SmartTravelDriver {
                     System.out.println("3) Bus");
                     System.out.print("Choose type: ");
                     int transportTypeFilter = readInt(keyboard);
+                    Transportation[] transportationSnapshot = smartTravelService.getTransportations();
 
                     for (int transportIndex = 0; transportIndex < smartTravelService.getTransportCount(); transportIndex++) {
-                        Transportation transportation = smartTravelService.getTransportations()[transportIndex];
+                        Transportation transportation = transportationSnapshot[transportIndex];
                         if (transportation == null) continue;
 
                         if (transportTypeFilter == 1 && transportation instanceof Flight) System.out.println(transportation);
@@ -529,9 +534,10 @@ public class SmartTravelDriver {
                     System.out.println("2) Hostel");
                     System.out.print("Choose type: ");
                     int accommodationTypeFilter = readInt(keyboard);
+                    Accommodation[] accommodationSnapshot = smartTravelService.getAccommodations();
 
                     for (int accommodationIndex = 0; accommodationIndex < smartTravelService.getAccommodationCount(); accommodationIndex++) {
-                        Accommodation accommodation = smartTravelService.getAccommodations()[accommodationIndex];
+                        Accommodation accommodation = accommodationSnapshot[accommodationIndex];
                         if (accommodation == null) continue;
 
                         if (accommodationTypeFilter == 1 && accommodation instanceof Hotel) System.out.println(accommodation);
@@ -572,7 +578,7 @@ public class SmartTravelDriver {
                         Trip mostExpensiveTrip = smartTravelService.findMostExpensiveTrip();
                         System.out.println("\nMost expensive trip:");
                         System.out.println(mostExpensiveTrip);
-                        System.out.println("Total cost: " + mostExpensiveTrip.calculateTotalCost());
+                        System.out.println("Total cost: " + String.format("%.2f", mostExpensiveTrip.calculateTotalCost()));
                     } catch (EntityNotFoundException exception) {
                         System.out.println("ERROR: " + exception.getMessage());
                     }
@@ -586,8 +592,9 @@ public class SmartTravelDriver {
                     }
 
                     System.out.println("\nTrips:");
+                    Trip[] tripSnapshot = smartTravelService.getTrips();
                     for (int tripIndex = 0; tripIndex < smartTravelService.getTripCount(); tripIndex++) {
-                        System.out.println(tripIndex + " -> " + smartTravelService.getTrips()[tripIndex]);
+                        System.out.println(tripIndex + " -> " + tripSnapshot[tripIndex]);
                     }
 
                     System.out.print("Enter trip index: ");
@@ -596,7 +603,7 @@ public class SmartTravelDriver {
                     try {
                         /* Calculate the total cost using the selected trip index. */
                         double totalCost = smartTravelService.calculateTripTotal(tripIndex);
-                        System.out.println("Total cost = " + totalCost);
+                        System.out.println("Total cost = " + String.format("%.2f", totalCost));
                     } catch (InvalidTripDataException exception) {
                         System.out.println("ERROR: " + exception.getMessage());
                     }
@@ -610,9 +617,10 @@ public class SmartTravelDriver {
                     }
 
                     Transportation[] copiedTransportations = smartTravelService.deepCopyTransportationArray();
+                    Transportation[] originalTransportations = smartTravelService.getTransportations();
 
                     System.out.println("\nBefore modifying copied transportation:");
-                    System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
+                    System.out.println("Original[0] = " + originalTransportations[0]);
                     System.out.println("Copy[0]     = " + copiedTransportations[0]);
 
                     try {
@@ -629,7 +637,7 @@ public class SmartTravelDriver {
                     }
 
                     System.out.println("\nAfter modifying copied transportation:");
-                    System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
+                    System.out.println("Original[0] = " + originalTransportations[0]);
                     System.out.println("Copy[0]     = " + copiedTransportations[0]);
                     break;
 
@@ -641,9 +649,10 @@ public class SmartTravelDriver {
                     }
 
                     Accommodation[] copiedAccommodations = smartTravelService.deepCopyAccommodationArray();
+                    Accommodation[] originalAccommodations = smartTravelService.getAccommodations();
 
                     System.out.println("\nBefore modifying copied accommodation:");
-                    System.out.println("Original[0] = " + smartTravelService.getAccommodations()[0]);
+                    System.out.println("Original[0] = " + originalAccommodations[0]);
                     System.out.println("Copy[0]     = " + copiedAccommodations[0]);
 
                     try {
@@ -658,7 +667,7 @@ public class SmartTravelDriver {
                     }
 
                     System.out.println("\nAfter modifying copied accommodation:");
-                    System.out.println("Original[0] = " + smartTravelService.getAccommodations()[0]);
+                    System.out.println("Original[0] = " + originalAccommodations[0]);
                     System.out.println("Copy[0]     = " + copiedAccommodations[0]);
                     break;
 
@@ -675,30 +684,34 @@ public class SmartTravelDriver {
     /** Prints all currently stored data grouped by category for quick review. */
     private static void listAllSummary(SmartTravelService smartTravelService) {
         System.out.println("\n--- Clients ---");
+        Client[] clientSnapshot = smartTravelService.getClients();
         for (int clientIndex = 0; clientIndex < smartTravelService.getClientCount(); clientIndex++) {
-            if (smartTravelService.getClients()[clientIndex] != null) {
-                System.out.println(smartTravelService.getClients()[clientIndex]);
+            if (clientSnapshot[clientIndex] != null) {
+                System.out.println(clientSnapshot[clientIndex]);
             }
         }
 
         System.out.println("\n--- Transportation (ALL) ---");
+        Transportation[] transportationSnapshot = smartTravelService.getTransportations();
         for (int transportIndex = 0; transportIndex < smartTravelService.getTransportCount(); transportIndex++) {
-            if (smartTravelService.getTransportations()[transportIndex] != null) {
-                System.out.println(smartTravelService.getTransportations()[transportIndex]);
+            if (transportationSnapshot[transportIndex] != null) {
+                System.out.println(transportationSnapshot[transportIndex]);
             }
         }
 
         System.out.println("\n--- Accommodation (ALL) ---");
+        Accommodation[] accommodationSnapshot = smartTravelService.getAccommodations();
         for (int accommodationIndex = 0; accommodationIndex < smartTravelService.getAccommodationCount(); accommodationIndex++) {
-            if (smartTravelService.getAccommodations()[accommodationIndex] != null) {
-                System.out.println(smartTravelService.getAccommodations()[accommodationIndex]);
+            if (accommodationSnapshot[accommodationIndex] != null) {
+                System.out.println(accommodationSnapshot[accommodationIndex]);
             }
         }
 
         System.out.println("\n--- Trips ---");
+        Trip[] tripSnapshot = smartTravelService.getTrips();
         for (int tripIndex = 0; tripIndex < smartTravelService.getTripCount(); tripIndex++) {
-            if (smartTravelService.getTrips()[tripIndex] != null) {
-                Trip trip = smartTravelService.getTrips()[tripIndex];
+            if (tripSnapshot[tripIndex] != null) {
+                Trip trip = tripSnapshot[tripIndex];
                 System.out.println(trip + " | total=" + String.format("%.2f", trip.calculateTotalCost()));
             }
         }
@@ -747,12 +760,16 @@ public class SmartTravelDriver {
 
                 case "7.3":
                 case "3":
-                    printClients(smartTravelService.getTopClientsBySpending());
+                    System.out.print("How many top clients to display? ");
+                    int maxTopClients = readInt(keyboard);
+                    printTopClients(smartTravelService.getTopClientsBySpending(), maxTopClients);
                     break;
 
                 case "7.4":
                 case "4":
-                    printTripResults(smartTravelService.getRecentTrips());
+                    System.out.print("How many recent trips to display? ");
+                    int maxRecentTrips = readInt(keyboard);
+                    smartTravelService.printRecentTrips(maxRecentTrips);
                     break;
 
                 case "7.5":
@@ -838,6 +855,28 @@ public class SmartTravelDriver {
         }
     }
 
+    /** Prints the top-N clients with ranking labels for the spending analytics screen. */
+    private static void printTopClients(List<Client> clients, int maxToShow) {
+        if (clients == null || clients.isEmpty()) {
+            System.out.println("No clients found.");
+            return;
+        }
+
+        if (maxToShow < 0) {
+            System.out.println("Please enter a non-negative number of clients to display.");
+            return;
+        }
+
+        int limit = maxToShow;
+        if (limit > clients.size()) {
+            limit = clients.size();
+        }
+
+        for (int index = 0; index < limit; index++) {
+            System.out.println((index + 1) + ") " + clients.get(index));
+        }
+    }
+
     /** Prints accommodation results consistently for analytics screens. */
     private static void printAccommodations(List<Accommodation> accommodations) {
         if (accommodations == null || accommodations.isEmpty()) {
@@ -900,7 +939,7 @@ public class SmartTravelDriver {
     /** Runs the Assignment 3 core scenario to demonstrate the main system features. */
     private static void runCoreScenarioDemo(SmartTravelService smartTravelService) {
         try {
-            // Start from a clean in-memory state before building scenario data. */
+            // Start from a clean in-memory state before building scenario data.
             smartTravelService.clearAllData();
 
             Client clientOne = new Client("Malcolm", "White", "malcolm@example.com");
@@ -957,28 +996,30 @@ public class SmartTravelDriver {
             System.out.println("\n===== MOST EXPENSIVE TRIP =====");
             Trip mostExpensiveTrip = smartTravelService.findMostExpensiveTrip();
             System.out.println(mostExpensiveTrip);
-            System.out.println("Total = " + mostExpensiveTrip.calculateTotalCost());
+            System.out.println("Total = " + String.format("%.2f", mostExpensiveTrip.calculateTotalCost()));
 
             /* Prove the transportation deep copy uses separate objects. */
             System.out.println("\n===== DEEP COPY TEST: TRANSPORT =====");
             Transportation[] copiedTransportations = smartTravelService.deepCopyTransportationArray();
-            System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
+            Transportation[] originalTransportations = smartTravelService.getTransportations();
+            System.out.println("Original[0] = " + originalTransportations[0]);
             System.out.println("Copy[0]     = " + copiedTransportations[0]);
             if (copiedTransportations[0] instanceof Flight) {
                 ((Flight) copiedTransportations[0]).setAirlineName("ChangedAirline");
             }
-            System.out.println("Original[0] = " + smartTravelService.getTransportations()[0]);
+            System.out.println("Original[0] = " + originalTransportations[0]);
             System.out.println("Copy[0]     = " + copiedTransportations[0]);
 
             /* Prove the accommodation deep copy uses separate objects. */
             System.out.println("\n===== DEEP COPY TEST: ACCOMMODATION =====");
             Accommodation[] copiedAccommodations = smartTravelService.deepCopyAccommodationArray();
-            System.out.println("Original[0] = " + smartTravelService.getAccommodations()[0]);
+            Accommodation[] originalAccommodations = smartTravelService.getAccommodations();
+            System.out.println("Original[0] = " + originalAccommodations[0]);
             System.out.println("Copy[0]     = " + copiedAccommodations[0]);
             if (copiedAccommodations[0] instanceof Hotel) {
                 ((Hotel) copiedAccommodations[0]).setStars(1);
             }
-            System.out.println("Original[0] = " + smartTravelService.getAccommodations()[0]);
+            System.out.println("Original[0] = " + originalAccommodations[0]);
             System.out.println("Copy[0]     = " + copiedAccommodations[0]);
 
         } catch (Exception exception) {
@@ -1000,8 +1041,9 @@ public class SmartTravelDriver {
 
         /* Intentionally trigger a duplicate email case to show exception handling. */
         if (smartTravelService.getClientCount() > 0) {
+            Client[] clientSnapshot = smartTravelService.getClients();
             try {
-                String duplicateEmail = smartTravelService.getClients()[0].getEmail();
+                String duplicateEmail = clientSnapshot[0].getEmail();
                 smartTravelService.addClient(new Client("Test", "User", duplicateEmail));
             } catch (DuplicateEmailException exception) {
                 System.out.println("Caught expected DuplicateEmailException: " + exception.getMessage());
@@ -1010,7 +1052,7 @@ public class SmartTravelDriver {
             }
         }
 
-        // Add one full set of valid demo objects to the current data. */
+        // Add one full set of valid demo objects to the current data.
         try {
             Client demoClient = new Client("A3", "Demo", "a3demo@example.com");
             smartTravelService.addClient(demoClient);
@@ -1035,7 +1077,7 @@ public class SmartTravelDriver {
             System.out.println("Unexpected add error in persistence scenario: " + exception.getMessage());
         }
 
-        // Intentionally trigger a validation failure for transportation rules. */
+        // Intentionally trigger a validation failure for transportation rules.
         try {
             new Bus("BadBus", "CityA", "CityB", 0);
         } catch (InvalidTransportDataException exception) {

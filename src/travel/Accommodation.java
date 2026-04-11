@@ -175,7 +175,7 @@ public abstract class Accommodation implements Identifiable, CsvPersistable, Com
             throw new InvalidAccommodationDataException("Accommodation CSV row cannot be null.");
         }
 
-        String[] tokens = csvRow.split(";");
+        String[] tokens = csvRow.split(";", -1);
         if (tokens.length < 2) {
             throw new InvalidAccommodationDataException("Bad accommodation CSV row: " + csvRow);
         }

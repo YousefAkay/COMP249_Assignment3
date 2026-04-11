@@ -18,10 +18,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/** Legacy fallback CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager. */
+/** Legacy array-based CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager via model toCsvRow/fromCsvRow methods. */
 public class AccommodationFileManager {
 
-    /** Saves each accommodation object using the subclass prefix required by the assignment. */
+    /** Saves each accommodation object for the older array-based flow using the required subclass prefix. */
     public static void saveAccommodations(Accommodation[] accommodations, int accommodationCount, String filePath)
             throws IOException {
         ensureParentDir(filePath);
@@ -56,7 +56,7 @@ public class AccommodationFileManager {
         outputWriter.close();
     }
 
-    /** Loads accommodation records line by line, logging invalid rows and continuing safely. */
+    /** Loads accommodation records for the legacy path, logging invalid rows and continuing safely. */
     public static int loadAccommodations(Accommodation[] accommodations, String filePath) throws IOException {
         int loadedCount = 0;
         BufferedReader bufferedReader = null;
@@ -73,7 +73,7 @@ public class AccommodationFileManager {
                 if (line.isEmpty()) continue;
 
                 try {
-                    String[] tokens = line.split(";");
+                    String[] tokens = line.split(";", -1);
                     String typePrefix = tokens[0].trim().toUpperCase();
 
                     if ("HOTEL".equals(typePrefix)) {

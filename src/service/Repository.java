@@ -4,7 +4,7 @@
 // Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
 // -----------------------------------------------------
 
-package repository;
+package service;
 
 import exceptions.EntityNotFoundException;
 import interfaces.Identifiable;

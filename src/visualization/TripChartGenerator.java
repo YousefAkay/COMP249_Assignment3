@@ -20,14 +20,16 @@ public class TripChartGenerator {
 
     /** Creates all required chart images inside the output/charts directory. */
     public static void generateAllCharts(Trip[] trips, int tripCount) throws IOException {
+        Trip[] safeTrips = (trips == null) ? new Trip[0] : trips;
+        int safeTripCount = Math.min(Math.max(tripCount, 0), safeTrips.length);
         File outputDirectory = new File("output/charts");
         if (!outputDirectory.exists()) {
             outputDirectory.mkdirs();
         }
 
-        generateTripCostBarChart(trips, tripCount, "output/charts/trip_cost_bar_chart.png");
-        generateTripDurationLineChart(trips, tripCount, "output/charts/trip_duration_line_chart.png");
-        generateTripsPerDestinationPieChart(trips, tripCount, "output/charts/trips_per_destination_pie.png");
+        generateTripCostBarChart(safeTrips, safeTripCount, "output/charts/trip_cost_bar_chart.png");
+        generateTripDurationLineChart(safeTrips, safeTripCount, "output/charts/trip_duration_line_chart.png");
+        generateTripsPerDestinationPieChart(safeTrips, safeTripCount, "output/charts/trips_per_destination_pie.png");
     }
 
     /** Draws a bar chart where each trip bar is scaled against the highest trip cost. */

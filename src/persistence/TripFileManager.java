@@ -18,10 +18,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/** Legacy fallback CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager. */
+/** Legacy array-based CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager plus SmartTravelService relationship wiring. */
 public class TripFileManager {
 
-    /** Saves each trip while keeping optional accommodation and transportation IDs blank when absent. */
+    /** Saves each trip in the older array-based persistence flow while preserving blank optional IDs. */
     public static void saveTrips(Trip[] trips, int tripCount, String filePath) throws IOException {
         ensureParentDir(filePath);
 
@@ -44,7 +44,7 @@ public class TripFileManager {
         outputWriter.close();
     }
 
-    /** Loads trips only after checking that referenced clients and bookings already exist. */
+    /** Loads trips for the legacy path after confirming referenced entities already exist in the service. */
     public static int loadTrips(Trip[] trips, String filePath, SmartTravelService smartTravelService)
             throws IOException {
         int loadedCount = 0;
@@ -62,7 +62,7 @@ public class TripFileManager {
                 if (line.isEmpty()) continue;
 
                 try {
-                    String[] tokens = line.split(";");
+                    String[] tokens = line.split(";", -1);
                     if (tokens.length != 7) {
                         throw new InvalidTripDataException("Bad TRIP token count: " + rawLine);
                     }
@@ -108,6 +108,7 @@ public class TripFileManager {
                     );
 
                     smartTravelService.addTrip(trip);
+                    trips[loadedCount] = trip;
                     loadedCount++;
 
                 } catch (Exception exception) {
