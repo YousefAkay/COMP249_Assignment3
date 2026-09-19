@@ -1,9 +1,3 @@
-// -----------------------------------------------------
-// Assignment 3
-// Class: SmartTravelService
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
-// -----------------------------------------------------
-
 package service;
 
 import client.Client;
@@ -188,7 +182,7 @@ public class SmartTravelService {
         }
 
         Transportation transportation = findTransportationById(transportId);
-        transportations.remove(transportation);
+        transportations.removeIf(item -> item == transportation);
         transportationRepository.removeById(transportId);
     }
 
@@ -214,7 +208,7 @@ public class SmartTravelService {
         }
 
         Accommodation accommodation = findAccommodationById(accommodationId);
-        accommodations.remove(accommodation);
+        accommodations.removeIf(item -> item == accommodation);
         accommodationRepository.removeById(accommodationId);
     }
 
