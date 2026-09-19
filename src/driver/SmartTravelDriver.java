@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: SmartTravelDriver
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package driver;
@@ -43,7 +43,7 @@ public class SmartTravelDriver {
             System.out.println("3) Transportation Management");
             System.out.println("4) Accommodation Management");
             System.out.println("5) Additional Operations");
-            System.out.println("6) Run A1 Predefined Scenario");
+            System.out.println("6) Run Core Demo Scenario");
             System.out.println("7) Advanced Analytics");
             System.out.println("8) Load All Data");
             System.out.println("9) Save All Data");
@@ -717,7 +717,7 @@ public class SmartTravelDriver {
         }
     }
 
-    /** Handles the A3 analytics submenu while preserving the rest of the driver flow. */
+    /** Handles the analytics submenu while preserving the rest of the driver flow. */
     private static void advancedAnalyticsMenu(Scanner keyboard, SmartTravelService smartTravelService) {
         boolean back = false;
 
@@ -788,7 +788,7 @@ public class SmartTravelDriver {
         }
     }
 
-    /** Displays one of the naturally sorted collections required by the A3 analytics workflow. */
+    /** Displays one of the naturally sorted collections required by the analytics workflow. */
     private static void smartSortCollectionsMenu(Scanner keyboard, SmartTravelService smartTravelService) {
         boolean back = false;
 
@@ -936,7 +936,7 @@ public class SmartTravelDriver {
         }
     }
 
-    /** Runs the Assignment 3 core scenario to demonstrate the main system features. */
+    /** Runs the core scenario to demonstrate the main system features. */
     private static void runCoreScenarioDemo(SmartTravelService smartTravelService) {
         try {
             // Start from a clean in-memory state before building scenario data.
@@ -1027,7 +1027,7 @@ public class SmartTravelDriver {
         }
     }
 
-    /** Runs the Assignment 3 persistence scenario to demonstrate loading, saving, validation, and dashboard generation. */
+    /** Runs the persistence scenario to demonstrate loading, saving, validation, and dashboard generation. */
     private static void runPersistenceScenarioDemo(SmartTravelService smartTravelService) {
         smartTravelService.clearAllData();
         System.out.println("\n===== RUNNING PERSISTENCE SCENARIO DEMO =====");
@@ -1054,7 +1054,7 @@ public class SmartTravelDriver {
 
         // Add one full set of valid demo objects to the current data.
         try {
-            Client demoClient = new Client("A3", "Demo", "a3demo@example.com");
+            Client demoClient = new Client("Sample", "Traveler", "sampletraveler@example.com");
             smartTravelService.addClient(demoClient);
 
             Flight demoFlight = new Flight("DemoAir", "Montreal", "Rome", "DemoAir", 23.0);
@@ -1066,7 +1066,7 @@ public class SmartTravelDriver {
             Trip demoTrip = new Trip(demoClient, demoFlight, demoHotel, "Rome", 5, 1500.0);
             smartTravelService.addTrip(demoTrip);
 
-            System.out.println("\nAdded valid Assignment 3 demo data:");
+            System.out.println("\nAdded valid demo data:");
             System.out.println(demoClient);
             System.out.println(demoFlight);
             System.out.println(demoHotel);

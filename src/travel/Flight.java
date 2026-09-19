@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Flight
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package travel;
@@ -14,7 +14,7 @@ public class Flight extends Transportation {
     private String airlineName;
     private double luggageAllowanceKg;
 
-    /** Builds a default flight with the assignment's standard base fare. */
+    /** Builds a default flight with the default base fare. */
     public Flight() {
         super();
         this.airlineName = "Unknown";
@@ -125,7 +125,7 @@ public class Flight extends Transportation {
                 ", airlineName='" + airlineName + "', luggageAllowanceKg=" + luggageAllowanceKg + "}";
     }
 
-    /** Serializes the flight using the current A2-compatible CSV format. */
+    /** Serializes the flight using the current CSV format. */
     @Override
     public String toCsvRow() {
         return "FLIGHT;" + getTransportId() + ";" + getCompanyName() + ";" +

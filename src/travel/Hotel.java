@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Hotel
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package travel;
@@ -88,7 +88,7 @@ public class Hotel extends Accommodation {
                 ", stars=" + stars + "}";
     }
 
-    /** Serializes the hotel using the current A2-compatible CSV format. */
+    /** Serializes the hotel using the current CSV format. */
     @Override
     public String toCsvRow() {
         return "HOTEL;" + getAccommodationId() + ";" + getName() + ";" +

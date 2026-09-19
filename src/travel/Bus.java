@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Bus
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package travel;
@@ -13,7 +13,7 @@ public class Bus extends Transportation {
 
     private int numberOfStops;
 
-    /** Builds a default bus with the assignment's standard base fare. */
+    /** Builds a default bus with the default base fare. */
     public Bus() {
         super();
         this.numberOfStops = 1;
@@ -88,7 +88,7 @@ public class Bus extends Transportation {
                 ", numberOfStops=" + numberOfStops + "}";
     }
 
-    /** Serializes the bus using the current A2-compatible CSV format. */
+    /** Serializes the bus using the current CSV format. */
     @Override
     public String toCsvRow() {
         return "BUS;" + getTransportId() + ";" + getCompanyName() + ";" +

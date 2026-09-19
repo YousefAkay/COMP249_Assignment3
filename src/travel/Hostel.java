@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Hostel
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package travel;
@@ -91,7 +91,7 @@ public class Hostel extends Accommodation {
                 ", sharedRoomCapacity=" + sharedRoomCapacity + "}";
     }
 
-    /** Serializes the hostel using the current A2-compatible CSV format. */
+    /** Serializes the hostel using the current CSV format. */
     @Override
     public String toCsvRow() {
         return "HOSTEL;" + getAccommodationId() + ";" + getName() + ";" +

@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Client
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package client;
@@ -208,13 +208,13 @@ public class Client implements Identifiable, CsvPersistable, Comparable<Client> 
                 "', email='" + email + "', amountSpent=" + String.format("%.2f", amountSpent) + "}";
     }
 
-    /** Serializes the client using the current A2-compatible CSV format. */
+    /** Serializes the client using the current CSV format. */
     @Override
     public String toCsvRow() {
         return clientId + ";" + firstName + ";" + lastName + ";" + email;
     }
 
-    /** Reconstructs one client from an A2-compatible CSV row. */
+    /** Reconstructs one client from a CSV row. */
     public static Client fromCsvRow(String csvRow) throws InvalidClientDataException {
         if (csvRow == null) {
             throw new InvalidClientDataException("Client CSV row cannot be null.");
@@ -234,7 +234,7 @@ public class Client implements Identifiable, CsvPersistable, Comparable<Client> 
         );
     }
 
-    /** Applies the A3 natural business ordering: amountSpent descending. */
+    /** Applies the natural business ordering: amountSpent descending. */
     @Override
     public int compareTo(Client otherClient) {
         if (otherClient == null) {

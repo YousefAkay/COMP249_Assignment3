@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Train
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package travel;
@@ -13,7 +13,7 @@ public class Train extends Transportation {
 
     private String trainType;
 
-    /** Builds a default train with the assignment's standard base fare. */
+    /** Builds a default train with the default base fare. */
     public Train() {
         super();
         this.trainType = "Standard";
@@ -100,7 +100,7 @@ public class Train extends Transportation {
                 ", trainType='" + trainType + "'}";
     }
 
-    /** Serializes the train using the current A2-compatible CSV format. */
+    /** Serializes the train using the current CSV format. */
     @Override
     public String toCsvRow() {
         return "TRAIN;" + getTransportId() + ";" + getCompanyName() + ";" +

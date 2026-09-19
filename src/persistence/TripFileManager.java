@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: TripFileManager
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package persistence;
@@ -18,7 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/** Legacy array-based CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager plus SmartTravelService relationship wiring. */
+/** Legacy array-based CSV helper retained for existing array-based callers; the service uses GenericFileManager plus SmartTravelService relationship wiring. */
 public class TripFileManager {
 
     /** Saves each trip in the older array-based persistence flow while preserving blank optional IDs. */
@@ -78,7 +78,7 @@ public class TripFileManager {
                     if (accommodationId.isEmpty()) accommodationId = null;
                     if (transportationId.isEmpty()) transportationId = null;
 
-                    /* Enforce the A2 rule that a trip needs at least one booking component. */
+                    /* Enforce the rule that a trip needs at least one booking component. */
                     if (accommodationId == null && transportationId == null) {
                         throw new InvalidTripDataException(
                                 "Trip must have accommodationId or transportationId: " + rawLine

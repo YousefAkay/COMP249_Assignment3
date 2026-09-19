@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: RecentList
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package service;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-/** Bounded recent-item list used by the A3 analytics workflow. */
+/** Bounded recent-item list used by the analytics workflow. */
 public class RecentList<T> {
 
     private static final int MAX_SIZE = 10;

@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: AccommodationFileManager
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package persistence;
@@ -18,7 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/** Legacy array-based CSV helper retained for A2 compatibility; A3 primarily uses GenericFileManager via model toCsvRow/fromCsvRow methods. */
+/** Legacy array-based CSV helper retained for existing array-based callers; the service uses GenericFileManager via model toCsvRow/fromCsvRow methods. */
 public class AccommodationFileManager {
 
     /** Saves each accommodation object for the older array-based flow using the required subclass prefix. */

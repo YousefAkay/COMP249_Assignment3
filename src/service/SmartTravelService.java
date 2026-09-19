@@ -37,7 +37,7 @@ public class SmartTravelService {
         initializeFromArrays(clients, trips, transportations, accommodations);
     }
 
-    /** Preferred collection-backed constructor for A3. */
+    /** Preferred collection-backed constructor for new instances. */
     public SmartTravelService() {
         this.clients = new ArrayList<Client>();
         this.trips = new ArrayList<Trip>();
@@ -57,13 +57,13 @@ public class SmartTravelService {
     public int getTransportCount() { return transportations.size(); }
     public int getAccommodationCount() { return accommodations.size(); }
 
-    /** Returns an array snapshot for A2-compatible callers such as the current driver and dashboard. */
+    /** Returns an array snapshot for array-based callers such as the current driver and dashboard. */
     public Client[] getClients() { return clients.toArray(new Client[clients.size()]); }
     public Trip[] getTrips() { return trips.toArray(new Trip[trips.size()]); }
     public Transportation[] getTransportations() { return transportations.toArray(new Transportation[transportations.size()]); }
     public Accommodation[] getAccommodations() { return accommodations.toArray(new Accommodation[accommodations.size()]); }
 
-    /** Exposes the live lists for A3 collection-based logic. */
+    /** Exposes the live lists for collection-based logic. */
     public List<Client> getClientList() { return new ArrayList<Client>(clients); }
     public List<Trip> getTripList() { return new ArrayList<Trip>(trips); }
     public List<Transportation> getTransportationList() { return new ArrayList<Transportation>(transportations); }
@@ -397,7 +397,7 @@ public class SmartTravelService {
         }
     }
 
-    /** Loads all CSV data through the primary A3 GenericFileManager path, then applies service-level validation and relationship resolution in A2-compatible order. */
+    /** Loads all CSV data through the primary GenericFileManager path, then applies service-level validation and relationship resolution in dependency order. */
     public void loadAllData(String directory) throws IOException {
         clearAllData();
         String dataDirectory = resolveDirectory(directory, DEFAULT_INPUT_DIRECTORY);
@@ -490,7 +490,7 @@ public class SmartTravelService {
         }
     }
 
-    /** Saves all current in-memory lists through the primary A3 GenericFileManager path. */
+    /** Saves all current in-memory lists through the primary GenericFileManager path. */
     public void saveAllData(String directory) throws IOException {
         String outputDirectory = resolveDirectory(directory, DEFAULT_OUTPUT_DIRECTORY);
 

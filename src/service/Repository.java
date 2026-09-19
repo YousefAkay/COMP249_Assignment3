@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Repository
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package service;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-/** Generic repository backed by an ArrayList for A3 collection-based storage. */
+/** Generic repository backed by an ArrayList for collection-based storage. */
 public class Repository<T extends Identifiable & Comparable<? super T>> {
 
     private final List<T> items;

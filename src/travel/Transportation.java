@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Transportation
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package travel;
@@ -264,7 +264,7 @@ public abstract class Transportation implements Identifiable, CsvPersistable, Co
 		throw new InvalidTransportDataException("Unknown transport type prefix: " + typePrefix);
 	}
 
-	/** Applies the A3 natural business ordering: baseFare descending. */
+	/** Applies the natural business ordering: baseFare descending. */
 	@Override
 	public int compareTo(Transportation otherTransportation) {
 		if (otherTransportation == null) {

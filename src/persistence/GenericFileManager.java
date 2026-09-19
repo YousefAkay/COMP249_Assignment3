@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: GenericFileManager
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package persistence;
@@ -21,13 +21,13 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Primary Assignment 3 CSV persistence helper for entities that implement CsvPersistable.
+/** Primary CSV persistence helper for entities that implement CsvPersistable.
  *  The current load path supports only the four root model classes: Client, Trip,
  *  Accommodation, and Transportation.
  */
 public class GenericFileManager {
 
-    /** Primary A3 load entry point: reads rows, delegates parsing to each model's fromCsvRow factory, and logs bad records.
+    /** Primary load entry point: reads rows, delegates parsing to each model's fromCsvRow factory, and logs bad records.
      *  This method currently supports only Client.class, Trip.class, Accommodation.class,
      *  and Transportation.class.
      */
@@ -61,7 +61,7 @@ public class GenericFileManager {
         return loadedItems;
     }
 
-    /** Primary A3 save entry point: writes each entity using its own toCsvRow implementation. */
+    /** Primary save entry point: writes each entity using its own toCsvRow implementation. */
     public static <T extends CsvPersistable> void save(List<T> items, String filePath) throws IOException {
         ensureParentDir(filePath);
 
@@ -83,7 +83,7 @@ public class GenericFileManager {
     }
 
     /** Centralizes the small class-to-factory dispatch so the service can keep one generic load path.
-     *  Only the four root Assignment 3 model classes are recognized here.
+     *  Only the four root persistable entity classes are recognized here.
      */
     private static <T extends CsvPersistable> T parseCsvRow(String csvRow, Class<T> clazz) throws Exception {
         if (clazz == Client.class) {

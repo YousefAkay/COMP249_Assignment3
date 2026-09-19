@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Trip
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package travel;
@@ -275,7 +275,7 @@ public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<
         return totalCost;
     }
 
-    /** Exposes the trip's current total cost through the A3 Billable contract. */
+    /** Exposes the trip's current total cost through the Billable contract. */
     @Override
     public double getTotalCost() {
         return calculateTotalCost();
@@ -325,12 +325,12 @@ public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<
                 ", basePrice=" + basePrice + "}";
     }
 
-    /** Preserves the A2-style billable accessor for backward compatibility. */
+    /** Preserves the billable accessor for backward compatibility. */
     public double getBillableAmount() {
         return getTotalCost();
     }
 
-    /** Serializes the trip using the current A2-compatible CSV format. */
+    /** Serializes the trip using the current CSV format. */
     @Override
     public String toCsvRow() {
         String savedAccommodationId = (accommodationId == null) ? "" : accommodationId;
@@ -340,7 +340,7 @@ public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<
                 savedTransportationId + ";" + destination + ";" + durationInDays + ";" + basePrice;
     }
 
-    /** Reconstructs one trip from an A2-compatible CSV row. */
+    /** Reconstructs one trip from a CSV row. */
     public static Trip fromCsvRow(String csvRow) throws InvalidTripDataException {
         if (csvRow == null) {
             throw new InvalidTripDataException("Trip CSV row cannot be null.");
@@ -372,7 +372,7 @@ public class Trip implements Identifiable, Billable, CsvPersistable, Comparable<
         );
     }
 
-    /** Applies the A3 natural business ordering: total cost descending. */
+    /** Applies the natural business ordering: total cost descending. */
     @Override
     public int compareTo(Trip otherTrip) {
         if (otherTrip == null) {

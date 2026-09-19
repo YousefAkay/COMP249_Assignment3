@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: Accommodation
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package travel;
@@ -213,7 +213,7 @@ public abstract class Accommodation implements Identifiable, CsvPersistable, Com
         throw new InvalidAccommodationDataException("Unknown accommodation type prefix: " + typePrefix);
     }
 
-    /** Applies the A3 natural business ordering: pricePerNight descending. */
+    /** Applies the natural business ordering: pricePerNight descending. */
     @Override
     public int compareTo(Accommodation otherAccommodation) {
         if (otherAccommodation == null) {

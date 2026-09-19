@@ -1,7 +1,7 @@
 // -----------------------------------------------------
-// Assignment 3
+// SmartTravel Manager
 // Class: ErrorLogger
-// Written by: Yousef Yousef (40299095) & Hamza Shaheed (40341727)
+// Written by: Yousef Yousef & Hamza Shaheed
 // -----------------------------------------------------
 
 package persistence;
@@ -16,7 +16,7 @@ public class ErrorLogger {
 
     private static final String DEFAULT_PATH = "output/logs/errors.txt";
 
-    /** Logs a message to the assignment's default error log file. */
+    /** Logs a message to the default error log file. */
     public static void log(String message) {
         log(DEFAULT_PATH, message);
     }
