@@ -294,7 +294,7 @@ public class SmartTravelService {
     /** Cancels a trip and rebuilds client spending totals. */
     public void cancelTrip(String tripId) throws EntityNotFoundException, InvalidClientDataException {
         Trip trip = findTripById(tripId);
-        trips.remove(trip);
+        trips.removeIf(item -> item == trip);
         tripRepository.removeById(tripId);
         recomputeAllClientSpending();
     }
